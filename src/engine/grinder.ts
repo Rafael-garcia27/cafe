@@ -12,7 +12,7 @@ import {
   canUseTimeForGrind,
 } from '@domain'
 import type { Grinder, BrewMethod, FlowState } from '@domain'
-import { getGrinderCatalogEntry, referenceMicron } from '@/kb'
+import { getGrinderCatalogEntry, referenceMicron, GRIND_TARGETS } from '@/kb'
 
 export function micronFor(setting: number, grinder?: Grinder): number | null {
   if (!grinder) return null
@@ -176,4 +176,53 @@ export function suggestedSetting(grinder: Grinder | undefined, method: BrewMetho
   const target = referenceMicron(method)
   const raw = (target - grinder.zeroPointOffsetMicron) / grinder.micronPerStep
   return Math.max(0, Math.round(raw))
+}
+
+// ── Plausibilitätsprüfung (Übernahme aus barista-pwa, docs/03 §2.4) ───
+
+/**
+ * Meldet, wenn die eingetragene Einstellung für die Methode weit außerhalb
+ * des Sinnvollen liegt. Mühlenunabhängig, weil in Mikrometern gerechnet.
+ */
+export function grindPlausibility(
+  setting: number,
+  method: BrewMethod,
+  grinder?: Grinder,
+): { ok: boolean; message?: string; suggestion?: number } {
+  if (!grinder) return { ok: true }
+  const micron = settingToMicron(setting, grinder)
+  const [lo, hi] = GRIND_TARGETS[method] ?? [200, 900]
+  const tol = 0.45 // 45 % Toleranz — Mahlwerke streuen erheblich
+
+  if (micron < lo * (1 - tol)) {
+    return {
+      ok: false,
+      message: `Einstellung ${setting} entspricht ~${Math.round(micron)} µm — sehr fein für ${method === 'v60' ? 'Filter' : method === 'espresso' ? 'Espresso' : 'AeroPress'} (üblich ${lo}–${hi} µm).`,
+      suggestion: suggestedSetting(grinder, method) ?? undefined,
+    }
+  }
+  if (micron > hi * (1 + tol)) {
+    return {
+      ok: false,
+      message: `Einstellung ${setting} entspricht ~${Math.round(micron)} µm — sehr grob (üblich ${lo}–${hi} µm).`,
+      suggestion: suggestedSetting(grinder, method) ?? undefined,
+    }
+  }
+  return { ok: true }
+}
+
+/**
+ * Anzeige der Mühlenskala (Übernahme docs/03 §2.5): viele Mühlen tragen die
+ * Zahl als Dezimalwert auf dem Rädchen — 24 Klicks lesen sich dort als „2.4".
+ */
+export function formatSetting(setting: number, grinder?: Grinder): string {
+  if (!grinder) return String(setting)
+  if (grinder.scaleType === 'stepless') return setting.toFixed(1)
+  const rev = grinder.clicksPerRotation
+  if (rev && rev >= 10) {
+    const turns = Math.floor(setting / rev)
+    const rest = setting % rev
+    if (turns > 0) return `${setting} (${turns}×${rev} + ${rest})`
+  }
+  return String(setting)
 }

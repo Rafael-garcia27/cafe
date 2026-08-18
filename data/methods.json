@@ -11,47 +11,243 @@
       "agitationRelevant": false,
       "channelingPossible": true,
       "lrr": null,
-      "targetGrindMicron": [200, 400],
-      "variables": ["doseG", "yieldG", "ratio", "grindSetting", "waterTempC", "pressureBar", "preinfusionS"],
-      "observations": ["flowState", "puckState", "cremaQuality"],
+      "targetGrindMicron": [
+        200,
+        400
+      ],
+      "variables": [
+        "doseG",
+        "yieldG",
+        "ratio",
+        "grindSetting",
+        "waterTempC",
+        "pressureBar",
+        "preinfusionS"
+      ],
+      "observations": [
+        "flowState",
+        "puckState",
+        "cremaQuality"
+      ],
       "timeIsResult": true,
       "defaults": {
-        "light":        { "doseG": 18, "ratio": 2.7, "timeS": 31, "waterTempC": 95, "pressureBar": 9, "preinfusionS": 6 },
-        "medium-light": { "doseG": 18, "ratio": 2.4, "timeS": 29, "waterTempC": 94, "pressureBar": 9, "preinfusionS": 5 },
-        "medium":       { "doseG": 18, "ratio": 2.1, "timeS": 28, "waterTempC": 93, "pressureBar": 9, "preinfusionS": 5 },
-        "medium-dark":  { "doseG": 18, "ratio": 1.95, "timeS": 27, "waterTempC": 91, "pressureBar": 9, "preinfusionS": 4 },
-        "dark":         { "doseG": 17, "ratio": 1.85, "timeS": 25, "waterTempC": 90, "pressureBar": 9, "preinfusionS": 3 }
+        "light": {
+          "doseG": 18,
+          "ratio": 2.7,
+          "timeS": 31,
+          "waterTempC": 95,
+          "pressureBar": 9,
+          "preinfusionS": 6
+        },
+        "medium-light": {
+          "doseG": 18,
+          "ratio": 2.4,
+          "timeS": 29,
+          "waterTempC": 94,
+          "pressureBar": 9,
+          "preinfusionS": 5
+        },
+        "medium": {
+          "doseG": 18,
+          "ratio": 2.1,
+          "timeS": 28,
+          "waterTempC": 93,
+          "pressureBar": 9,
+          "preinfusionS": 5
+        },
+        "medium-dark": {
+          "doseG": 18,
+          "ratio": 1.95,
+          "timeS": 27,
+          "waterTempC": 91,
+          "pressureBar": 9,
+          "preinfusionS": 4
+        },
+        "dark": {
+          "doseG": 17,
+          "ratio": 1.85,
+          "timeS": 25,
+          "waterTempC": 90,
+          "pressureBar": 9,
+          "preinfusionS": 3
+        }
       },
       "basketDoseMap": {
-        "58": { "typical": [16, 20], "max": 25, "areaCm2": 26.42 },
-        "54": { "typical": [14, 17], "max": 21, "areaCm2": 22.90 },
-        "53": { "typical": [13, 16], "max": 20, "areaCm2": 22.06 },
-        "51": { "typical": [12, 15], "max": 18, "areaCm2": 20.43 }
+        "58": {
+          "typical": [
+            16,
+            20
+          ],
+          "max": 25,
+          "areaCm2": 26.42
+        },
+        "54": {
+          "typical": [
+            14,
+            17
+          ],
+          "max": 21,
+          "areaCm2": 22.9
+        },
+        "53": {
+          "typical": [
+            13,
+            16
+          ],
+          "max": 20,
+          "areaCm2": 22.06
+        },
+        "51": {
+          "typical": [
+            12,
+            15
+          ],
+          "max": 18,
+          "areaCm2": 20.43
+        }
       },
       "shotStyles": {
-        "ristretto":  { "ratio": [1.0, 1.5], "grindOffset": 2, "note": "Braucht GRÖBEREN Mahlgrad, nicht nur früheren Stopp." },
-        "espresso":   { "ratio": [1.8, 2.5], "grindOffset": 0 },
-        "lungo":      { "ratio": [3.0, 4.5], "grindOffset": -1 },
-        "turbo":      { "ratio": [3.0, 5.0], "grindOffset": 6, "pressureBar": 6, "timeS": [15, 20], "requiresRoast": ["light", "medium-light"] }
+        "ristretto": {
+          "ratio": [
+            1.0,
+            1.5
+          ],
+          "grindOffset": 2,
+          "note": "Braucht GRÖBEREN Mahlgrad, nicht nur früheren Stopp."
+        },
+        "espresso": {
+          "ratio": [
+            1.8,
+            2.5
+          ],
+          "grindOffset": 0
+        },
+        "lungo": {
+          "ratio": [
+            3.0,
+            4.5
+          ],
+          "grindOffset": -1
+        },
+        "turbo": {
+          "ratio": [
+            3.0,
+            5.0
+          ],
+          "grindOffset": 6,
+          "pressureBar": 6,
+          "timeS": [
+            15,
+            20
+          ],
+          "requiresRoast": [
+            "light",
+            "medium-light"
+          ]
+        }
       },
       "steps": [
-        { "index": 1,  "type": "prepare", "note": "Maschine 20 min aufheizen, Siebträger eingespannt" },
-        { "index": 2,  "type": "weigh",   "note": "Bohnen auf Zieldosis wiegen" },
-        { "index": 3,  "type": "rdt",     "note": "1-2 Tropfen Wasser auf die Bohnen" },
-        { "index": 4,  "type": "grind" },
-        { "index": 5,  "type": "weigh",   "note": "Auswiegen, ±0,1 g korrigieren" },
-        { "index": 6,  "type": "wdt",     "note": "8-12 kreisende Bewegungen" },
-        { "index": 7,  "type": "level" },
-        { "index": 8,  "type": "tamp",    "note": "Eben ist wichtiger als fest. ~10-15 kg." },
-        { "index": 9,  "type": "flush",   "durationS": 2 },
-        { "index": 10, "type": "tare" },
-        { "index": 11, "type": "brew",    "note": "Timer ab Pumpenstart" },
-        { "index": 12, "type": "stop",    "note": "Bei targetYieldG stoppen" },
-        { "index": 13, "type": "record",  "note": "Zeit, Auswaage, flowState, puckState" },
-        { "index": 14, "type": "taste" }
-      ]
+        {
+          "index": 1,
+          "type": "prepare",
+          "note": "Maschine 20 min aufheizen, Siebträger eingespannt"
+        },
+        {
+          "index": 2,
+          "type": "weigh",
+          "note": "Bohnen auf Zieldosis wiegen"
+        },
+        {
+          "index": 3,
+          "type": "rdt",
+          "note": "1-2 Tropfen Wasser auf die Bohnen"
+        },
+        {
+          "index": 4,
+          "type": "grind"
+        },
+        {
+          "index": 5,
+          "type": "weigh",
+          "note": "Auswiegen, ±0,1 g korrigieren"
+        },
+        {
+          "index": 6,
+          "type": "wdt",
+          "note": "8-12 kreisende Bewegungen"
+        },
+        {
+          "index": 7,
+          "type": "level"
+        },
+        {
+          "index": 8,
+          "type": "tamp",
+          "note": "Eben ist wichtiger als fest. ~10-15 kg."
+        },
+        {
+          "index": 9,
+          "type": "flush",
+          "durationS": 2
+        },
+        {
+          "index": 10,
+          "type": "tare"
+        },
+        {
+          "index": 11,
+          "type": "brew",
+          "note": "Timer ab Pumpenstart"
+        },
+        {
+          "index": 12,
+          "type": "stop",
+          "note": "Bei targetYieldG stoppen"
+        },
+        {
+          "index": 13,
+          "type": "record",
+          "note": "Zeit, Auswaage, flowState, puckState"
+        },
+        {
+          "index": 14,
+          "type": "taste"
+        }
+      ],
+      "suitability": {
+        "_note": "Dunkel/natural extrahiert leicht und trägt Milch; hell/washed ist im Druckformat am anspruchsvollsten.",
+        "dark": {
+          "natural": 5,
+          "honey": 5,
+          "washed": 4,
+          "fermented": 4
+        },
+        "medium-dark": {
+          "natural": 5,
+          "honey": 4,
+          "washed": 4,
+          "fermented": 4
+        },
+        "medium": {
+          "natural": 4,
+          "honey": 4,
+          "washed": 3,
+          "fermented": 4
+        },
+        "medium-light": {
+          "natural": 3,
+          "honey": 3,
+          "washed": 2,
+          "fermented": 3
+        },
+        "light": {
+          "natural": 2,
+          "honey": 2,
+          "washed": 1,
+          "fermented": 2
+        }
+      }
     },
-
     {
       "id": "v60",
       "label": "V60",
@@ -61,102 +257,403 @@
       "agitationRelevant": true,
       "channelingPossible": true,
       "lrr": 2.0,
-      "targetGrindMicron": [550, 800],
-      "variables": ["doseG", "waterG", "ratio", "grindSetting", "waterTempC", "bloomWaterG", "bloomTimeS", "pourCount"],
-      "observations": ["bloomBehavior", "drawdownS", "bedAppearance"],
+      "targetGrindMicron": [
+        550,
+        800
+      ],
+      "variables": [
+        "doseG",
+        "waterG",
+        "ratio",
+        "grindSetting",
+        "waterTempC",
+        "bloomWaterG",
+        "bloomTimeS",
+        "pourCount"
+      ],
+      "observations": [
+        "bloomBehavior",
+        "drawdownS",
+        "bedAppearance"
+      ],
       "timeIsResult": true,
       "defaults": {
-        "light":        { "doseG": 18, "ratio": 15.5, "waterTempC": 97, "bloomRatio": 2.5, "bloomTimeS": 45, "pourCount": 4 },
-        "medium-light": { "doseG": 18, "ratio": 16.0, "waterTempC": 95, "bloomRatio": 2.5, "bloomTimeS": 40, "pourCount": 3 },
-        "medium":       { "doseG": 18, "ratio": 16.7, "waterTempC": 94, "bloomRatio": 2.5, "bloomTimeS": 40, "pourCount": 3 },
-        "medium-dark":  { "doseG": 18, "ratio": 16.7, "waterTempC": 92, "bloomRatio": 2.0, "bloomTimeS": 35, "pourCount": 3 },
-        "dark":         { "doseG": 18, "ratio": 17.5, "waterTempC": 89, "bloomRatio": 2.0, "bloomTimeS": 30, "pourCount": 2 }
+        "light": {
+          "doseG": 18,
+          "ratio": 15.5,
+          "waterTempC": 97,
+          "bloomRatio": 2.5,
+          "bloomTimeS": 45,
+          "pourCount": 4
+        },
+        "medium-light": {
+          "doseG": 18,
+          "ratio": 16.0,
+          "waterTempC": 95,
+          "bloomRatio": 2.5,
+          "bloomTimeS": 40,
+          "pourCount": 3
+        },
+        "medium": {
+          "doseG": 18,
+          "ratio": 16.7,
+          "waterTempC": 94,
+          "bloomRatio": 2.5,
+          "bloomTimeS": 40,
+          "pourCount": 3
+        },
+        "medium-dark": {
+          "doseG": 18,
+          "ratio": 16.7,
+          "waterTempC": 92,
+          "bloomRatio": 2.0,
+          "bloomTimeS": 35,
+          "pourCount": 3
+        },
+        "dark": {
+          "doseG": 18,
+          "ratio": 17.5,
+          "waterTempC": 89,
+          "bloomRatio": 2.0,
+          "bloomTimeS": 30,
+          "pourCount": 2
+        }
       },
       "targetTimeByDose": [
-        { "doseG": 12, "timeS": [120, 150], "dripper": "01/02", "grindOffset": 0 },
-        { "doseG": 15, "timeS": [135, 165], "dripper": "02",    "grindOffset": 0 },
-        { "doseG": 18, "timeS": [150, 180], "dripper": "02",    "grindOffset": 0 },
-        { "doseG": 22, "timeS": [165, 195], "dripper": "02",    "grindOffset": 1 },
-        { "doseG": 30, "timeS": [195, 240], "dripper": "02/03", "grindOffset": 2 }
+        {
+          "doseG": 12,
+          "timeS": [
+            120,
+            150
+          ],
+          "dripper": "01/02",
+          "grindOffset": 0
+        },
+        {
+          "doseG": 15,
+          "timeS": [
+            135,
+            165
+          ],
+          "dripper": "02",
+          "grindOffset": 0
+        },
+        {
+          "doseG": 18,
+          "timeS": [
+            150,
+            180
+          ],
+          "dripper": "02",
+          "grindOffset": 0
+        },
+        {
+          "doseG": 22,
+          "timeS": [
+            165,
+            195
+          ],
+          "dripper": "02",
+          "grindOffset": 1
+        },
+        {
+          "doseG": 30,
+          "timeS": [
+            195,
+            240
+          ],
+          "dripper": "02/03",
+          "grindOffset": 2
+        }
       ],
       "drawdownClasses": {
-        "fast":    { "pctOfTotal": [0, 15],   "verdict": "zu grob" },
-        "normal":  { "pctOfTotal": [15, 30],  "verdict": "ok" },
-        "slow":    { "pctOfTotal": [30, 45],  "verdict": "zu fein" },
-        "stalled": { "pctOfTotal": [45, 100], "verdict": "verstopft" }
+        "fast": {
+          "pctOfTotal": [
+            0,
+            15
+          ],
+          "verdict": "zu grob"
+        },
+        "normal": {
+          "pctOfTotal": [
+            15,
+            30
+          ],
+          "verdict": "ok"
+        },
+        "slow": {
+          "pctOfTotal": [
+            30,
+            45
+          ],
+          "verdict": "zu fein"
+        },
+        "stalled": {
+          "pctOfTotal": [
+            45,
+            100
+          ],
+          "verdict": "verstopft"
+        }
       },
       "recipeVariants": [
         {
           "id": "standard-4pour",
           "label": "Standard (4 Güsse)",
-          "doseG": 18, "waterG": 300, "waterTempC": 94,
+          "doseG": 18,
+          "waterG": 300,
+          "waterTempC": 94,
           "steps": [
-            { "index": 1, "type": "bloom", "startAtS": 0,   "targetMassG": 50,  "pourStyle": "center" },
-            { "index": 2, "type": "swirl", "startAtS": 10 },
-            { "index": 3, "type": "pour",  "startAtS": 45,  "targetMassG": 150, "pourStyle": "spiral" },
-            { "index": 4, "type": "pour",  "startAtS": 75,  "targetMassG": 225, "pourStyle": "spiral" },
-            { "index": 5, "type": "pour",  "startAtS": 105, "targetMassG": 300, "pourStyle": "spiral" },
-            { "index": 6, "type": "swirl", "startAtS": 135, "note": "Rao Spin" },
-            { "index": 7, "type": "drawdown" }
+            {
+              "index": 1,
+              "type": "bloom",
+              "startAtS": 0,
+              "targetMassG": 50,
+              "pourStyle": "center"
+            },
+            {
+              "index": 2,
+              "type": "swirl",
+              "startAtS": 10
+            },
+            {
+              "index": 3,
+              "type": "pour",
+              "startAtS": 45,
+              "targetMassG": 150,
+              "pourStyle": "spiral"
+            },
+            {
+              "index": 4,
+              "type": "pour",
+              "startAtS": 75,
+              "targetMassG": 225,
+              "pourStyle": "spiral"
+            },
+            {
+              "index": 5,
+              "type": "pour",
+              "startAtS": 105,
+              "targetMassG": 300,
+              "pourStyle": "spiral"
+            },
+            {
+              "index": 6,
+              "type": "swirl",
+              "startAtS": 135,
+              "note": "Rao Spin"
+            },
+            {
+              "index": 7,
+              "type": "drawdown"
+            }
           ]
         },
         {
           "id": "hoffmann",
           "label": "Hoffmann Ultimate V60",
-          "doseG": 30, "waterG": 500, "waterTempC": 100,
+          "doseG": 30,
+          "waterG": 500,
+          "waterTempC": 100,
           "grindOffset": -1,
           "steps": [
-            { "index": 1, "type": "bloom", "startAtS": 0,  "targetMassG": 60 },
-            { "index": 2, "type": "swirl", "startAtS": 5,  "note": "kräftig swirlen" },
-            { "index": 3, "type": "pour",  "startAtS": 45, "targetMassG": 300, "durationS": 30, "pourStyle": "spiral" },
-            { "index": 4, "type": "pour",  "startAtS": 75, "targetMassG": 500, "durationS": 30, "pourStyle": "spiral" },
-            { "index": 5, "type": "swirl", "startAtS": 105 },
-            { "index": 6, "type": "drawdown" }
+            {
+              "index": 1,
+              "type": "bloom",
+              "startAtS": 0,
+              "targetMassG": 60
+            },
+            {
+              "index": 2,
+              "type": "swirl",
+              "startAtS": 5,
+              "note": "kräftig swirlen"
+            },
+            {
+              "index": 3,
+              "type": "pour",
+              "startAtS": 45,
+              "targetMassG": 300,
+              "durationS": 30,
+              "pourStyle": "spiral"
+            },
+            {
+              "index": 4,
+              "type": "pour",
+              "startAtS": 75,
+              "targetMassG": 500,
+              "durationS": 30,
+              "pourStyle": "spiral"
+            },
+            {
+              "index": 5,
+              "type": "swirl",
+              "startAtS": 105
+            },
+            {
+              "index": 6,
+              "type": "drawdown"
+            }
           ]
         },
         {
           "id": "kasuya-4-6",
           "label": "4:6-Methode (Tetsu Kasuya)",
-          "doseG": 20, "waterG": 300, "waterTempC": 93,
+          "doseG": 20,
+          "waterG": 300,
+          "waterTempC": 93,
           "grindOffset": 2,
           "controls": {
             "sweetnessVsAcidity": {
               "label": "Süße ↔ Säure (erste 40 %)",
               "options": [
-                { "id": "acidic",   "split": [50, 70], "label": "mehr Säure" },
-                { "id": "balanced", "split": [60, 60], "label": "ausgewogen" },
-                { "id": "sweet",    "split": [70, 50], "label": "mehr Süße" }
+                {
+                  "id": "acidic",
+                  "split": [
+                    50,
+                    70
+                  ],
+                  "label": "mehr Säure"
+                },
+                {
+                  "id": "balanced",
+                  "split": [
+                    60,
+                    60
+                  ],
+                  "label": "ausgewogen"
+                },
+                {
+                  "id": "sweet",
+                  "split": [
+                    70,
+                    50
+                  ],
+                  "label": "mehr Süße"
+                }
               ]
             },
             "strength": {
               "label": "mild ↔ kräftig (letzte 60 %)",
               "options": [
-                { "id": "mild",     "pours": 1, "label": "leicht" },
-                { "id": "medium",   "pours": 2, "label": "mittel" },
-                { "id": "standard", "pours": 3, "label": "Standard" },
-                { "id": "strong",   "pours": 4, "label": "kräftig" }
+                {
+                  "id": "mild",
+                  "pours": 1,
+                  "label": "leicht"
+                },
+                {
+                  "id": "medium",
+                  "pours": 2,
+                  "label": "mittel"
+                },
+                {
+                  "id": "standard",
+                  "pours": 3,
+                  "label": "Standard"
+                },
+                {
+                  "id": "strong",
+                  "pours": 4,
+                  "label": "kräftig"
+                }
               ]
             }
           }
         }
       ],
       "steps": [
-        { "index": 1,  "type": "prepare", "note": "Wasser aufsetzen" },
-        { "index": 2,  "type": "rinse",   "note": "Filter mit ~200 g spülen, Wasser weggießen" },
-        { "index": 3,  "type": "weigh" },
-        { "index": 4,  "type": "grind" },
-        { "index": 5,  "type": "fill",    "note": "Bett flach klopfen" },
-        { "index": 6,  "type": "tare" },
-        { "index": 7,  "type": "bloom" },
-        { "index": 8,  "type": "swirl" },
-        { "index": 9,  "type": "pour" },
-        { "index": 10, "type": "swirl",   "note": "Rao Spin" },
-        { "index": 11, "type": "drawdown" },
-        { "index": 12, "type": "record",  "note": "Gesamtzeit, Drawdown, Kaffeekuchen" },
-        { "index": 13, "type": "taste" }
-      ]
+        {
+          "index": 1,
+          "type": "prepare",
+          "note": "Wasser aufsetzen"
+        },
+        {
+          "index": 2,
+          "type": "rinse",
+          "note": "Filter mit ~200 g spülen, Wasser weggießen"
+        },
+        {
+          "index": 3,
+          "type": "weigh"
+        },
+        {
+          "index": 4,
+          "type": "grind"
+        },
+        {
+          "index": 5,
+          "type": "fill",
+          "note": "Bett flach klopfen"
+        },
+        {
+          "index": 6,
+          "type": "tare"
+        },
+        {
+          "index": 7,
+          "type": "bloom"
+        },
+        {
+          "index": 8,
+          "type": "swirl"
+        },
+        {
+          "index": 9,
+          "type": "pour"
+        },
+        {
+          "index": 10,
+          "type": "swirl",
+          "note": "Rao Spin"
+        },
+        {
+          "index": 11,
+          "type": "drawdown"
+        },
+        {
+          "index": 12,
+          "type": "record",
+          "note": "Gesamtzeit, Drawdown, Kaffeekuchen"
+        },
+        {
+          "index": 13,
+          "type": "taste"
+        }
+      ],
+      "suitability": {
+        "_note": "Der V60 zeigt Klarheit und Säure — genau das, was helle Washed liefern.",
+        "light": {
+          "washed": 5,
+          "natural": 4,
+          "honey": 4,
+          "fermented": 4
+        },
+        "medium-light": {
+          "washed": 5,
+          "natural": 4,
+          "honey": 4,
+          "fermented": 4
+        },
+        "medium": {
+          "washed": 4,
+          "honey": 3,
+          "natural": 3,
+          "fermented": 3
+        },
+        "medium-dark": {
+          "washed": 2,
+          "honey": 2,
+          "natural": 2,
+          "fermented": 2
+        },
+        "dark": {
+          "washed": 1,
+          "honey": 1,
+          "natural": 1,
+          "fermented": 1
+        }
+      }
     },
-
     {
       "id": "aeropress",
       "label": "AeroPress",
@@ -167,120 +664,425 @@
       "channelingPossible": false,
       "lrr": 1.5,
       "lrrInverted": 1.6,
-      "targetGrindMicron": [400, 900],
+      "targetGrindMicron": [
+        400,
+        900
+      ],
       "maxChamberWaterG": 250,
-      "variables": ["doseG", "waterG", "ratio", "grindSetting", "waterTempC", "steepS", "stirCount", "bypassG", "inverted", "filterType"],
-      "observations": ["pressResistance", "sediment"],
+      "variables": [
+        "doseG",
+        "waterG",
+        "ratio",
+        "grindSetting",
+        "waterTempC",
+        "steepS",
+        "stirCount",
+        "bypassG",
+        "inverted",
+        "filterType"
+      ],
+      "observations": [
+        "pressResistance",
+        "sediment"
+      ],
       "correctionOrder": {
-        "underextracted": ["stirCount", "waterTempC", "grindSetting", "steepS"],
-        "overextracted":  ["waterTempC", "grindSetting", "steepS"]
+        "underextracted": [
+          "stirCount",
+          "waterTempC",
+          "grindSetting",
+          "steepS"
+        ],
+        "overextracted": [
+          "waterTempC",
+          "grindSetting",
+          "steepS"
+        ]
       },
       "defaults": {
-        "light":        { "doseG": 16, "ratio": 15, "waterTempC": 95, "steepS": 105, "stirCount": 3, "inverted": true },
-        "medium-light": { "doseG": 16, "ratio": 15, "waterTempC": 93, "steepS": 95,  "stirCount": 2, "inverted": true },
-        "medium":       { "doseG": 16, "ratio": 15, "waterTempC": 92, "steepS": 90,  "stirCount": 2, "inverted": true },
-        "medium-dark":  { "doseG": 16, "ratio": 15, "waterTempC": 89, "steepS": 80,  "stirCount": 2, "inverted": true },
-        "dark":         { "doseG": 16, "ratio": 15, "waterTempC": 85, "steepS": 75,  "stirCount": 1, "inverted": true }
+        "light": {
+          "doseG": 16,
+          "ratio": 15,
+          "waterTempC": 95,
+          "steepS": 105,
+          "stirCount": 3,
+          "inverted": true
+        },
+        "medium-light": {
+          "doseG": 16,
+          "ratio": 15,
+          "waterTempC": 93,
+          "steepS": 95,
+          "stirCount": 2,
+          "inverted": true
+        },
+        "medium": {
+          "doseG": 16,
+          "ratio": 15,
+          "waterTempC": 92,
+          "steepS": 90,
+          "stirCount": 2,
+          "inverted": true
+        },
+        "medium-dark": {
+          "doseG": 16,
+          "ratio": 15,
+          "waterTempC": 89,
+          "steepS": 80,
+          "stirCount": 2,
+          "inverted": true
+        },
+        "dark": {
+          "doseG": 16,
+          "ratio": 15,
+          "waterTempC": 85,
+          "steepS": 75,
+          "stirCount": 1,
+          "inverted": true
+        }
       },
       "recipeVariants": [
         {
           "id": "standard",
           "label": "Standard (invertiert)",
-          "doseG": 16, "waterG": 240, "waterTempC": 92, "inverted": true,
+          "doseG": 16,
+          "waterG": 240,
+          "waterTempC": 92,
+          "inverted": true,
           "steps": [
-            { "index": 1, "type": "pour",  "startAtS": 0,  "targetMassG": 240 },
-            { "index": 2, "type": "stir",  "startAtS": 10, "note": "2x rühren" },
-            { "index": 3, "type": "steep", "startAtS": 10, "durationS": 80 },
-            { "index": 4, "type": "press", "startAtS": 95, "durationS": 25 }
+            {
+              "index": 1,
+              "type": "pour",
+              "startAtS": 0,
+              "targetMassG": 240
+            },
+            {
+              "index": 2,
+              "type": "stir",
+              "startAtS": 10,
+              "note": "2x rühren"
+            },
+            {
+              "index": 3,
+              "type": "steep",
+              "startAtS": 10,
+              "durationS": 80
+            },
+            {
+              "index": 4,
+              "type": "press",
+              "startAtS": 95,
+              "durationS": 25
+            }
           ]
         },
         {
           "id": "concentrate-bypass",
           "label": "Konzentrat + Bypass",
-          "doseG": 18, "waterG": 120, "waterTempC": 94, "inverted": true,
+          "doseG": 18,
+          "waterG": 120,
+          "waterTempC": 94,
+          "inverted": true,
           "bypassG": 130,
           "expectedConcentrateTdsPct": 3.5,
           "expectedFinalTdsPct": 1.45,
           "steps": [
-            { "index": 1, "type": "pour",   "startAtS": 0,   "targetMassG": 120 },
-            { "index": 2, "type": "stir",   "startAtS": 5,   "note": "3x rühren" },
-            { "index": 3, "type": "steep",  "startAtS": 5,   "durationS": 115 },
-            { "index": 4, "type": "press",  "startAtS": 120, "durationS": 30 },
-            { "index": 5, "type": "dilute", "targetMassG": 223 }
+            {
+              "index": 1,
+              "type": "pour",
+              "startAtS": 0,
+              "targetMassG": 120
+            },
+            {
+              "index": 2,
+              "type": "stir",
+              "startAtS": 5,
+              "note": "3x rühren"
+            },
+            {
+              "index": 3,
+              "type": "steep",
+              "startAtS": 5,
+              "durationS": 115
+            },
+            {
+              "index": 4,
+              "type": "press",
+              "startAtS": 120,
+              "durationS": 30
+            },
+            {
+              "index": 5,
+              "type": "dilute",
+              "targetMassG": 223
+            }
           ]
         },
         {
           "id": "hoffmann",
           "label": "Hoffmann Ultimate AeroPress",
-          "doseG": 11, "waterG": 200, "waterTempC": 100, "inverted": false,
+          "doseG": 11,
+          "waterG": 200,
+          "waterTempC": 100,
+          "inverted": false,
           "grindOffset": -2,
           "steps": [
-            { "index": 1, "type": "pour",  "startAtS": 0,   "targetMassG": 200 },
-            { "index": 2, "type": "steep", "startAtS": 0,   "durationS": 120 },
-            { "index": 3, "type": "swirl", "startAtS": 120 },
-            { "index": 4, "type": "wait",  "startAtS": 120, "durationS": 30 },
-            { "index": 5, "type": "press", "startAtS": 150, "durationS": 30, "note": "sehr langsam" }
+            {
+              "index": 1,
+              "type": "pour",
+              "startAtS": 0,
+              "targetMassG": 200
+            },
+            {
+              "index": 2,
+              "type": "steep",
+              "startAtS": 0,
+              "durationS": 120
+            },
+            {
+              "index": 3,
+              "type": "swirl",
+              "startAtS": 120
+            },
+            {
+              "index": 4,
+              "type": "wait",
+              "startAtS": 120,
+              "durationS": 30
+            },
+            {
+              "index": 5,
+              "type": "press",
+              "startAtS": 150,
+              "durationS": 30,
+              "note": "sehr langsam"
+            }
           ]
         },
         {
           "id": "championship",
           "label": "Championship-Stil",
-          "doseG": 18, "waterG": 60, "waterTempC": 85, "inverted": true,
-          "bypassG": 140, "bypassTempC": 70,
+          "doseG": 18,
+          "waterG": 60,
+          "waterTempC": 85,
+          "inverted": true,
+          "bypassG": 140,
+          "bypassTempC": 70,
           "grindOffset": -3,
           "steps": [
-            { "index": 1, "type": "pour",   "startAtS": 0,  "targetMassG": 60 },
-            { "index": 2, "type": "stir",   "startAtS": 3,  "note": "kräftig rühren" },
-            { "index": 3, "type": "steep",  "startAtS": 3,  "durationS": 42 },
-            { "index": 4, "type": "press",  "startAtS": 45, "durationS": 20 },
-            { "index": 5, "type": "dilute", "targetMassG": 180 }
+            {
+              "index": 1,
+              "type": "pour",
+              "startAtS": 0,
+              "targetMassG": 60
+            },
+            {
+              "index": 2,
+              "type": "stir",
+              "startAtS": 3,
+              "note": "kräftig rühren"
+            },
+            {
+              "index": 3,
+              "type": "steep",
+              "startAtS": 3,
+              "durationS": 42
+            },
+            {
+              "index": 4,
+              "type": "press",
+              "startAtS": 45,
+              "durationS": 20
+            },
+            {
+              "index": 5,
+              "type": "dilute",
+              "targetMassG": 180
+            }
           ]
         },
         {
           "id": "espresso-style",
           "label": "Espresso-Style (Prismo)",
-          "doseG": 18, "waterG": 55, "waterTempC": 93, "inverted": false,
+          "doseG": 18,
+          "waterG": 55,
+          "waterTempC": 93,
+          "inverted": false,
           "requiresAccessory": "prismo",
           "expectedTdsPct": 6,
           "warning": "Kein echter Espresso — ca. 1-2 bar statt 9. Keine echte Emulsion, keine stabile Crema.",
           "steps": [
-            { "index": 1, "type": "pour",  "startAtS": 0,  "targetMassG": 55 },
-            { "index": 2, "type": "stir",  "startAtS": 5 },
-            { "index": 3, "type": "steep", "startAtS": 5,  "durationS": 25 },
-            { "index": 4, "type": "press", "startAtS": 30, "durationS": 30, "note": "kräftig" }
+            {
+              "index": 1,
+              "type": "pour",
+              "startAtS": 0,
+              "targetMassG": 55
+            },
+            {
+              "index": 2,
+              "type": "stir",
+              "startAtS": 5
+            },
+            {
+              "index": 3,
+              "type": "steep",
+              "startAtS": 5,
+              "durationS": 25
+            },
+            {
+              "index": 4,
+              "type": "press",
+              "startAtS": 30,
+              "durationS": 30,
+              "note": "kräftig"
+            }
           ]
         },
         {
           "id": "cold-brew",
           "label": "Cold Brew (AeroPress)",
-          "doseG": 20, "waterG": 200, "waterTempC": 20, "inverted": true,
+          "doseG": 20,
+          "waterG": 200,
+          "waterTempC": 20,
+          "inverted": true,
           "grindOffset": 4,
           "steepS": 36000,
           "steps": [
-            { "index": 1, "type": "pour",  "startAtS": 0, "targetMassG": 200 },
-            { "index": 2, "type": "stir",  "startAtS": 5, "durationS": 90, "note": "1-2 min kräftig rühren" },
-            { "index": 3, "type": "steep", "durationS": 36000, "note": "8-12 h kühl stellen" },
-            { "index": 4, "type": "press", "durationS": 30 }
+            {
+              "index": 1,
+              "type": "pour",
+              "startAtS": 0,
+              "targetMassG": 200
+            },
+            {
+              "index": 2,
+              "type": "stir",
+              "startAtS": 5,
+              "durationS": 90,
+              "note": "1-2 min kräftig rühren"
+            },
+            {
+              "index": 3,
+              "type": "steep",
+              "durationS": 36000,
+              "note": "8-12 h kühl stellen"
+            },
+            {
+              "index": 4,
+              "type": "press",
+              "durationS": 30
+            }
           ]
         }
       ],
       "steps": [
-        { "index": 1,  "type": "prepare" },
-        { "index": 2,  "type": "assemble", "note": "Kolben ~1 cm in die Kammer, umgedreht auf die Waage" },
-        { "index": 3,  "type": "rinse",    "note": "Filter in der Kappe spülen" },
-        { "index": 4,  "type": "weigh" },
-        { "index": 5,  "type": "grind" },
-        { "index": 6,  "type": "fill" },
-        { "index": 7,  "type": "tare" },
-        { "index": 8,  "type": "pour" },
-        { "index": 9,  "type": "stir" },
-        { "index": 10, "type": "steep" },
-        { "index": 11, "type": "cap",      "note": "Kappe festdrehen — auf festen Sitz prüfen!" },
-        { "index": 12, "type": "invert",   "warning": "Verbrühungsrisiko — über der Tasse umdrehen" },
-        { "index": 13, "type": "press",    "note": "Beim ersten Zischen aufhören" },
-        { "index": 14, "type": "dilute",   "optional": true },
-        { "index": 15, "type": "taste" }
-      ]
+        {
+          "index": 1,
+          "type": "prepare"
+        },
+        {
+          "index": 2,
+          "type": "assemble",
+          "note": "Kolben ~1 cm in die Kammer, umgedreht auf die Waage"
+        },
+        {
+          "index": 3,
+          "type": "rinse",
+          "note": "Filter in der Kappe spülen"
+        },
+        {
+          "index": 4,
+          "type": "weigh"
+        },
+        {
+          "index": 5,
+          "type": "grind"
+        },
+        {
+          "index": 6,
+          "type": "fill"
+        },
+        {
+          "index": 7,
+          "type": "tare"
+        },
+        {
+          "index": 8,
+          "type": "pour"
+        },
+        {
+          "index": 9,
+          "type": "stir"
+        },
+        {
+          "index": 10,
+          "type": "steep"
+        },
+        {
+          "index": 11,
+          "type": "cap",
+          "note": "Kappe festdrehen — auf festen Sitz prüfen!"
+        },
+        {
+          "index": 12,
+          "type": "invert",
+          "warning": "Verbrühungsrisiko — über der Tasse umdrehen"
+        },
+        {
+          "index": 13,
+          "type": "press",
+          "note": "Beim ersten Zischen aufhören"
+        },
+        {
+          "index": 14,
+          "type": "dilute",
+          "optional": true
+        },
+        {
+          "index": 15,
+          "type": "taste"
+        }
+      ],
+      "suitability": {
+        "_note": "Fehlerverzeihendste Methode — funktioniert mit fast allem.",
+        "light": {
+          "natural": 4,
+          "honey": 4,
+          "washed": 4,
+          "fermented": 4
+        },
+        "medium-light": {
+          "natural": 5,
+          "honey": 4,
+          "washed": 4,
+          "fermented": 4
+        },
+        "medium": {
+          "natural": 5,
+          "honey": 5,
+          "washed": 4,
+          "fermented": 4
+        },
+        "medium-dark": {
+          "natural": 4,
+          "honey": 4,
+          "washed": 4,
+          "fermented": 4
+        },
+        "dark": {
+          "natural": 3,
+          "honey": 3,
+          "washed": 3,
+          "fermented": 3
+        }
+      }
     }
-  ]
+  ],
+  "_suitabilityLegend": {
+    "5": "ideal",
+    "4": "gut",
+    "3": "machbar",
+    "2": "anspruchsvoll",
+    "1": "schwierig",
+    "_note": "Bewusst vier bis fünf Stufen statt Prozentzahlen — die Datenlage gibt keine Prozentpräzision her."
+  }
 }

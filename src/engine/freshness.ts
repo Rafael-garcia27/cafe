@@ -7,7 +7,7 @@
  */
 import formulas from '@data/formulas.json'
 import { freshnessScore as gaussScore, ageGrindDrift } from '@domain'
-import type { BrewMethod, RoastLevel, Bag } from '@domain'
+import type { BrewMethod, RoastLevel, Bag, Process } from '@domain'
 import { daysOffRoast, daysSince } from '@/domain'
 
 type RestTable = Record<BrewMethod, Record<RoastLevel, [number, number]>>
@@ -15,6 +15,7 @@ type RestTable = Record<BrewMethod, Record<RoastLevel, [number, number]>>
 const REST: RestTable = formulas.restWindows as unknown as RestTable
 const DECAF_FACTOR = formulas.restWindows.decafFactor as number
 const STALE_AFTER = formulas.restWindows.staleAfterDays as number
+const PROCESS_OFFSET = formulas.restWindows.processOffsetDays as unknown as Record<string, number>
 const FRESHNESS_PARAMS = (
   formulas.formulas.find((f) => f.id === 'F-31') as unknown as {
     params: Record<BrewMethod, Record<RoastLevel, { tPeak: number; sigma: number }>>
@@ -26,15 +27,26 @@ export interface RestWindow {
   max: number
 }
 
-/** Ruhefenster in Tagen nach Röstung. Decaf altert schneller (kb/05 §6). */
+/**
+ * Ruhefenster in Tagen nach Röstung.
+ *
+ * Decaf altert schneller (kb/05 §6). Die Aufbereitung verschiebt das Fenster
+ * zusätzlich: Naturals gasen schneller aus und sind früher trinkreif als
+ * Washed — Übernahme aus der alten PWA (docs/03 §2.2).
+ */
 export function restWindow(
   method: BrewMethod,
   roast: RoastLevel,
   isDecaf = false,
+  process?: Process,
 ): RestWindow {
   const [min, max] = REST[method]?.[roast] ?? [5, 21]
   const f = isDecaf ? DECAF_FACTOR : 1
-  return { min: Math.round(min * f), max: Math.round(max * f) }
+  const off = process ? (PROCESS_OFFSET[process] ?? 0) : 0
+  return {
+    min: Math.max(1, Math.round(min * f + off)),
+    max: Math.max(2, Math.round(max * f + off)),
+  }
 }
 
 export type FreshnessState =
@@ -60,8 +72,9 @@ export function assessFreshness(
   roast: RoastLevel,
   isDecaf: boolean,
   today: Date,
+  process?: Process,
 ): Freshness {
-  const win = restWindow(method, roast, isDecaf)
+  const win = restWindow(method, roast, isDecaf, process)
   const days = daysOffRoast(bag, today)
 
   if (days === null) {

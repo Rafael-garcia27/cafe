@@ -5,7 +5,7 @@
  * insbesondere die Fälle, in denen sie NICHT das Naheliegende tun darf.
  */
 import { describe, it, expect } from 'vitest'
-import type { Bean, Bag, Brew, Grinder, BrewMethod } from '@domain'
+import type { Bean, Bag, Brew, Grinder } from '@domain'
 import type { EngineContext } from '@/domain'
 import { DEFAULT_SETTINGS, EMPTY_LEARNED } from '@/domain'
 import { startingPoint } from './starting'
@@ -466,5 +466,100 @@ describe('Messungen', () => {
       tasting: { rating: 4, defects: [], characters: [], wouldRepeat: true },
     })
     expect(d.metrics?.ey).toBeCloseTo(20.2, 1)
+  })
+})
+
+// ══════════════════════════════════════════════════════════════════════
+// Iteration 2 — Übernahmen aus der alten barista-pwa (docs/03)
+// ══════════════════════════════════════════════════════════════════════
+
+describe('Bohnen-Eignung je Methode (docs/03 §2.1)', () => {
+  it('heller Washed ist im Espresso schwierig, im V60 ideal', async () => {
+    const { suitability } = await import('./suitability')
+    const b = bean({ roastLevel: 'light', process: 'washed', origins: [{ country: 'Äthiopien' }] })
+    const esp = suitability(b, 'espresso')
+    const v60 = suitability(b, 'v60')
+    expect(esp.score).toBeLessThan(v60.score)
+    expect(esp.isWarning).toBe(true)
+    expect(v60.level).toBe('ideal')
+  })
+
+  it('dunkler Natural ist im Espresso ideal', async () => {
+    const { suitability } = await import('./suitability')
+    const b = bean({ roastLevel: 'dark', process: 'natural', origins: [{ country: 'Brasilien' }] })
+    expect(suitability(b, 'espresso').level).toBe('ideal')
+  })
+
+  it('schlägt die passendste Methode vor', async () => {
+    const { bestMethodFor } = await import('./suitability')
+    expect(bestMethodFor(bean({ roastLevel: 'light', process: 'washed', origins: [{ country: 'Kenia' }] })).method).toBe('v60')
+    expect(bestMethodFor(bean({ roastLevel: 'dark', process: 'natural', origins: [{ country: 'Brasilien' }] })).method).toBe('espresso')
+  })
+
+  it('begründet die Warnung im Klartext statt mit einer Zahl', async () => {
+    const { suitability } = await import('./suitability')
+    const s = suitability(bean({ roastLevel: 'light', process: 'washed' }), 'espresso')
+    expect(s.reason.length).toBeGreaterThan(40)
+    expect(s.reason).toContain('V60')
+  })
+})
+
+describe('Ruhefenster nach Aufbereitung (docs/03 §2.2)', () => {
+  it('Naturals sind früher trinkreif als Washed', () => {
+    const washed = restWindow('espresso', 'medium', false, 'washed')
+    const natural = restWindow('espresso', 'medium', false, 'natural')
+    expect(natural.min).toBeLessThan(washed.min)
+  })
+
+  it('ohne Aufbereitungsangabe bleibt es beim Röstgrad-Fenster', () => {
+    const a = restWindow('espresso', 'medium')
+    const b = restWindow('espresso', 'medium', false, 'washed')
+    expect(a.min).toBe(b.min)
+  })
+})
+
+describe('Startpunkt aus dem eigenen besten Versuch (docs/03 §2.3)', () => {
+  it('nutzt den besten Versuch auch unter vier Sternen', () => {
+    const hist = [
+      brew({ id: 'a', actual: { doseG: 18, yieldG: 34, timeS: 27, grindSetting: { equipmentId: 'gr1', value: 22, unit: 'clicks' } }, tasting: { rating: 3, defects: ['sour'], characters: [], wouldRepeat: false }, createdAt: daysAgo(1) }),
+      brew({ id: 'b', actual: { doseG: 18, yieldG: 36, timeS: 25, grindSetting: { equipmentId: 'gr1', value: 26, unit: 'clicks' } }, tasting: { rating: 2, defects: ['sour'], characters: [], wouldRepeat: false }, createdAt: daysAgo(2) }),
+    ]
+    const sp = startingPoint(ctx({ beanHistory: hist }))
+    expect(sp.source).toBe('own-attempt')
+    expect(sp.proposal.grindSetting).toBe(22) // der besser bewertete
+    expect(sp.headline).toContain('Versuch')
+  })
+
+  it('ein einzelner schlechter Versuch reicht nicht — dann Standard', () => {
+    const hist = [brew({ tasting: { rating: 2, defects: ['sour'], characters: [], wouldRepeat: false } })]
+    expect(startingPoint(ctx({ beanHistory: hist })).source).toBe('default')
+  })
+
+  it('gute Referenz schlägt den bloßen Versuch', () => {
+    const hist = [
+      brew({ id: 'g', tasting: { rating: 5, defects: [], characters: [], wouldRepeat: true }, createdAt: daysAgo(1) }),
+      brew({ id: 'h', tasting: { rating: 3, defects: ['sour'], characters: [], wouldRepeat: false }, createdAt: daysAgo(2) }),
+    ]
+    expect(startingPoint(ctx({ beanHistory: hist })).source).toBe('personal')
+  })
+})
+
+describe('Mahlgrad-Plausibilität (docs/03 §2.4)', () => {
+  it('meldet absurd feine Einstellungen für V60', async () => {
+    const { grindPlausibility } = await import('./grinder')
+    const r = grindPlausibility(5, 'v60', grinder) // 62 µm — Türkisch-Bereich
+    expect(r.ok).toBe(false)
+    expect(r.suggestion).toBeGreaterThan(20)
+  })
+
+  it('lässt sinnvolle Einstellungen durch', async () => {
+    const { grindPlausibility } = await import('./grinder')
+    expect(grindPlausibility(24, 'espresso', grinder).ok).toBe(true)
+    expect(grindPlausibility(54, 'v60', grinder).ok).toBe(true)
+  })
+
+  it('ohne Mühle wird nicht geraten', async () => {
+    const { grindPlausibility } = await import('./grinder')
+    expect(grindPlausibility(5, 'v60', undefined).ok).toBe(true)
   })
 })

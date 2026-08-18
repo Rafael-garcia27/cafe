@@ -19,7 +19,7 @@ type Mods = { grindSteps?: number; waterTempC?: number; ratio?: number }
 const ROAST_MODS = formulas.roastModifiers as unknown as Record<RoastLevel, Mods>
 const BEAN_MODS = formulas.beanModifiers as unknown as Record<string, Mods>
 
-export type StartingSource = 'personal' | 'transfer' | 'roaster' | 'default'
+export type StartingSource = 'personal' | 'own-attempt' | 'transfer' | 'roaster' | 'default'
 
 export interface Proposal {
   method: BrewMethod
@@ -236,6 +236,7 @@ export function startingPoint(ctx: EngineContext): StartingPoint {
     ctx.bean.roastLevel,
     !!ctx.bean.isDecaf,
     ctx.today,
+    ctx.bean.process,
   )
   const nowDays = daysOffRoast(ctx.bag, ctx.today)
 
@@ -274,7 +275,36 @@ export function startingPoint(ctx: EngineContext): StartingPoint {
     }
   }
 
-  // 2 — Transfer von einer ähnlichen Bohne
+  // 2 — Eigener bester Versuch, auch wenn er noch nicht überzeugt hat.
+  //     Übernahme aus der alten PWA (docs/03 §2.3): Wer fünfmal gebrüht hat,
+  //     will beim sechsten Mal nicht wieder beim Standard anfangen.
+  const attempts = ctx.beanHistory
+    .filter((b) => (b.tasting?.rating ?? 0) >= 2)
+    .sort(
+      (a, b) =>
+        (b.tasting!.rating - a.tasting!.rating) ||
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+
+  if (attempts.length >= 2) {
+    const ref = attempts[0]!
+    const p = proposalFromBrew(ref, ctx)
+    lines.push({
+      text: `Dein bisher bester Versuch mit dieser Bohne (${ref.tasting!.rating}★ von ${ctx.beanHistory.length} Durchgängen) — noch nicht perfekt, aber näher dran als der Standard.`,
+      kind: 'source',
+    })
+    if (fresh.hint) lines.push({ text: fresh.hint, kind: 'warning' })
+    return {
+      proposal: p,
+      source: 'own-attempt',
+      headline: 'Dein bester Versuch',
+      rationale: lines,
+      warning: fresh.state === 'too-fresh' || fresh.state === 'stale' ? fresh.label : undefined,
+      brewsUntilPersonal: Math.max(0, LEARN_THRESHOLDS.perBean - own.length),
+    }
+  }
+
+  // 3 — Transfer von einer ähnlichen Bohne
   const candidates = ctx.methodHistory
     .filter((b) => (b.tasting?.rating ?? 0) >= 4 && b.beanId !== ctx.bean.id)
     .map((b) => ({ brew: b, bean: b.beanId }))
@@ -307,7 +337,7 @@ export function startingPoint(ctx: EngineContext): StartingPoint {
     }
   }
 
-  // 3/4 — Methodendefault, angereichert mit Bohnenprofil
+  // 4 — Methodendefault, angereichert mit Bohnenprofil
   let p = methodBase(ctx)
   lines.push({
     text: `Standard für ${ctx.bean.roastLevel === 'light' ? 'helle' : ctx.bean.roastLevel === 'dark' ? 'dunkle' : 'mittlere'} Röstung.`,

@@ -30,7 +30,10 @@
       "name": "ratioFilter",
       "label": "Brew Ratio (Filter)",
       "expr": "waterG / doseG",
-      "inputs": ["waterG", "doseG"],
+      "inputs": [
+        "waterG",
+        "doseG"
+      ],
       "unit": "-",
       "confidence": "high"
     },
@@ -39,7 +42,10 @@
       "name": "ratioEspresso",
       "label": "Brew Ratio (Espresso)",
       "expr": "yieldG / doseG",
-      "inputs": ["yieldG", "doseG"],
+      "inputs": [
+        "yieldG",
+        "doseG"
+      ],
       "unit": "-",
       "confidence": "high",
       "note": "Nenner ist die Masse IM GLAS, nicht das Brühwasser."
@@ -49,7 +55,10 @@
       "name": "targetYield",
       "label": "Zielausbringung",
       "expr": "doseG * ratio",
-      "inputs": ["doseG", "ratio"],
+      "inputs": [
+        "doseG",
+        "ratio"
+      ],
       "unit": "g",
       "confidence": "high"
     },
@@ -58,7 +67,10 @@
       "name": "doseForYield",
       "label": "Dosis aus Zielausbringung",
       "expr": "yieldG / ratio",
-      "inputs": ["yieldG", "ratio"],
+      "inputs": [
+        "yieldG",
+        "ratio"
+      ],
       "unit": "g",
       "confidence": "high"
     },
@@ -67,7 +79,11 @@
       "name": "beverageMass",
       "label": "Getränkemasse (Filter)",
       "expr": "waterG - lrr * doseG",
-      "inputs": ["waterG", "doseG", "lrr"],
+      "inputs": [
+        "waterG",
+        "doseG",
+        "lrr"
+      ],
       "unit": "g",
       "confidence": "medium",
       "note": "Ohne diesen Term wird EY um 10-15% relativ zu niedrig berechnet."
@@ -77,7 +93,11 @@
       "name": "extractionYield",
       "label": "Extraktionsausbeute",
       "expr": "(tdsPct * beverageG) / doseG",
-      "inputs": ["tdsPct", "beverageG", "doseG"],
+      "inputs": [
+        "tdsPct",
+        "beverageG",
+        "doseG"
+      ],
       "unit": "%",
       "confidence": "high",
       "core": true
@@ -87,7 +107,10 @@
       "name": "solidsMass",
       "label": "Extrahierte Feststoffmasse",
       "expr": "(ey / 100) * doseG",
-      "inputs": ["ey", "doseG"],
+      "inputs": [
+        "ey",
+        "doseG"
+      ],
       "unit": "g",
       "confidence": "high"
     },
@@ -96,7 +119,10 @@
       "name": "expectedTdsEspresso",
       "label": "Erwartetes TDS (Espresso)",
       "expr": "ey / ratio",
-      "inputs": ["ey", "ratio"],
+      "inputs": [
+        "ey",
+        "ratio"
+      ],
       "unit": "%",
       "confidence": "high"
     },
@@ -105,7 +131,11 @@
       "name": "expectedTdsFilter",
       "label": "Erwartetes TDS (Filter)",
       "expr": "ey / (ratio - lrr)",
-      "inputs": ["ey", "ratio", "lrr"],
+      "inputs": [
+        "ey",
+        "ratio",
+        "lrr"
+      ],
       "unit": "%",
       "confidence": "high",
       "note": "Erlaubt Stärkevorhersage ohne Refraktometer."
@@ -115,7 +145,11 @@
       "name": "ratioForTargetTds",
       "label": "Ratio für Ziel-TDS (Filter)",
       "expr": "ey / tdsTarget + lrr",
-      "inputs": ["ey", "tdsTarget", "lrr"],
+      "inputs": [
+        "ey",
+        "tdsTarget",
+        "lrr"
+      ],
       "unit": "-",
       "confidence": "high"
     },
@@ -124,7 +158,11 @@
       "name": "waterForBeverage",
       "label": "Wasser für Ziel-Getränkemasse",
       "expr": "targetBeverageG + lrr * doseG",
-      "inputs": ["targetBeverageG", "lrr", "doseG"],
+      "inputs": [
+        "targetBeverageG",
+        "lrr",
+        "doseG"
+      ],
       "unit": "g",
       "confidence": "high"
     },
@@ -133,7 +171,9 @@
       "name": "blendTds",
       "label": "Mischungs-TDS",
       "expr": "sum(m_i * tds_i) / sum(m_i)",
-      "inputs": ["components"],
+      "inputs": [
+        "components"
+      ],
       "unit": "%",
       "confidence": "high",
       "isReduction": true
@@ -143,7 +183,11 @@
       "name": "americanoTds",
       "label": "Americano End-TDS",
       "expr": "(tdsEsp * espG) / (espG + waterG)",
-      "inputs": ["tdsEsp", "espG", "waterG"],
+      "inputs": [
+        "tdsEsp",
+        "espG",
+        "waterG"
+      ],
       "unit": "%",
       "confidence": "high"
     },
@@ -152,7 +196,11 @@
       "name": "waterForTargetTds",
       "label": "Wassermenge für Ziel-TDS",
       "expr": "espG * (tdsEsp / tdsTarget - 1)",
-      "inputs": ["espG", "tdsEsp", "tdsTarget"],
+      "inputs": [
+        "espG",
+        "tdsEsp",
+        "tdsTarget"
+      ],
       "unit": "g",
       "confidence": "high"
     },
@@ -161,7 +209,11 @@
       "name": "bypassInvariant",
       "label": "Bypass-Invariante",
       "expr": "(tdsConc * concG) / doseG",
-      "inputs": ["tdsConc", "concG", "doseG"],
+      "inputs": [
+        "tdsConc",
+        "concG",
+        "doseG"
+      ],
       "unit": "%",
       "confidence": "high",
       "note": "EY bleibt bei Verdünnung KONSTANT. Bypass ist nie eine Antwort auf Bitterkeit."
@@ -171,7 +223,11 @@
       "name": "bypassWater",
       "label": "Bypass-Wasser für Zielstärke",
       "expr": "concG * (tdsConc / tdsTarget - 1)",
-      "inputs": ["concG", "tdsConc", "tdsTarget"],
+      "inputs": [
+        "concG",
+        "tdsConc",
+        "tdsTarget"
+      ],
       "unit": "g",
       "confidence": "high"
     },
@@ -180,7 +236,9 @@
       "name": "mixTemperature",
       "label": "Mischtemperatur",
       "expr": "sum(m_i * c_i * T_i) / sum(m_i * c_i)",
-      "inputs": ["components"],
+      "inputs": [
+        "components"
+      ],
       "unit": "°C",
       "confidence": "high",
       "isReduction": true
@@ -190,7 +248,12 @@
       "name": "iceForTargetTemp",
       "label": "Eismenge für Zieltemperatur",
       "expr": "(hotG * 4.10 * (tHot - tFinal)) / (2.09 * abs(tIce) + 334 + 4.18 * tFinal)",
-      "inputs": ["hotG", "tHot", "tFinal", "tIce"],
+      "inputs": [
+        "hotG",
+        "tHot",
+        "tFinal",
+        "tIce"
+      ],
       "unit": "g",
       "confidence": "high",
       "note": "Berechnet die Menge, die exakt vollständig schmilzt. Für Restwürfel Faktor 1,3-1,5."
@@ -200,7 +263,11 @@
       "name": "meltDilution",
       "label": "Schmelzwasser-Verdünnung",
       "expr": "tdsInit * (initG / (initG + meltG))",
-      "inputs": ["tdsInit", "initG", "meltG"],
+      "inputs": [
+        "tdsInit",
+        "initG",
+        "meltG"
+      ],
       "unit": "%",
       "confidence": "high"
     },
@@ -209,7 +276,10 @@
       "name": "steamCondensate",
       "label": "Milchverdünnung durch Dampf",
       "expr": "(3.90 * (tFinal - tStart)) / (2257 + 4.18 * (100 - tFinal))",
-      "inputs": ["tStart", "tFinal"],
+      "inputs": [
+        "tStart",
+        "tFinal"
+      ],
       "unit": "ratio",
       "confidence": "high",
       "note": "Ergebnis mit milkStartG multiplizieren. Real 1,1-1,3x wegen feuchtem Dampf."
@@ -219,7 +289,13 @@
       "name": "darcyFlow",
       "label": "Darcy-Gesetz",
       "expr": "(k * A * dP) / (mu * L)",
-      "inputs": ["k", "A", "dP", "mu", "L"],
+      "inputs": [
+        "k",
+        "A",
+        "dP",
+        "mu",
+        "L"
+      ],
       "unit": "m³/s",
       "confidence": "high",
       "qualitativeOnly": true
@@ -229,7 +305,10 @@
       "name": "grindScaleFactor",
       "label": "Mahlgradkorrektur aus Zeitabweichung",
       "expr": "sqrt(actualTimeS / targetTimeS)",
-      "inputs": ["actualTimeS", "targetTimeS"],
+      "inputs": [
+        "actualTimeS",
+        "targetTimeS"
+      ],
       "unit": "-",
       "confidence": "medium",
       "core": true,
@@ -241,7 +320,11 @@
       "name": "grindSteps",
       "label": "Mahlgradschritte",
       "expr": "round((currentMicron * (factor - 1)) / micronPerStep)",
-      "inputs": ["currentMicron", "factor", "micronPerStep"],
+      "inputs": [
+        "currentMicron",
+        "factor",
+        "micronPerStep"
+      ],
       "unit": "Schritte",
       "confidence": "low"
     },
@@ -250,7 +333,11 @@
       "name": "expectedTimeAfterGrindChange",
       "label": "Erwartete Zeit nach Mahlgradänderung",
       "expr": "actualTimeS * pow(currentMicron / newMicron, 2)",
-      "inputs": ["actualTimeS", "currentMicron", "newMicron"],
+      "inputs": [
+        "actualTimeS",
+        "currentMicron",
+        "newMicron"
+      ],
       "unit": "s",
       "confidence": "medium",
       "note": "Umkehrung von F-22. Liefert die überprüfbare Erwartung für die Diagnoseausgabe."
@@ -260,7 +347,10 @@
       "name": "flowRate",
       "label": "Flussrate",
       "expr": "yieldG / timeS",
-      "inputs": ["yieldG", "timeS"],
+      "inputs": [
+        "yieldG",
+        "timeS"
+      ],
       "unit": "g/s",
       "confidence": "high"
     },
@@ -269,7 +359,9 @@
       "name": "basketArea",
       "label": "Korbquerschnitt",
       "expr": "PI * pow(basketDiameterMm / 20, 2)",
-      "inputs": ["basketDiameterMm"],
+      "inputs": [
+        "basketDiameterMm"
+      ],
       "unit": "cm²",
       "confidence": "high"
     },
@@ -278,10 +370,16 @@
       "name": "doseDensity",
       "label": "Dosisdichte",
       "expr": "doseG / basketAreaCm2",
-      "inputs": ["doseG", "basketAreaCm2"],
+      "inputs": [
+        "doseG",
+        "basketAreaCm2"
+      ],
       "unit": "g/cm²",
       "confidence": "medium",
-      "targetRange": [0.62, 0.76],
+      "targetRange": [
+        0.62,
+        0.76
+      ],
       "note": "Macht Rezepte zwischen Korbgrößen übertragbar."
     },
     {
@@ -289,7 +387,11 @@
       "name": "puckHeight",
       "label": "Trockene Puckhöhe",
       "expr": "doseG / (bulkDensity * basketAreaCm2)",
-      "inputs": ["doseG", "bulkDensity", "basketAreaCm2"],
+      "inputs": [
+        "doseG",
+        "bulkDensity",
+        "basketAreaCm2"
+      ],
       "unit": "cm",
       "confidence": "low"
     },
@@ -298,7 +400,10 @@
       "name": "specificSurfaceArea",
       "label": "Spezifische Oberfläche",
       "expr": "6 / (rho * d)",
-      "inputs": ["rho", "d"],
+      "inputs": [
+        "rho",
+        "d"
+      ],
       "unit": "m²/kg",
       "confidence": "high"
     },
@@ -307,7 +412,11 @@
       "name": "grinderMicron",
       "label": "Mühlenskala zu Mikrometer",
       "expr": "zeroPointOffsetMicron + setting * micronPerStep",
-      "inputs": ["zeroPointOffsetMicron", "setting", "micronPerStep"],
+      "inputs": [
+        "zeroPointOffsetMicron",
+        "setting",
+        "micronPerStep"
+      ],
       "unit": "µm",
       "confidence": "low"
     },
@@ -316,40 +425,99 @@
       "name": "co2Remaining",
       "label": "CO₂-Restgehalt",
       "expr": "m0 * exp(-days / tau)",
-      "inputs": ["m0", "days", "tau"],
+      "inputs": [
+        "m0",
+        "days",
+        "tau"
+      ],
       "unit": "mg/g",
       "confidence": "medium",
-      "tau": { "light": 20, "medium-light": 17, "medium": 14, "medium-dark": 11, "dark": 9 }
+      "tau": {
+        "light": 20,
+        "medium-light": 17,
+        "medium": 14,
+        "medium-dark": 11,
+        "dark": 9
+      }
     },
     {
       "id": "F-31",
       "name": "freshnessScore",
       "label": "Frische-Score",
       "expr": "100 * exp(-pow(days - tPeak, 2) / (2 * pow(sigma, 2)))",
-      "inputs": ["days", "tPeak", "sigma"],
+      "inputs": [
+        "days",
+        "tPeak",
+        "sigma"
+      ],
       "unit": "0-100",
       "confidence": "low",
       "params": {
         "espresso": {
-          "light":        { "tPeak": 16, "sigma": 8 },
-          "medium-light": { "tPeak": 14, "sigma": 7.5 },
-          "medium":       { "tPeak": 12, "sigma": 7 },
-          "medium-dark":  { "tPeak": 10, "sigma": 6 },
-          "dark":         { "tPeak": 8,  "sigma": 5 }
+          "light": {
+            "tPeak": 16,
+            "sigma": 8
+          },
+          "medium-light": {
+            "tPeak": 14,
+            "sigma": 7.5
+          },
+          "medium": {
+            "tPeak": 12,
+            "sigma": 7
+          },
+          "medium-dark": {
+            "tPeak": 10,
+            "sigma": 6
+          },
+          "dark": {
+            "tPeak": 8,
+            "sigma": 5
+          }
         },
         "v60": {
-          "light":        { "tPeak": 12, "sigma": 8 },
-          "medium-light": { "tPeak": 10, "sigma": 7.5 },
-          "medium":       { "tPeak": 9,  "sigma": 7 },
-          "medium-dark":  { "tPeak": 7,  "sigma": 6 },
-          "dark":         { "tPeak": 6,  "sigma": 5 }
+          "light": {
+            "tPeak": 12,
+            "sigma": 8
+          },
+          "medium-light": {
+            "tPeak": 10,
+            "sigma": 7.5
+          },
+          "medium": {
+            "tPeak": 9,
+            "sigma": 7
+          },
+          "medium-dark": {
+            "tPeak": 7,
+            "sigma": 6
+          },
+          "dark": {
+            "tPeak": 6,
+            "sigma": 5
+          }
         },
         "aeropress": {
-          "light":        { "tPeak": 12, "sigma": 10 },
-          "medium-light": { "tPeak": 10, "sigma": 9.5 },
-          "medium":       { "tPeak": 9,  "sigma": 9 },
-          "medium-dark":  { "tPeak": 7,  "sigma": 8 },
-          "dark":         { "tPeak": 6,  "sigma": 7 }
+          "light": {
+            "tPeak": 12,
+            "sigma": 10
+          },
+          "medium-light": {
+            "tPeak": 10,
+            "sigma": 9.5
+          },
+          "medium": {
+            "tPeak": 9,
+            "sigma": 9
+          },
+          "medium-dark": {
+            "tPeak": 7,
+            "sigma": 8
+          },
+          "dark": {
+            "tPeak": 6,
+            "sigma": 7
+          }
         }
       },
       "openedPenalty": "score * max(0.6, 1 - 0.004 * daysSinceOpened)"
@@ -359,10 +527,15 @@
       "name": "ageGrindDrift",
       "label": "Mahlgraddrift durch Alterung",
       "expr": "-0.08 * (daysNow - daysRef)",
-      "inputs": ["daysNow", "daysRef"],
+      "inputs": [
+        "daysNow",
+        "daysRef"
+      ],
       "unit": "Schritte",
       "confidence": "low",
-      "scope": ["espresso"],
+      "scope": [
+        "espresso"
+      ],
       "note": "Negativ = feiner. Ca. 1 Schritt je 12 Tage."
     },
     {
@@ -370,16 +543,35 @@
       "name": "caffeineEstimate",
       "label": "Koffein-Schätzung",
       "expr": "caffeineFraction * doseG * 1000 * efficiency",
-      "inputs": ["caffeineFraction", "doseG", "efficiency"],
+      "inputs": [
+        "caffeineFraction",
+        "doseG",
+        "efficiency"
+      ],
       "unit": "mg",
       "confidence": "low",
       "outputAsRange": true,
-      "caffeineFraction": { "arabica": 0.012, "robusta": 0.022 },
+      "caffeineFraction": {
+        "arabica": 0.012,
+        "robusta": 0.022
+      },
       "efficiency": {
-        "espresso":  [0.35, 0.55],
-        "v60":       [0.70, 0.90],
-        "aeropress": [0.80, 0.95],
-        "coldbrew":  [0.70, 0.85]
+        "espresso": [
+          0.35,
+          0.55
+        ],
+        "v60": [
+          0.7,
+          0.9
+        ],
+        "aeropress": [
+          0.8,
+          0.95
+        ],
+        "coldbrew": [
+          0.7,
+          0.85
+        ]
       },
       "note": "Unpräziseste Formel der Sammlung. Immer als Spanne ausgeben."
     },
@@ -388,7 +580,10 @@
       "name": "costPerCup",
       "label": "Kosten pro Tasse",
       "expr": "(pricePerKg / 1000) * doseG",
-      "inputs": ["pricePerKg", "doseG"],
+      "inputs": [
+        "pricePerKg",
+        "doseG"
+      ],
       "unit": "EUR",
       "confidence": "high"
     },
@@ -397,7 +592,11 @@
       "name": "drinkIntensity",
       "label": "Kaffeeintensität eines Getränks",
       "expr": "(tdsBrew * brewG) / totalG",
-      "inputs": ["tdsBrew", "brewG", "totalG"],
+      "inputs": [
+        "tdsBrew",
+        "brewG",
+        "totalG"
+      ],
       "unit": "%",
       "confidence": "high",
       "source": "kb/12-getraenke.md §1",
@@ -408,7 +607,11 @@
       "name": "milkToPour",
       "label": "Einzufüllende Milchmenge",
       "expr": "targetMilkFinalG / ((1 + overrun) * (1 + steamCondensate))",
-      "inputs": ["targetMilkFinalG", "overrun", "steamCondensate"],
+      "inputs": [
+        "targetMilkFinalG",
+        "overrun",
+        "steamCondensate"
+      ],
       "unit": "g",
       "confidence": "medium",
       "source": "kb/11-milch.md §7"
@@ -419,60 +622,218 @@
     "_unit": "Tage nach Röstung [min, max]",
     "_note": "Espresso braucht länger als Filter, weil der Druck die Störwirkung des CO₂ verstärkt.",
     "espresso": {
-      "light": [10, 28],
-      "medium-light": [8, 24],
-      "medium": [7, 21],
-      "medium-dark": [5, 16],
-      "dark": [4, 12]
+      "light": [
+        10,
+        28
+      ],
+      "medium-light": [
+        8,
+        24
+      ],
+      "medium": [
+        7,
+        21
+      ],
+      "medium-dark": [
+        5,
+        16
+      ],
+      "dark": [
+        4,
+        12
+      ]
     },
     "v60": {
-      "light": [7, 24],
-      "medium-light": [6, 20],
-      "medium": [5, 18],
-      "medium-dark": [4, 14],
-      "dark": [3, 10]
+      "light": [
+        7,
+        24
+      ],
+      "medium-light": [
+        6,
+        20
+      ],
+      "medium": [
+        5,
+        18
+      ],
+      "medium-dark": [
+        4,
+        14
+      ],
+      "dark": [
+        3,
+        10
+      ]
     },
     "aeropress": {
-      "light": [7, 26],
-      "medium-light": [6, 22],
-      "medium": [5, 20],
-      "medium-dark": [4, 16],
-      "dark": [3, 12]
+      "light": [
+        7,
+        26
+      ],
+      "medium-light": [
+        6,
+        22
+      ],
+      "medium": [
+        5,
+        20
+      ],
+      "medium-dark": [
+        4,
+        16
+      ],
+      "dark": [
+        3,
+        12
+      ]
     },
     "decafFactor": 0.7,
-    "staleAfterDays": 60
+    "staleAfterDays": 60,
+    "processOffsetDays": {
+      "_source": "barista-pwa/engine/freshness.ts, fachlich bestätigt",
+      "_note": "Naturals gasen schneller aus und sind früher trinkreif; Washed brauchen länger.",
+      "washed": 0,
+      "honey-yellow": -2,
+      "honey-red": -2,
+      "honey-black": -3,
+      "natural": -3,
+      "anaerobic": -3,
+      "carbonic-maceration": -3,
+      "wet-hulled": -1,
+      "experimental": -2
+    }
   },
-
   "roastModifiers": {
     "_source": "kb/03 §6, kb/05 §7",
     "_note": "Additive Offsets auf die Methodendefaults. grindSteps negativ = feiner.",
-    "light": { "grindSteps": -3, "waterTempC": 2.5, "ratio": 0.55 },
-    "medium-light": { "grindSteps": -1.5, "waterTempC": 1.5, "ratio": 0.3 },
-    "medium": { "grindSteps": 0, "waterTempC": 0, "ratio": 0 },
-    "medium-dark": { "grindSteps": 1.5, "waterTempC": -1.5, "ratio": -0.15 },
-    "dark": { "grindSteps": 2.5, "waterTempC": -3, "ratio": -0.25 }
+    "light": {
+      "grindSteps": -3,
+      "waterTempC": 2.5,
+      "ratio": 0.55
+    },
+    "medium-light": {
+      "grindSteps": -1.5,
+      "waterTempC": 1.5,
+      "ratio": 0.3
+    },
+    "medium": {
+      "grindSteps": 0,
+      "waterTempC": 0,
+      "ratio": 0
+    },
+    "medium-dark": {
+      "grindSteps": 1.5,
+      "waterTempC": -1.5,
+      "ratio": -0.15
+    },
+    "dark": {
+      "grindSteps": 2.5,
+      "waterTempC": -3,
+      "ratio": -0.25
+    }
   },
-
   "beanModifiers": {
     "_source": "kb/04 §7, kb/05 §7",
-    "altitudeAbove1800": { "grindSteps": -1.5, "waterTempC": 1.5 },
-    "densityAbove400": { "grindSteps": -1 },
-    "decaf": { "grindSteps": 1.5, "waterTempC": -2 },
-    "frozen": { "grindSteps": 1.5 }
+    "altitudeAbove1800": {
+      "grindSteps": -1.5,
+      "waterTempC": 1.5
+    },
+    "densityAbove400": {
+      "grindSteps": -1
+    },
+    "decaf": {
+      "grindSteps": 1.5,
+      "waterTempC": -2
+    },
+    "frozen": {
+      "grindSteps": 1.5
+    }
   },
-
   "targetRanges": {
-    "goldenCup": { "ey": [18, 22], "tdsFilter": [1.15, 1.35], "tdsFilterThirdWave": [1.30, 1.45] },
-    "espressoClassic": { "ratio": [1.8, 2.5], "ey": [18, 21], "tds": [9, 12], "timeS": [25, 30], "flowRate": [1.2, 1.6] },
-    "espressoModern": { "ratio": [2.2, 3.0], "ey": [20, 24], "tds": [7, 10], "timeS": [25, 35], "flowRate": [1.0, 1.5] }
+    "goldenCup": {
+      "ey": [
+        18,
+        22
+      ],
+      "tdsFilter": [
+        1.15,
+        1.35
+      ],
+      "tdsFilterThirdWave": [
+        1.3,
+        1.45
+      ]
+    },
+    "espressoClassic": {
+      "ratio": [
+        1.8,
+        2.5
+      ],
+      "ey": [
+        18,
+        21
+      ],
+      "tds": [
+        9,
+        12
+      ],
+      "timeS": [
+        25,
+        30
+      ],
+      "flowRate": [
+        1.2,
+        1.6
+      ]
+    },
+    "espressoModern": {
+      "ratio": [
+        2.2,
+        3.0
+      ],
+      "ey": [
+        20,
+        24
+      ],
+      "tds": [
+        7,
+        10
+      ],
+      "timeS": [
+        25,
+        35
+      ],
+      "flowRate": [
+        1.0,
+        1.5
+      ]
+    }
   },
   "hardLimits": {
-    "doseG": [1, 30],
-    "ratio": [0.5, 25],
-    "waterTempC": [1, 100],
-    "tdsPct": [0.1, 15],
-    "ey": [1, 30],
-    "timeS": [1, 3600],
+    "doseG": [
+      1,
+      30
+    ],
+    "ratio": [
+      0.5,
+      25
+    ],
+    "waterTempC": [
+      1,
+      100
+    ],
+    "tdsPct": [
+      0.1,
+      15
+    ],
+    "ey": [
+      1,
+      30
+    ],
+    "timeS": [
+      1,
+      3600
+    ],
     "implausibleEyAbove": 26
   }
 }

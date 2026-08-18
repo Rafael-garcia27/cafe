@@ -9,6 +9,7 @@ import type { Route } from '@/router'
 import { useStore } from '@/store'
 import type { Bean, RoastLevel, Process, BrewMethod } from '@domain'
 import { assessFreshness } from '@/engine/freshness'
+import { suitability, bestMethodFor, SUITABILITY_LABEL } from '@/engine/suitability'
 import { ORIGIN_NAMES } from '@/kb'
 import { ROAST_LABEL, PROCESS_LABEL, METHOD_LABEL } from '@/labels'
 import {
@@ -35,9 +36,16 @@ export default function ShelfScreen({ route, navigate, back }: Props) {
   // „Welche Bohne heute?“ — nach Frischefenster sortiert (Briefing Teil D)
   const ranked = beans
     .map((b) => {
+      const best = bestMethodFor(b)
       const bag = bags.filter((x) => x.beanId === b.id && !x.depleted)[0]
-      const f = assessFreshness(bag, b.preferredMethod ?? 'espresso', b.roastLevel, !!b.isDecaf, new Date())
-      return { bean: b, bag, fresh: f, count: brews.filter((x) => x.beanId === b.id).length }
+      const f = assessFreshness(bag, best.method, b.roastLevel, !!b.isDecaf, new Date(), b.process)
+      return {
+        bean: b,
+        bag,
+        fresh: f,
+        best,
+        count: brews.filter((x) => x.beanId === b.id).length,
+      }
     })
     .sort((a, b) => b.fresh.score - a.fresh.score)
 
@@ -62,7 +70,7 @@ export default function ShelfScreen({ route, navigate, back }: Props) {
       ) : (
         <Section title="Nach Frische sortiert">
           <div className="space-y-2">
-            {ranked.map(({ bean, fresh, count }) => (
+            {ranked.map(({ bean, fresh, count, best }) => (
               <Card key={bean.id} onClick={() => navigate({ tab: 'shelf', detail: 'bean', id: bean.id })}>
                 <div className="flex items-center gap-3">
                   <FreshnessRing score={fresh.score} label={fresh.days !== null ? String(fresh.days) : '?'} />
@@ -75,6 +83,9 @@ export default function ShelfScreen({ route, navigate, back }: Props) {
                     <p className="mt-0.5 truncate text-[12px] text-faint">
                       {fresh.label}
                       {count > 0 && ` · ${count}× gebrüht`}
+                    </p>
+                    <p className="mt-0.5 truncate text-[12px] text-crema">
+                      Am besten als {METHOD_LABEL[best.method]}
                     </p>
                   </div>
                   <span className="text-faint">›</span>
@@ -136,6 +147,39 @@ function BeanDetail({ bean, onBack }: { bean: Bean; onBack: () => void }) {
         </Card>
       </Section>
 
+      <Section title="Eignung">
+        <Card>
+          <div className="space-y-2">
+            {(['espresso', 'v60', 'aeropress'] as BrewMethod[]).map((m) => {
+              const fit = suitability(bean, m)
+              return (
+                <div key={m} className="flex items-center gap-3">
+                  <span className="w-24 shrink-0 text-[14px]">{METHOD_LABEL[m]}</span>
+                  <span className="flex gap-0.5" aria-label={SUITABILITY_LABEL[fit.level]}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <span
+                        key={n}
+                        className={`h-1.5 w-5 rounded-full ${
+                          n <= Math.round(fit.score)
+                            ? fit.isWarning
+                              ? 'bg-warn'
+                              : 'bg-crema'
+                            : 'bg-line'
+                        }`}
+                      />
+                    ))}
+                  </span>
+                  <span className="text-[13px] text-mute">{SUITABILITY_LABEL[fit.level]}</span>
+                </div>
+              )
+            })}
+          </div>
+          <p className="mt-3 border-t border-line pt-3 text-[13px] leading-relaxed text-mute">
+            {suitability(bean, bestMethodFor(bean).method).reason}
+          </p>
+        </Card>
+      </Section>
+
       <Section title="Tüten" action={<Button size="sm" variant="ghost" onClick={() => setShowBag(true)}>+ Tüte</Button>}>
         {bags.length === 0 ? (
           <Card>
@@ -146,7 +190,7 @@ function BeanDetail({ bean, onBack }: { bean: Bean; onBack: () => void }) {
         ) : (
           <div className="space-y-2">
             {bags.map((bag) => {
-              const f = assessFreshness(bag, bean.preferredMethod ?? 'espresso', bean.roastLevel, !!bean.isDecaf, new Date())
+              const f = assessFreshness(bag, bean.preferredMethod ?? 'espresso', bean.roastLevel, !!bean.isDecaf, new Date(), bean.process)
               return (
                 <Card key={bag.id}>
                   <div className="flex items-center gap-3">

@@ -13,6 +13,8 @@ import { startingPoint } from '@/engine/starting'
 import { diagnose, type Diagnosis } from '@/engine/diagnose'
 import { assessFreshness } from '@/engine/freshness'
 import { consistencyWarning, brewsUntilPersonal } from '@/engine/learn'
+import { suitability, SUITABILITY_LABEL, bestMethodFor } from '@/engine/suitability'
+import { grindPlausibility, formatSetting } from '@/engine/grinder'
 import { METHOD_LABEL, DEFECT_LABEL, COMMON_DEFECTS, CHARACTER_LABEL, COMMON_CHARACTERS, FLOW_LABEL, FLOW_CHOICES, PUCK_LABEL, PUCK_CHOICES, BLOOM_LABEL, BLOOM_CHOICES } from '@/labels'
 import {
   Screen, Header, Section, Card, Button, Chip, SegmentedControl, Stepper, Field,
@@ -113,7 +115,10 @@ export default function BrewScreen({ navigate }: Props) {
   }
   if (!bean || !ctx || !sp) return null
 
-  const fresh = assessFreshness(bag, method, bean.roastLevel, !!bean.isDecaf, new Date())
+  const fresh = assessFreshness(bag, method, bean.roastLevel, !!bean.isDecaf, new Date(), bean.process)
+  const fit = suitability(bean, method)
+  const plaus = grindPlausibility(grindVal, method, grinder)
+  const brewCount = beanHistory.length
   const consistency = consistencyWarning(s.learned, method)
   const untilPersonal = brewsUntilPersonal(s.learned, bean.id, method)
   const isEspresso = method === 'espresso'
@@ -187,25 +192,36 @@ export default function BrewScreen({ navigate }: Props) {
 
           <Section title="Bohne">
             <div className="space-y-2">
-              {s.beans.map((b) => {
-                const bBag = s.bags.filter((x) => x.beanId === b.id && !x.depleted)[0]
-                const f = assessFreshness(bBag, method, b.roastLevel, !!b.isDecaf, new Date())
-                const active = b.id === bean.id
-                return (
-                  <Card key={b.id} onClick={() => setBeanId(b.id)} tone={active ? 'accent' : 'default'}>
-                    <div className="flex items-center gap-3">
-                      <FreshnessRing score={f.score} label={f.days !== null ? String(f.days) : '?'} />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{b.name}</p>
-                        <p className="truncate text-[13px] text-mute">
-                          {b.origins.map((o) => o.country).join(', ') || 'Herkunft offen'} · {f.label}
-                        </p>
+              {[...s.beans]
+                .map((b) => {
+                  const bBag = s.bags.filter((x) => x.beanId === b.id && !x.depleted)[0]
+                  const f = assessFreshness(bBag, method, b.roastLevel, !!b.isDecaf, new Date(), b.process)
+                  return { b, f, fit: suitability(b, method) }
+                })
+                // Nach Eignung für die gewählte Methode, dann nach Frische
+                .sort((x, y) => y.fit.score - x.fit.score || y.f.score - x.f.score)
+                .map(({ b, f, fit }) => {
+                  const active = b.id === bean.id
+                  return (
+                    <Card key={b.id} onClick={() => setBeanId(b.id)} tone={active ? 'accent' : 'default'}>
+                      <div className="flex items-center gap-3">
+                        <FreshnessRing score={f.score} label={f.days !== null ? String(f.days) : '?'} />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-medium">{b.name}</p>
+                          <p className="truncate text-[13px] text-mute">
+                            {b.origins.map((o) => o.country).join(', ') || 'Herkunft offen'} · {f.label}
+                          </p>
+                          <p
+                            className={`mt-0.5 text-[12px] ${fit.isWarning ? 'text-warn' : 'text-faint'}`}
+                          >
+                            Für {METHOD_LABEL[method]}: {SUITABILITY_LABEL[fit.level]}
+                          </p>
+                        </div>
+                        {active && <span className="text-crema">✓</span>}
                       </div>
-                      {active && <span className="text-crema">✓</span>}
-                    </div>
-                  </Card>
-                )
-              })}
+                    </Card>
+                  )
+                })}
             </div>
           </Section>
 
@@ -231,7 +247,9 @@ export default function BrewScreen({ navigate }: Props) {
                 )}
                 <Stat label="Verhältnis" value={`1:${sp.proposal.ratio.toFixed(1)}`} term="ratio" />
                 <Stat label="Temperatur" value={tempC} unit="°C" />
-                {grinder && <Stat label={`Mahlgrad (${grinder.name})`} value={grindVal} term="grind" />}
+                {grinder && (
+                  <Stat label={grinder.name} value={formatSetting(grindVal, grinder)} term="grind" />
+                )}
                 {targetT && (
                   <Stat label="Zielzeit" value={`${targetT[0]}–${targetT[1]}`} unit="s" term="time-is-result" />
                 )}
@@ -251,6 +269,38 @@ export default function BrewScreen({ navigate }: Props) {
                 ))}
               </div>
             </Card>
+
+            {fit.isWarning && (
+              <Card className="mt-3" tone="warn">
+                <p className="text-[14px] leading-snug">
+                  <strong>
+                    Diese Bohne ist für {METHOD_LABEL[method]} {SUITABILITY_LABEL[fit.level]}.
+                  </strong>{' '}
+                  {fit.reason}
+                </p>
+                {bestMethodFor(bean).method !== method && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="mt-2 -ml-3"
+                    onClick={() => { setMethod(bestMethodFor(bean).method); setPhase('select') }}
+                  >
+                    Mit {METHOD_LABEL[bestMethodFor(bean).method]} versuchen →
+                  </Button>
+                )}
+              </Card>
+            )}
+
+            {!plaus.ok && plaus.message && (
+              <Card className="mt-3" tone="warn">
+                <p className="text-[14px] leading-snug">{plaus.message}</p>
+                {plaus.suggestion !== undefined && (
+                  <Button size="sm" variant="ghost" className="mt-2 -ml-3" onClick={() => setGrindVal(plaus.suggestion!)}>
+                    Auf {plaus.suggestion} setzen →
+                  </Button>
+                )}
+              </Card>
+            )}
 
             {!grinder && (
               <Card className="mt-3" tone="warn">
@@ -272,6 +322,7 @@ export default function BrewScreen({ navigate }: Props) {
 
             {untilPersonal > 0 && sp.source !== 'personal' && (
               <p className="mt-3 px-1 text-[13px] text-faint">
+                {brewCount > 0 && `${brewCount}× gebrüht. `}
                 Noch{' '}
                 {untilPersonal === 1
                   ? 'ein gut bewerteter Durchgang'
