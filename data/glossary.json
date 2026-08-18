@@ -1,0 +1,421 @@
+{
+  "version": "1.0.0",
+  "source": "kb/GLOSSAR.md",
+  "purpose": "App-Inhalt für Tooltips, Info-Buttons und den Einsteigermodus. NICHT nur Doku — die meisten Nutzer kennen diese Begriffe nicht.",
+
+  "levels": {
+    "basis": { "label": "Basis", "showIn": "Haupt-UI", "description": "Muss jeder Nutzer verstehen" },
+    "advanced": { "label": "Fortgeschritten", "showIn": "Info-Icon", "description": "Braucht, wer selbst einmisst" },
+    "expert": { "label": "Experte", "showIn": "Aufklappbar", "description": "Hintergrund, optional" }
+  },
+
+  "uiGuidance": {
+    "beginnerMode": "Nur level=basis anzeigen. TDS/EY-Eingabe komplett ausblenden.",
+    "tooltipRule": "Jeder Begriff aus dieser Datei, der in der UI erscheint, braucht ein Info-Icon mit dem short-Text.",
+    "firstUseRule": "Beim ersten Auftreten eines Begriffs den long-Text als einmaliges Overlay zeigen, danach nur noch short.",
+    "neverAssume": "Niemals einen Begriff dieser Liste ohne Erklärung in einer Fehlermeldung oder Empfehlung verwenden."
+  },
+
+  "terms": [
+    {
+      "id": "extraction",
+      "term": "Extraktion",
+      "level": "basis",
+      "short": "Das Herauslösen von Stoffen aus dem Kaffee durch Wasser.",
+      "long": "Beim Brühen passiert genau eine Sache: Wasser löst Stoffe aus der Bohne. Nur etwa 30 % der Bohne sind überhaupt löslich, der Rest ist Pflanzengerüst. Gut sind 18–22 % — darunter schmeckt es sauer, darüber bitter.",
+      "seeAlso": ["ey", "underextraction", "overextraction"],
+      "kbRef": "kb/START-HIER.md §1"
+    },
+    {
+      "id": "ey",
+      "term": "Extraktionsausbeute (EY)",
+      "level": "advanced",
+      "unit": "%",
+      "short": "Wie viel Prozent der Bohne sich aufgelöst hat. Ziel: 18–22 %.",
+      "long": "Misst, wie viel von der Kaffeebohne im Getränk gelandet ist. Maximal möglich sind ~30 %. Unter 18 % schmeckt der Kaffee sauer und dünn, über 22 % bitter und trocken. Zum Messen braucht man ein Refraktometer — ohne Messgerät schätzt man über den Geschmack.",
+      "seeAlso": ["tds", "refractometer", "goldencup"],
+      "formulaRef": "F-06",
+      "showWhen": ["measurement-input", "diagnosis"],
+      "kbRef": "kb/02 F-06"
+    },
+    {
+      "id": "tds",
+      "term": "Stärke (TDS)",
+      "level": "advanced",
+      "unit": "%",
+      "short": "Wie konzentriert das Getränk ist. Espresso 8–12 %, Filter ~1,3 %.",
+      "long": "Anteil gelöster Feststoffe an der Flüssigkeit. Nicht zu verwechseln mit der Extraktion: Ein Kaffee kann stark und trotzdem sauer sein, oder dünn und trotzdem bitter. Stärke steuert man über das Verhältnis Kaffee:Wasser, Extraktion über den Mahlgrad.",
+      "warning": "Bei Wasser bedeutet „TDS\" den Mineralgehalt in mg/L — andere Größe, gleiche Abkürzung. Nie ohne Einheit anzeigen.",
+      "seeAlso": ["ey", "ratio"],
+      "showWhen": ["measurement-input"],
+      "kbRef": "kb/01 §2"
+    },
+    {
+      "id": "ratio",
+      "term": "Verhältnis (Ratio)",
+      "level": "basis",
+      "short": "Kaffee zu Wasser, z. B. 1:2 (Espresso) oder 1:16 (Filter).",
+      "long": "18 g Kaffee auf 36 g Getränk = 1:2. Verhältnisse werden genutzt, weil sie skalieren — 1:16 funktioniert für eine Tasse wie für eine Kanne. Achtung: Beim Espresso zählt, was im Glas ist; beim Filter, was oben hineingegossen wird.",
+      "seeAlso": ["dose", "yield", "retention"],
+      "formulaRef": "F-01",
+      "showWhen": ["recipe-editor"],
+      "kbRef": "kb/START-HIER.md §3"
+    },
+    {
+      "id": "dose",
+      "term": "Dosis",
+      "level": "basis",
+      "unit": "g",
+      "short": "Menge trockener Kaffee, die eingewogen wird.",
+      "long": "Espresso typisch 18 g, Filter 15–20 g. Immer wiegen, nie in Löffeln messen: Ein Löffel dunkler Bohnen wiegt bis zu 20 % weniger als derselbe Löffel heller.",
+      "showWhen": ["recipe-editor", "brew"]
+    },
+    {
+      "id": "yield",
+      "term": "Ausbringung",
+      "level": "basis",
+      "unit": "g",
+      "short": "Was am Ende im Glas ist, in Gramm.",
+      "long": "Beim Espresso die zweite Zahl des Verhältnisses. Wird gewogen, nicht am Volumen abgeschätzt — die Crema täuscht über die Menge hinweg.",
+      "showWhen": ["recipe-editor", "brew"]
+    },
+    {
+      "id": "underextraction",
+      "term": "Unterextraktion",
+      "level": "basis",
+      "short": "Zu wenig gelöst. Sauer, salzig, dünn, hört abrupt auf.",
+      "long": "Das Wasser hatte nicht genug Gelegenheit, die süßen Stoffe herauszulösen — nur die früh löslichen Säuren und Salze sind drin. Korrektur: feiner mahlen, längere Kontaktzeit oder heißeres Wasser. Die Salzigkeit ist der beste Indikator: Sauer allein kann Sortencharakter sein, salzig-sauer ist immer Unterextraktion.",
+      "seeAlso": ["extraction", "grind"],
+      "showWhen": ["diagnosis", "tasting"]
+    },
+    {
+      "id": "overextraction",
+      "term": "Überextraktion",
+      "level": "basis",
+      "short": "Zu viel gelöst. Bitter, kratzig, trocken im Mund.",
+      "long": "Das Wasser hat auch die spät löslichen Bitter- und Gerbstoffe mitgenommen. Korrektur: gröber mahlen, kürzere Kontaktzeit oder kühleres Wasser.",
+      "seeAlso": ["extraction", "astringency", "grind"],
+      "showWhen": ["diagnosis", "tasting"]
+    },
+    {
+      "id": "uneven-extraction",
+      "term": "Ungleichmäßige Extraktion",
+      "level": "basis",
+      "short": "Sauer UND bitter gleichzeitig — ein Teil zu viel, ein Teil zu wenig.",
+      "long": "Kein Widerspruch und kein Verkostungsfehler: Ein Teil des Kaffees wurde überextrahiert, ein anderer kaum berührt. Beim Espresso liegt es an der Verteilung im Sieb, beim Filter am Gießen. Mahlgradkorrekturen helfen hier nicht — nur bessere Technik.",
+      "seeAlso": ["channeling", "wdt"],
+      "showWhen": ["diagnosis"]
+    },
+    {
+      "id": "grind",
+      "term": "Mahlgrad",
+      "level": "basis",
+      "short": "Wie fein gemahlen wird. Die stärkste Stellschraube.",
+      "long": "Feiner = mehr Oberfläche = mehr löst sich = weniger sauer, mehr bitter. Beim Espresso wirkt er etwa dreimal so stark wie beim Filter. Problem: Es gibt keine allgemeine Skala — „12\" bedeutet auf jeder Mühle etwas anderes.",
+      "seeAlso": ["micron", "fines"],
+      "showWhen": ["recipe-editor", "diagnosis"]
+    },
+    {
+      "id": "time-is-result",
+      "term": "Zeit",
+      "level": "basis",
+      "short": "Ein Ergebnis, keine Einstellung.",
+      "long": "Man kann einen Espresso nicht auf 28 Sekunden „einstellen\". Man wählt einen Mahlgrad, und daraus folgt eine bestimmte Zeit. Deshalb ist Zeit hier eine Anzeige mit Zielwert, kein Schieberegler.",
+      "showWhen": ["brew", "recipe-editor"]
+    },
+    {
+      "id": "channeling",
+      "term": "Kanalbildung",
+      "level": "basis",
+      "short": "Das Wasser sucht sich einen Weg und umgeht den Rest des Kaffees.",
+      "long": "Am bodenlosen Siebträger sichtbar als mehrere Strahlen oder seitliches Spritzen. Ergebnis: ein Teil überextrahiert, der Rest unterextrahiert — schmeckt sauer und bitter zugleich. Wichtig: Bei Kanalbildung ist die gemessene Durchlaufzeit wertlos, weil ein Teil des Wassers gar nicht durch den Kaffee gelaufen ist. Erst die Verteilung korrigieren, dann wieder einmessen.",
+      "seeAlso": ["puck", "wdt", "tamping", "uneven-extraction"],
+      "showWhen": ["diagnosis", "observation-input"]
+    },
+    {
+      "id": "puck",
+      "term": "Puck",
+      "level": "basis",
+      "short": "Das gepresste Kaffeebett im Espressosieb.",
+      "long": "Nach dem Bezug ein fester, feuchter Kuchen. Sein Aussehen ist ein Diagnosewerkzeug: ein Loch in der Mitte oder eine ausgewaschene Rinne am Rand zeigt Kanalbildung.",
+      "showWhen": ["observation-input"]
+    },
+    {
+      "id": "tamping",
+      "term": "Tampen",
+      "level": "basis",
+      "short": "Andrücken des Kaffees im Sieb. Eben ist wichtiger als fest.",
+      "long": "Ab etwa 10 kg Druck ändert mehr Kraft praktisch nichts — 9 bar Wasserdruck überschreiben jede Handkraft. Ein schiefer Tamp dagegen erzeugt zuverlässig Kanalbildung.",
+      "seeAlso": ["channeling"],
+      "showWhen": ["brew-steps"]
+    },
+    {
+      "id": "wdt",
+      "term": "WDT",
+      "level": "advanced",
+      "short": "Mit dünnen Nadeln im Sieb rühren, bevor getampt wird.",
+      "long": "Löst Klumpen auf und gleicht die Dichte im Sieb an. Der wirksamste Einzelschritt gegen Kanalbildung. 8–12 kreisende Bewegungen, Nadeln bis fast auf den Siebboden. Steht für „Weiss Distribution Technique\".",
+      "seeAlso": ["channeling"],
+      "showWhen": ["brew-steps", "diagnosis"]
+    },
+    {
+      "id": "rdt",
+      "term": "RDT",
+      "level": "advanced",
+      "short": "Ein bis zwei Tropfen Wasser auf die Bohnen vor dem Mahlen.",
+      "long": "Die statische Aufladung bricht zusammen: kein Kaffeestaub, keine Klumpen, weniger Reste in der Mühle. Kein Nachteil, kein Geschmackseinfluss. Steht für „Ross Droplet Technique\".",
+      "showWhen": ["brew-steps"]
+    },
+    {
+      "id": "bloom",
+      "term": "Bloom",
+      "level": "basis",
+      "short": "Erster kleiner Guss beim Filter, damit das CO₂ entweichen kann.",
+      "long": "Etwa das 2–3-fache der Kaffeemenge an Wasser, dann 30–45 s warten. Frisch gerösteter Kaffee ist voller CO₂ — lässt man es nicht entweichen, drängt es später das Wasser weg und die Extraktion wird ungleichmäßig. Das Bett bläht sich sichtbar auf, daher der Name.",
+      "seeAlso": ["degassing"],
+      "showWhen": ["brew-steps", "observation-input"]
+    },
+    {
+      "id": "drawdown",
+      "term": "Drawdown",
+      "level": "advanced",
+      "unit": "s",
+      "short": "Zeit vom letzten Guss bis zum letzten Tropfen.",
+      "long": "Der aussagekräftigste Einzelwert beim V60. Sollte 15–30 % der Gesamtzeit ausmachen. Deutlich länger heißt: zu fein gemahlen oder das Papier ist zugesetzt.",
+      "showWhen": ["brew", "diagnosis"]
+    },
+    {
+      "id": "degassing",
+      "term": "Ausgasung",
+      "level": "advanced",
+      "short": "Kaffee gibt nach dem Rösten wochenlang CO₂ ab.",
+      "long": "Zu frisch (unter 5 Tage) stört das CO₂ die Extraktion — der Espresso spritzt und schmeckt scharf. Das gute Fenster liegt etwa zwischen Tag 7 und Tag 25, je nach Röstgrad.",
+      "seeAlso": ["freshness-drift", "bloom"],
+      "showWhen": ["bean-detail"]
+    },
+    {
+      "id": "freshness-drift",
+      "term": "Frische-Drift",
+      "level": "advanced",
+      "short": "Älterer Kaffee läuft schneller durch — mit der Zeit feiner mahlen.",
+      "long": "Weil das CO₂ nach und nach entweicht, bietet dasselbe Kaffeemehl immer weniger Widerstand. Der Espresso läuft von Woche zu Woche schneller und wird saurer, obwohl man nichts verändert hat. Faustregel: etwa ein Klick feiner pro zwölf Tage.",
+      "isOwnTerm": true,
+      "seeAlso": ["degassing"],
+      "formulaRef": "F-32",
+      "showWhen": ["starting-point", "diagnosis"],
+      "productNote": "Die App kennt das Röstdatum des letzten guten Ergebnisses und kann proaktiv korrigieren. Das kann sonst niemand."
+    },
+    {
+      "id": "gh",
+      "term": "Gesamthärte (GH)",
+      "level": "advanced",
+      "unit": "mg/L CaCO₃",
+      "short": "Kalzium und Magnesium im Wasser — sie ziehen den Geschmack heraus.",
+      "long": "Destilliertes Wasser extrahiert schlecht, weil diese Bindungspartner fehlen. Ziel etwa 50–80 mg/L. Zu wenig: der Kaffee schmeckt leer und dünn. Zu viel: schwer und kreidig.",
+      "seeAlso": ["kh"],
+      "showWhen": ["water-setup"]
+    },
+    {
+      "id": "kh",
+      "term": "Karbonathärte (KH)",
+      "level": "advanced",
+      "unit": "mg/L CaCO₃",
+      "short": "Neutralisiert die Kaffeesäuren. Zu viel macht den Kaffee flach.",
+      "long": "Ziel 20–60 mg/L. Über 80 mg/L schmeckt der Kaffee flach und langweilig, obwohl technisch alles stimmt — alle Messwerte gut, Geschmack trotzdem fad. Das ist die häufigste unerkannte Fehlerursache überhaupt, und keine Mahlgradkorrektur hilft dagegen.",
+      "seeAlso": ["gh"],
+      "showWhen": ["water-setup", "diagnosis"],
+      "productNote": "Rechtfertigt eine eigene Diagnoseregel (D-06), die den Nutzer aus der Mahlgrad-Schleife holt."
+    },
+    {
+      "id": "overrun",
+      "term": "Overrun",
+      "level": "advanced",
+      "unit": "%",
+      "short": "Wie stark die Milch beim Aufschäumen an Volumen zunimmt.",
+      "long": "15 % Overrun heißt: aus 100 ml Milch werden 115 ml. Der Zuwachs ist Luft. Das ist der einzige echte Unterschied zwischen Flat White (10–20 %) und Cappuccino (50–80 %) — Kaffee- und Milchmenge sind identisch.",
+      "seeAlso": ["microfoam", "steam-condensate"],
+      "showWhen": ["milk-setup", "drink-detail"]
+    },
+    {
+      "id": "microfoam",
+      "term": "Microfoam",
+      "level": "basis",
+      "short": "Milchschaum mit unsichtbar feinen Bläschen, glänzend wie nasse Farbe.",
+      "long": "Fließt als eine Einheit statt obenauf zu sitzen. Voraussetzung für Latte Art und für die cremige Textur eines Flat White. Entsteht, wenn die Luft früh und schnell eingezogen und danach nur noch gewirbelt wird.",
+      "seeAlso": ["stretching", "overrun"],
+      "showWhen": ["milk-setup"]
+    },
+    {
+      "id": "stretching",
+      "term": "Stretching / Texturing",
+      "level": "advanced",
+      "short": "Die zwei Phasen beim Aufschäumen: erst Luft ziehen, dann wirbeln.",
+      "long": "Phase 1 (Stretching): Düse knapp unter der Oberfläche, bis etwa 37 °C — nur hier entsteht Volumen. Phase 2 (Texturing): Düse tiefer, ein Wirbel zerkleinert die Blasen, keine Luft mehr, bis 60 °C. Häufigster Fehler: zu lange in Phase 1, das gibt steifen, blasigen Schaum.",
+      "showWhen": ["milk-setup", "diagnosis"]
+    },
+    {
+      "id": "steam-condensate",
+      "term": "Dampfkondensat",
+      "level": "expert",
+      "short": "Beim Aufschäumen kondensiert Dampf in die Milch — sie wird ~9 % schwerer.",
+      "long": "Aus 150 g Kühlschrankmilch werden beim Erhitzen auf 60 °C etwa 163 g. Das Wasser kommt aus dem Dampf. Praktische Folge: Die Milchmenge für ein Rezept muss auf die finale Masse gerechnet werden, nicht auf die eingefüllte.",
+      "formulaRef": "F-19",
+      "showWhen": ["milk-setup"]
+    },
+    {
+      "id": "milk-temp",
+      "term": "Milchtemperatur",
+      "level": "basis",
+      "unit": "°C",
+      "short": "Ziel 60 °C. Über 70 °C ist die Milch ruiniert.",
+      "long": "Über 70 °C zerfallen die Eiweiße, die den Schaum tragen: Es schmeckt nach gekochter Milch, wird nicht mehr süß, der Schaum fällt zusammen. Und der Schaden ist nicht reparierbar. Die wahrgenommene Süße ist bei 55–62 °C am höchsten.",
+      "showWhen": ["milk-setup"]
+    },
+    {
+      "id": "crema",
+      "term": "Crema",
+      "level": "basis",
+      "short": "Die Schaumschicht auf dem Espresso. Frische-Anzeiger, kein Gütesiegel.",
+      "long": "CO₂-Bläschen, stabilisiert durch Röststoffe und Fette. Dunkle Röstungen erzeugen viel Crema, ohne besser zu sein; sehr helle wenig, ohne schlechter zu sein. Als Diagnose nützlich: übertrieben dick und blasig heißt „zu frisch\", fast keine heißt „zu alt\".",
+      "showWhen": ["observation-input"]
+    },
+    {
+      "id": "refractometer",
+      "term": "Refraktometer",
+      "level": "advanced",
+      "short": "Messgerät für die Stärke (TDS) des fertigen Kaffees.",
+      "long": "Bestimmt über die Lichtbrechung, wie viel Feststoff gelöst ist. Damit lässt sich die Extraktionsausbeute berechnen statt zu schätzen. Optional — aber wenn ein Wert vorliegt, hat er Vorrang vor jedem Geschmackseindruck.",
+      "seeAlso": ["tds", "ey"],
+      "showWhen": ["measurement-input"]
+    },
+    {
+      "id": "goldencup",
+      "term": "Golden Cup",
+      "level": "advanced",
+      "short": "Branchenstandard: Extraktion 18–22 %, Stärke 1,15–1,35 %.",
+      "long": "Zielkorridor der Specialty Coffee Association für Filterkaffee. Kein Gesetz, aber ein guter Startpunkt — die meisten Menschen bewerten Kaffee in diesem Bereich am besten.",
+      "showWhen": ["measurement-input"]
+    },
+    {
+      "id": "fines",
+      "term": "Fines",
+      "level": "advanced",
+      "short": "Die feinsten Partikel im Mahlgut. Beim Espresso nötig, beim Filter störend.",
+      "long": "Entstehen beim Brechen der Zellwände, jede Mühle produziert sie. Espresso braucht sie für Widerstand und Körper. Beim Filter extrahieren sie zu schnell und setzen das Papier zu.",
+      "showWhen": ["grinder-setup", "diagnosis"]
+    },
+    {
+      "id": "micron",
+      "term": "Mikrometer (µm)",
+      "level": "advanced",
+      "unit": "µm",
+      "short": "Tausendstel Millimeter — die Einheit für Partikelgröße.",
+      "long": "Espresso ~200–400 µm, V60 ~550–800 µm, French Press ~1000 µm. Die App rechnet intern in Mikrometern, damit Mahlgrade zwischen verschiedenen Mühlen übertragbar werden.",
+      "showWhen": ["grinder-setup"]
+    },
+    {
+      "id": "retention",
+      "term": "Retentionswasser",
+      "level": "advanced",
+      "short": "Wasser, das im Kaffeebett hängen bleibt: ~2 g pro Gramm Kaffee.",
+      "long": "Bei 18 g Kaffee und 300 g Wasser landen nur etwa 264 g in der Kanne. Wer das nicht abzieht, berechnet die Extraktion systematisch zu niedrig — einer der häufigsten Rechenfehler in Kaffee-Apps.",
+      "formulaRef": "F-05",
+      "showWhen": ["measurement-input"]
+    },
+    {
+      "id": "bypass",
+      "term": "Bypass",
+      "level": "advanced",
+      "short": "Konzentriert brühen, danach verdünnen. Ändert nur die Stärke.",
+      "long": "Verdünnen ändert nie die Extraktion — die Bitterstoffe sind bereits gelöst und werden nur verteilt. Gegen „zu bitter\" hilft es deshalb nicht. Gegen „zu wuchtig, aber geschmacklich sauber\" hilft es perfekt.",
+      "formulaRef": "F-14",
+      "showWhen": ["recipe-editor", "diagnosis"]
+    },
+    {
+      "id": "immersion",
+      "term": "Immersion",
+      "level": "advanced",
+      "short": "Der Kaffee liegt im stehenden Wasser (AeroPress, Cold Brew).",
+      "long": "Die Konzentration im Wasser steigt, das Gefälle sinkt, die Extraktion läuft aus. Nach etwa 2 Minuten passiert wenig Zusätzliches — deshalb sind Immersionsverfahren fehlerverzeihend. Gegenstück: Perkolation.",
+      "seeAlso": ["percolation"]
+    },
+    {
+      "id": "percolation",
+      "term": "Perkolation",
+      "level": "advanced",
+      "short": "Frisches Wasser strömt laufend durch den Kaffee (V60, Espresso).",
+      "long": "Effizienter als Immersion, weil das Wasser nie gesättigt wird — aber anfälliger für Kanalbildung, weil sich Wege bilden können.",
+      "seeAlso": ["immersion", "channeling"]
+    },
+    {
+      "id": "intensity",
+      "term": "Kaffeeintensität",
+      "level": "basis",
+      "unit": "%",
+      "short": "Wie viel Kaffee im Getränk steckt — vergleichbar über alle Getränke.",
+      "long": "Anteil gelöster Kaffeefeststoffe an der Gesamtmasse. Espresso 10 %, Cortado 3,8 %, Americano 2,3 %, Flat White 2,3 %, Filterkaffee 1,4 %, Latte 1,3 %. Überraschend: Ein Flat White ist kaum stärker als ein Filterkaffee — er wirkt nur so.",
+      "isOwnTerm": true,
+      "formulaRef": "F-40",
+      "showWhen": ["drink-picker"]
+    },
+    {
+      "id": "roastlevel",
+      "term": "Röstgrad",
+      "level": "basis",
+      "short": "Wie dunkel geröstet wurde. Bestimmt fast alle Startwerte.",
+      "long": "Hell: mehr Säure und Fruchtaroma, dichter, schwerer zu extrahieren — braucht mehr Wasser, mehr Hitze, feineren Mahlgrad. Dunkel: mehr Bitterkeit und Röstaroma, porös, löst sich leicht und kippt schnell — braucht weniger von allem.",
+      "showWhen": ["bean-detail", "starting-point"]
+    },
+    {
+      "id": "process",
+      "term": "Aufbereitung",
+      "level": "advanced",
+      "short": "Wie die Kaffeekirsche auf der Farm verarbeitet wurde.",
+      "long": "Washed (gewaschen): klar, säurebetont, zeigt die Herkunft. Natural (ganze Kirsche getrocknet): fruchtig, schwer, süß. Honey: dazwischen. Der zweitgrößte Geschmackshebel nach der Röstung.",
+      "showWhen": ["bean-detail"]
+    },
+    {
+      "id": "variety",
+      "term": "Varietät",
+      "level": "advanced",
+      "short": "Die botanische Sorte — wie Rebsorten beim Wein.",
+      "long": "Bourbon, Caturra, SL28, Geisha und andere. Bestimmt zusammen mit der Anbauhöhe die Obergrenze dessen, was der Kaffee kann.",
+      "showWhen": ["bean-detail"]
+    },
+    {
+      "id": "astringency",
+      "term": "Adstringenz",
+      "level": "basis",
+      "short": "Trockenes, pelziges Gefühl im Mund — wie nach starkem schwarzem Tee.",
+      "long": "Kein Geschmack, sondern ein Tastgefühl. Verursacht durch Gerbstoffe, die sich erst spät lösen. Sicheres Zeichen für Überextraktion. Nicht mit Bitterkeit verwechseln: Bitter schmeckt man, adstringierend fühlt man.",
+      "showWhen": ["tasting"]
+    },
+    {
+      "id": "flow-law",
+      "term": "Durchflussgesetz",
+      "level": "expert",
+      "short": "Doppelt so grob gemahlen = viermal so schneller Durchfluss.",
+      "long": "Folgt aus zwei physikalischen Gesetzen für Flüssigkeiten in Schüttbetten (Darcy 1856, Kozeny-Carman). Praktischer Nutzen: Aus einer Zeitabweichung lässt sich die nötige Mahlgradkorrektur ausrechnen. Shot lief 35 s statt 28 s → Wurzel aus 35/28 = 1,12 → 12 % gröber → bei einer typischen Mühle etwa 3 Klicks.",
+      "formulaRef": "F-22",
+      "showWhen": ["diagnosis"],
+      "productNote": "Macht aus „mahl mal etwas gröber\" eine konkrete Zahl plus überprüfbare Zeitvorhersage."
+    },
+    {
+      "id": "flash-chill",
+      "term": "Flash Chill / Japanese Iced",
+      "level": "advanced",
+      "short": "Heiß auf Eis brühen — kalter Kaffee, der nach heißem schmeckt.",
+      "long": "Ein Teil des Brühwassers liegt als Eis in der Kanne. Der Kaffee wird im Moment des Auftreffens schockgekühlt, die flüchtigen Aromen bleiben eingefangen statt zu verfliegen. Anders als Cold Brew bleibt die Säurestruktur vollständig erhalten — die richtige Wahl für helle, fruchtige Bohnen.",
+      "formulaRef": "F-17",
+      "showWhen": ["iced-mode"]
+    },
+    {
+      "id": "cold-brew",
+      "term": "Cold Brew",
+      "level": "basis",
+      "short": "Kalt angesetzt, 12–24 Stunden gezogen. Mild und schokoladig.",
+      "long": "Kaltes Wasser löst deutlich weniger Säure — Cold Brew hat etwa 60–70 % weniger Säure als heiß gebrühter Kaffee derselben Bohne. Mild, aber nicht koffeinarm: Koffein wird über die lange Zeit fast vollständig extrahiert.",
+      "showWhen": ["iced-mode"]
+    }
+  ]
+}

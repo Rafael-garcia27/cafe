@@ -1,0 +1,187 @@
+{
+  "version": "1.0.0",
+  "source": "kb/03-variablen-referenz.md",
+
+  "sensitivityScale": { "***": 3, "**": 2, "*": 1, "-": 0 },
+
+  "variables": [
+    { "id": "doseG", "label": "Dosis", "unit": "g", "type": "number",
+      "scope": ["espresso","v60","aeropress"],
+      "ranges": { "espresso": [7,25], "v60": [10,60], "aeropress": [10,30] },
+      "defaults": { "espresso": 18, "v60": 18, "aeropress": 16 },
+      "step": { "espresso": 0.1, "v60": 0.5, "aeropress": 0.5 },
+      "sensitivity": 1, "priority": 4, "isControl": true,
+      "tooltip": "Trockener Kaffee. Immer wiegen — Volumen schwankt je nach Röstgrad um bis zu 20 %." },
+
+    { "id": "yieldG", "label": "Ausbringung", "unit": "g", "type": "number",
+      "scope": ["espresso"], "ranges": { "espresso": [10,90] }, "defaults": { "espresso": 36 },
+      "step": { "espresso": 0.5 }, "sensitivity": 2, "priority": 2, "isControl": true,
+      "derivedFrom": "doseG * ratio", "formulaRef": "F-03",
+      "tooltip": "Masse im Glas, nicht Volumen. Crema mitwiegen." },
+
+    { "id": "waterG", "label": "Wasser", "unit": "g", "type": "number",
+      "scope": ["v60","aeropress"], "ranges": { "v60": [150,900], "aeropress": [60,250] },
+      "defaults": { "v60": 300, "aeropress": 240 }, "step": { "v60": 5, "aeropress": 5 },
+      "sensitivity": 2, "priority": 2, "isControl": true,
+      "warnings": [{ "when": "method === 'aeropress' && value > 250", "message": "Kammer fasst max. ~250 g — Bypass-Modus nutzen" }] },
+
+    { "id": "ratio", "label": "Verhältnis", "unit": "1:n", "type": "number",
+      "scope": ["espresso","v60","aeropress"],
+      "ranges": { "espresso": [1.0,5.0], "v60": [12,20], "aeropress": [6,18] },
+      "defaults": { "espresso": 2.0, "v60": 16.7, "aeropress": 15 },
+      "step": { "espresso": 0.1, "v60": 0.1, "aeropress": 0.5 },
+      "sensitivity": 2, "priority": 2, "isControl": true,
+      "tooltip": "Steuert die STÄRKE, nicht die Extraktion.",
+      "warnings": [{ "when": "method === 'v60' && value >= 18", "message": "Bei 1:18 verzeiht das Rezept keine niedrige Extraktion — unter 19 % EY landest du unter dem Golden-Cup-Minimum (F-08)" }] },
+
+    { "id": "grindSetting", "label": "Mahlgrad", "unit": "Schritte", "type": "grinder-relative",
+      "scope": ["espresso","v60","aeropress"],
+      "sensitivity": 3, "priority": 1, "isControl": true,
+      "displayDual": true,
+      "tooltip": "Die stärkste Einzelvariable. Steuert WIE VIEL extrahiert wird.",
+      "note": "Immer zwei Zahlen anzeigen: mühlenspezifische Einstellung UND abgeleitete Mikrometer." },
+
+    { "id": "timeS", "label": "Zeit", "unit": "s", "type": "number",
+      "scope": ["espresso","v60","aeropress"],
+      "ranges": { "espresso": [10,60], "v60": [90,360], "aeropress": [30,600] },
+      "sensitivity": 2, "priority": null, "isControl": false, "isResult": true,
+      "tooltip": "Ergebnis, keine Stellgröße. Man beobachtet sie und korrigiert über den Mahlgrad (F-22).",
+      "espressoConvention": "ab Pumpenstart, inkl. Präinfusion" },
+
+    { "id": "waterTempC", "label": "Wassertemperatur", "unit": "°C", "type": "number",
+      "scope": ["espresso","v60","aeropress"],
+      "ranges": { "espresso": [85,100], "v60": [80,100], "aeropress": [70,100] },
+      "defaults": { "espresso": 93, "v60": 94, "aeropress": 92 },
+      "step": { "espresso": 0.5, "v60": 1, "aeropress": 1 },
+      "sensitivity": 1, "priority": 3, "isControl": true,
+      "effectPerDegree": 0.25,
+      "tooltip": "±1 °C ≈ ∓0,25 Prozentpunkte EY. Feinwerkzeug nach Mahlgrad und Ratio." },
+
+    { "id": "pressureBar", "label": "Druck", "unit": "bar", "type": "number",
+      "scope": ["espresso"], "ranges": { "espresso": [3,12] }, "defaults": { "espresso": 9 },
+      "step": { "espresso": 0.5 }, "sensitivity": 1, "priority": 5, "isControl": true,
+      "warnings": [{ "when": "value > 9.5", "message": "Über 9 bar steigt die Kanalisierungsneigung — die Extraktion kann sinken" }] },
+
+    { "id": "preinfusionS", "label": "Präinfusion", "unit": "s", "type": "number",
+      "scope": ["espresso"], "ranges": { "espresso": [0,20] }, "defaults": { "espresso": 5 },
+      "step": { "espresso": 1 }, "sensitivity": 1, "priority": 5, "isControl": true,
+      "tooltip": "5 s sind fast immer eine Verbesserung. Bei Bohnen unter 8 Tagen bis 10 s." },
+
+    { "id": "bloomWaterG", "label": "Bloom-Wasser", "unit": "g", "type": "number",
+      "scope": ["v60"], "ranges": { "v60": [0,150] }, "derivedFrom": "doseG * bloomRatio",
+      "defaults": { "v60": 45 }, "sensitivity": 1, "priority": 5, "isControl": true },
+
+    { "id": "bloomTimeS", "label": "Bloom-Dauer", "unit": "s", "type": "number",
+      "scope": ["v60","aeropress"], "ranges": { "v60": [0,60] }, "defaults": { "v60": 40 },
+      "step": { "v60": 5 }, "sensitivity": 1, "priority": 5, "isControl": true },
+
+    { "id": "pourCount", "label": "Anzahl Güsse", "unit": "-", "type": "integer",
+      "scope": ["v60"], "ranges": { "v60": [1,8] }, "defaults": { "v60": 3 },
+      "sensitivity": 2, "priority": 4, "isControl": true,
+      "tooltip": "Mehr Güsse = mehr Agitation = höhere Extraktion." },
+
+    { "id": "drawdownS", "label": "Drawdown", "unit": "s", "type": "number",
+      "scope": ["v60"], "ranges": { "v60": [10,180] }, "isControl": false, "isResult": true,
+      "sensitivity": 0, "tooltip": "Vom Ende des letzten Gusses bis zum letzten Tropfen. Der beste V60-Diagnosewert.",
+      "classes": { "fast": [0,15], "normal": [15,30], "slow": [30,45], "stalled": [45,100] },
+      "classUnit": "% der Gesamtzeit" },
+
+    { "id": "steepS", "label": "Ziehzeit", "unit": "s", "type": "number",
+      "scope": ["aeropress"], "ranges": { "aeropress": [30,600] }, "defaults": { "aeropress": 90 },
+      "step": { "aeropress": 5 }, "sensitivity": 1, "priority": 3, "isControl": true,
+      "warnings": [{ "when": "value > 90 && !inverted", "message": "Ab 90 s Ziehzeit invertiert arbeiten — sonst tropft unkontrolliert durch" }] },
+
+    { "id": "stirCount", "label": "Rührvorgänge", "unit": "-", "type": "integer",
+      "scope": ["aeropress"], "ranges": { "aeropress": [0,10] }, "defaults": { "aeropress": 2 },
+      "sensitivity": 1, "priority": 1, "isControl": true,
+      "tooltip": "2x Rühren wirkt etwa wie 30-45 s mehr Ziehzeit — bei gleichmäßigerer Extraktion.",
+      "note": "Bei der AeroPress vor dem Mahlgrad in der Korrekturkaskade (D-26)." },
+
+    { "id": "bypassG", "label": "Bypass-Wasser", "unit": "g", "type": "number",
+      "scope": ["aeropress"], "ranges": { "aeropress": [0,250] }, "defaults": { "aeropress": 0 },
+      "step": { "aeropress": 5 }, "sensitivity": 0, "priority": null, "isControl": true,
+      "formulaRef": "F-15",
+      "tooltip": "Ändert die Stärke, NIE die Extraktion. Kein Mittel gegen Bitterkeit." },
+
+    { "id": "inverted", "label": "Invertiert", "unit": "-", "type": "boolean",
+      "scope": ["aeropress"], "defaults": { "aeropress": true }, "sensitivity": 0, "isControl": true },
+
+    { "id": "filterType", "label": "Filter", "unit": "-", "type": "enum",
+      "scope": ["aeropress","v60"],
+      "options": ["paper","paper-double","metal-fine","metal-coarse","prismo"],
+      "defaults": { "aeropress": "paper", "v60": "paper" },
+      "sensitivity": 1, "priority": 5, "isControl": true },
+
+    { "id": "milkStartG", "label": "Milch (einfüllen)", "unit": "g", "type": "number",
+      "scope": ["milk"], "ranges": { "milk": [30,400] }, "defaults": { "milk": 100 },
+      "sensitivity": 2, "formulaRef": "F-41" },
+    { "id": "milkFinalG", "label": "Milch (final)", "unit": "g", "type": "number",
+      "scope": ["milk"], "isControl": false, "derivedFrom": "milkStartG * (1 + steamCondensate)", "formulaRef": "F-19" },
+    { "id": "milkStartTempC", "label": "Milch-Starttemperatur", "unit": "°C", "type": "number",
+      "scope": ["milk"], "ranges": { "milk": [2,10] }, "defaults": { "milk": 4 }, "sensitivity": 0 },
+    { "id": "milkTargetTempC", "label": "Milch-Zieltemperatur", "unit": "°C", "type": "number",
+      "scope": ["milk"], "ranges": { "milk": [50,70] }, "defaults": { "milk": 60, "oat-barista": 57 },
+      "sensitivity": 2,
+      "warnings": [
+        { "when": "value > 68", "message": "Über 70 °C denaturieren die Molkenproteine irreversibel", "severity": "error" },
+        { "when": "value > 62 && milkType.startsWith('oat')", "message": "Hafermilch wird über 62 °C dünn", "severity": "warning" }
+      ],
+      "sweetSpot": [55, 62] },
+    { "id": "foamClass", "label": "Schaumklasse", "unit": "-", "type": "enum",
+      "scope": ["milk"], "options": ["flat","microfoam-thin","microfoam-standard","airy","stiff"],
+      "defaults": { "milk": "microfoam-standard" }, "sensitivity": 2,
+      "overrunMap": { "flat": 3, "microfoam-thin": 8, "microfoam-standard": 15, "airy": 65, "stiff": 90 } },
+    { "id": "milkType", "label": "Milchsorte", "unit": "-", "type": "enum",
+      "scope": ["milk"],
+      "options": ["whole","semi","skim","lactose-free","oat-barista","soy-barista","almond-barista","pea","coconut"],
+      "defaults": { "milk": "whole" }, "sensitivity": 2 },
+
+    { "id": "tdsMgL", "label": "Wasser-TDS", "unit": "mg/L", "type": "number",
+      "scope": ["water"], "ranges": { "water": [0,600] }, "target": 150, "acceptable": [75,250], "sensitivity": 2 },
+    { "id": "ghMgL", "label": "Gesamthärte", "unit": "mg/L CaCO₃", "type": "number",
+      "scope": ["water"], "ranges": { "water": [0,600] }, "target": 68, "acceptable": [17,85], "sensitivity": 2,
+      "warnings": [
+        { "when": "value > 120", "message": "Hart — Kaffee wirkt schwer und kreidig" },
+        { "when": "value < 30", "message": "Zu weich — Kaffee wirkt dünn" }
+      ] },
+    { "id": "khMgL", "label": "Karbonathärte", "unit": "mg/L CaCO₃", "type": "number",
+      "scope": ["water"], "ranges": { "water": [0,400] }, "target": 40, "acceptable": [20,60], "sensitivity": 3,
+      "warnings": [
+        { "when": "value > 80", "message": "Hohe Alkalinität — Kaffee schmeckt flach, auch bei perfekter Extraktion", "severity": "error" },
+        { "when": "value < 30", "message": "Geschmacklich fein, aber bei Metallboilern korrosiv", "severity": "info" }
+      ] },
+    { "id": "ph", "label": "pH", "unit": "-", "type": "number",
+      "scope": ["water"], "ranges": { "water": [4,10] }, "target": 7.0, "acceptable": [6.5,7.5], "sensitivity": 1 },
+    { "id": "chlorineMgL", "label": "Chlor", "unit": "mg/L", "type": "number",
+      "scope": ["water"], "target": 0, "acceptable": [0,0], "sensitivity": 3,
+      "warnings": [{ "when": "value > 0", "message": "Chlor zerstört die Aromatik vollständig — Aktivkohlefilter nötig", "severity": "error" }] },
+
+    { "id": "tdsPct", "label": "TDS", "unit": "%", "type": "number",
+      "scope": ["measurement"], "ranges": { "espresso": [5,15], "filter": [0.5,2.5] },
+      "resolution": 0.01, "required": false, "sensitivity": 0 },
+    { "id": "extractionYield", "label": "Extraktionsausbeute", "unit": "%", "type": "number",
+      "scope": ["measurement"], "isControl": false, "derivedFrom": "tdsPct * beverageG / doseG", "formulaRef": "F-06",
+      "target": [18,22], "hardMax": 30, "implausibleAbove": 26 },
+    { "id": "rating", "label": "Bewertung", "unit": "1-5", "type": "integer",
+      "scope": ["tasting"], "ranges": { "tasting": [1,5] }, "required": true }
+  ],
+
+  "interactions": [
+    { "change": "grindSetting finer",   "sideEffects": ["timeS ↑", "ey ↑", "channelingRisk ↑"], "compensation": "ggf. doseG -0,5 g" },
+    { "change": "doseG ↑ (ratio fix)",  "sideEffects": ["yieldG ↑", "timeS ↑", "headspace ↓"],  "compensation": "grindSetting ~1 Schritt gröber" },
+    { "change": "ratio ↑",              "sideEffects": ["timeS ↑", "tds ↓", "ey ↑"],            "compensation": "keine — bewusste Doppelwirkung" },
+    { "change": "waterTempC ↑",         "sideEffects": ["ey ↑", "flowRate ↑"],                  "compensation": "vernachlässigbar" },
+    { "change": "bean +10 Tage",        "sideEffects": ["resistance ↓", "timeS ↓", "ey ↓"],     "compensation": "~1 Schritt feiner (F-32)" },
+    { "change": "basket 58 → 54 mm",    "sideEffects": ["doseDensity ↑"],                       "compensation": "Dosis über F-25 skalieren" },
+    { "change": "filterBrand",          "sideEffects": ["drawdown ±20 %"],                       "compensation": "Mahlgrad nachziehen" },
+    { "change": "milkTargetTempC ↑",    "sideEffects": ["Süße ↓ über 62 °C", "Schaum instabil > 68 °C"], "compensation": "Zieltemperatur senken" },
+    { "change": "gh ↑",                 "sideEffects": ["ey ↑"],                                 "compensation": "grindSetting 1 Schritt gröber" },
+    { "change": "kh ↑",                 "sideEffects": ["wahrgenommene Säure ↓", "ey unverändert"], "compensation": "NICHT über Mahlgrad korrigieren — Wasser ändern" }
+  ],
+
+  "displayRounding": {
+    "doseG": 1, "yieldG": 1, "waterG": 0, "ratio": 1, "ratioBelow3": 2,
+    "timeS": "m:ss", "waterTempC": 0, "tdsPct": 2, "extractionYield": 1,
+    "flowRate": 2, "caffeineMg": "range-5", "milkG": 0, "costEur": 2
+  }
+}

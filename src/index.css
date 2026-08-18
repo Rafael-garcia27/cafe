@@ -1,0 +1,119 @@
+@import 'tailwindcss';
+
+/* ── Design-Tokens ──────────────────────────────────────────────────────
+   Dark zuerst (Solution Design §8.6): gebrüht wird morgens in dunklen
+   Küchen. Die Werte hängen an CSS-Variablen, damit der Hell-Modus zur
+   Laufzeit umschalten kann, ohne dass Tailwind neu gebaut werden muss. */
+
+@theme inline {
+  --color-paper: var(--c-paper);
+  --color-card: var(--c-card);
+  --color-raised: var(--c-raised);
+  --color-line: var(--c-line);
+  --color-ink: var(--c-ink);
+  --color-mute: var(--c-mute);
+  --color-faint: var(--c-faint);
+  --color-crema: var(--c-crema);
+  --color-crema-dim: var(--c-crema-dim);
+  --color-ok: var(--c-ok);
+  --color-warn: var(--c-warn);
+  --color-bad: var(--c-bad);
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui,
+    sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', monospace;
+}
+
+/* Dunkel (Standard) */
+:root {
+  --c-paper: #171310;
+  --c-card: #211b17;
+  --c-raised: #2c241e;
+  --c-line: #382e26;
+  --c-ink: #f5efe9;
+  --c-mute: #a3968b;
+  --c-faint: #6d5f55;
+  --c-crema: #e0a86a;
+  --c-crema-dim: #8a6338;
+  --c-ok: #7fb069;
+  --c-warn: #e0a86a;
+  --c-bad: #d1584f;
+
+  color-scheme: dark;
+}
+
+/* Hell — nur wenn explizit gewählt */
+html.light {
+  --c-paper: #faf7f4;
+  --c-card: #ffffff;
+  --c-raised: #f2ece6;
+  --c-line: #e2d8ce;
+  --c-ink: #1f1813;
+  --c-mute: #6b5d52;
+  --c-faint: #9c8d80;
+  --c-crema: #a9601c;
+  --c-crema-dim: #d9b48a;
+  --c-ok: #4a7c3f;
+  --c-warn: #a9601c;
+  --c-bad: #b03a31;
+
+  color-scheme: light;
+}
+
+/* ── Basis ──────────────────────────────────────────────────────────── */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--c-paper);
+  color: var(--c-ink);
+  font-family: var(--font-sans);
+  /* Gummiband-Scrollen des ganzen Dokuments unterbinden — sonst wirkt die
+     PWA im Standalone-Modus wie eine Webseite, nicht wie eine App. */
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Auto-Zoom beim Fokussieren verhindern: iOS zoomt bei < 16px. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* Zahlen in Tabellen und Timern dürfen nicht springen. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* Safe Areas des iPhone 12 */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.h-safe-bottom {
+  height: env(safe-area-inset-bottom);
+}
+
+/* Bewegung reduzieren respektieren */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

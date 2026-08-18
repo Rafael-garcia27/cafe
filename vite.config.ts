@@ -1,0 +1,54 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
+import { fileURLToPath, URL } from 'node:url'
+
+// Repo-Name für GitHub Pages. Bei eigener Domain auf '/' setzen.
+const BASE = process.env.DEPLOY_BASE ?? '/'
+
+export default defineConfig({
+  base: BASE,
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@domain': fileURLToPath(new URL('./types/domain.ts', import.meta.url)),
+      '@data': fileURLToPath(new URL('./data', import.meta.url)),
+    },
+  },
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'Dialed — Barista',
+        short_name: 'Dialed',
+        description: 'Persönliches Dial-in-Werkzeug für Espresso, V60 und AeroPress',
+        lang: 'de',
+        theme_color: '#171310',
+        background_color: '#171310',
+        display: 'standalone',
+        orientation: 'portrait',
+        start_url: BASE,
+        scope: BASE,
+        icons: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Die App macht keine Netzwerkanfragen zur Laufzeit —
+        // alles wird beim ersten Laden gecacht.
+        navigateFallback: `${BASE}index.html`,
+      },
+    }),
+  ],
+  build: {
+    target: 'es2022',
+    sourcemap: false,
+  },
+})

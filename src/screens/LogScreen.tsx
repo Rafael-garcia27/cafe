@@ -1,0 +1,211 @@
+/**
+ * Logbuch.
+ *
+ * Zeigt nicht nur, was war, sondern auch die damals gegebene Empfehlung —
+ * und ob sie eingetroffen ist. Das macht die App überprüfbar.
+ */
+import { useState } from 'react'
+import type { Route } from '@/router'
+import { useStore } from '@/store'
+import type { BrewMethod } from '@domain'
+import { METHOD_LABEL, DEFECT_LABEL, CHARACTER_LABEL, FLOW_LABEL } from '@/labels'
+import { Screen, Header, Section, Card, Empty, Chip, Stat, Button, fmtTime } from '@/components/ui'
+
+interface Props {
+  route: Route
+  navigate: (r: Route) => void
+  back: () => void
+}
+
+export default function LogScreen({ route, navigate, back }: Props) {
+  const brews = useStore((s) => s.brews)
+  const beans = useStore((s) => s.beans)
+  const [filterMethod, setFilterMethod] = useState<BrewMethod | 'all'>('all')
+  const [filterBean, setFilterBean] = useState<string | 'all'>('all')
+
+  const detail = route.detail === 'brew' ? brews.find((b) => b.id === route.id) : undefined
+  if (detail) return <BrewDetail brewId={detail.id} onBack={back} />
+
+  const filtered = brews.filter(
+    (b) =>
+      (filterMethod === 'all' || b.method === filterMethod) &&
+      (filterBean === 'all' || b.beanId === filterBean),
+  )
+
+  const beanName = (id: string) => beans.find((b) => b.id === id)?.name ?? 'Unbekannt'
+
+  return (
+    <Screen>
+      <Header title="Logbuch" subtitle={`${brews.length} Durchgänge`} />
+
+      {brews.length === 0 ? (
+        <Empty
+          title="Noch nichts protokolliert"
+          body="Jeder Durchgang macht die Empfehlungen präziser. Nach drei gut bewerteten Tassen pro Bohne kennt die App deinen Geschmack."
+          action={<Button onClick={() => navigate({ tab: 'brew' })}>Ersten Kaffee brühen</Button>}
+        />
+      ) : (
+        <>
+          <Section>
+            <div className="flex flex-wrap gap-2">
+              <Chip label="Alle" active={filterMethod === 'all'} onClick={() => setFilterMethod('all')} />
+              {(['espresso', 'v60', 'aeropress'] as BrewMethod[]).map((m) => (
+                <Chip
+                  key={m}
+                  label={METHOD_LABEL[m]}
+                  active={filterMethod === m}
+                  onClick={() => setFilterMethod(filterMethod === m ? 'all' : m)}
+                />
+              ))}
+            </div>
+            {beans.length > 1 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Chip label="Alle Bohnen" active={filterBean === 'all'} onClick={() => setFilterBean('all')} />
+                {beans.map((b) => (
+                  <Chip
+                    key={b.id}
+                    label={b.name}
+                    active={filterBean === b.id}
+                    onClick={() => setFilterBean(filterBean === b.id ? 'all' : b.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </Section>
+
+          <Section title={`${filtered.length} Einträge`}>
+            <div className="space-y-2">
+              {filtered.map((b) => (
+                <Card key={b.id} onClick={() => navigate({ tab: 'log', detail: 'brew', id: b.id })}>
+                  <div className="flex items-start gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate font-medium">{beanName(b.beanId)}</p>
+                        {b.isBest && <span className="shrink-0 text-[11px] text-crema">REFERENZ</span>}
+                      </div>
+                      <p className="mt-0.5 text-[13px] text-mute">
+                        {METHOD_LABEL[b.method]} · {b.actual.doseG} g →{' '}
+                        {b.actual.yieldG ? `${b.actual.yieldG} g` : `${b.actual.waterG} g`} ·{' '}
+                        {fmtTime(b.actual.timeS)}
+                      </p>
+                      <p className="mt-1 text-[12px] text-faint">
+                        {new Date(b.createdAt).toLocaleDateString('de-DE', {
+                          day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+                        })}
+                        {b.tasting?.defects.length
+                          ? ` · ${b.tasting.defects.map((d) => DEFECT_LABEL[d]).join(', ')}`
+                          : ''}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-[13px] text-crema">
+                      {'★'.repeat(b.tasting?.rating ?? 0)}
+                    </span>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </Section>
+        </>
+      )}
+    </Screen>
+  )
+}
+
+function BrewDetail({ brewId, onBack }: { brewId: string; onBack: () => void }) {
+  const brew = useStore((s) => s.brews.find((b) => b.id === brewId))
+  const bean = useStore((s) => s.beans.find((b) => b.id === brew?.beanId))
+  const setBest = useStore((s) => s.setBestBrew)
+  const del = useStore((s) => s.deleteBrew)
+  if (!brew) return null
+
+  const a = brew.actual
+  return (
+    <Screen>
+      <Header
+        title={bean?.name ?? 'Durchgang'}
+        subtitle={`${METHOD_LABEL[brew.method]} · ${new Date(brew.createdAt).toLocaleString('de-DE')}`}
+        onBack={onBack}
+      />
+
+      <Section title="Parameter">
+        <Card>
+          <div className="grid grid-cols-2 gap-4">
+            <Stat label="Dosis" value={a.doseG.toFixed(1)} unit="g" />
+            {a.yieldG !== undefined && <Stat label="Ausbringung" value={a.yieldG.toFixed(1)} unit="g" />}
+            {a.waterG !== undefined && <Stat label="Wasser" value={a.waterG} unit="g" />}
+            <Stat label="Zeit" value={fmtTime(a.timeS)} />
+            <Stat
+              label="Verhältnis"
+              value={`1:${((a.yieldG ?? a.waterG ?? 0) / a.doseG).toFixed(1)}`}
+            />
+            {a.waterTempC && <Stat label="Temperatur" value={a.waterTempC} unit="°C" />}
+            {a.grindSetting && <Stat label="Mahlgrad" value={a.grindSetting.value} />}
+            {a.yieldG && (
+              <Stat label="Flussrate" value={(a.yieldG / a.timeS).toFixed(2)} unit="g/s" />
+            )}
+          </div>
+        </Card>
+      </Section>
+
+      {brew.observations && Object.values(brew.observations).some(Boolean) && (
+        <Section title="Beobachtungen">
+          <Card>
+            <div className="flex flex-wrap gap-2">
+              {brew.observations.flowState && (
+                <Chip label={FLOW_LABEL[brew.observations.flowState]} active tone={brew.observations.flowState === 'normal' ? 'good' : 'bad'} />
+              )}
+              {brew.observations.drawdownS && <Chip label={`Drawdown ${brew.observations.drawdownS}s`} active />}
+            </div>
+          </Card>
+        </Section>
+      )}
+
+      {brew.tasting && (
+        <Section title="Verkostung">
+          <Card>
+            <p className="text-[20px] text-crema">{'★'.repeat(brew.tasting.rating)}</p>
+            {brew.tasting.defects.length > 0 && (
+              <div className="mt-3">
+                <p className="text-[12px] text-mute">Was störte</p>
+                <div className="mt-1.5 flex flex-wrap gap-2">
+                  {brew.tasting.defects.map((d) => (
+                    <Chip key={d} label={DEFECT_LABEL[d]} active tone="bad" />
+                  ))}
+                </div>
+              </div>
+            )}
+            {brew.tasting.characters.length > 0 && (
+              <div className="mt-3">
+                <p className="text-[12px] text-mute">Charakter</p>
+                <div className="mt-1.5 flex flex-wrap gap-2">
+                  {brew.tasting.characters.map((c) => (
+                    <Chip key={c} label={CHARACTER_LABEL[c] ?? c} active />
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        </Section>
+      )}
+
+      <Section>
+        <div className="space-y-2">
+          {!brew.isBest && (
+            <Button variant="secondary" className="w-full" onClick={() => setBest(brew.id)}>
+              Als Referenz für diese Bohne setzen
+            </Button>
+          )}
+          <Button
+            variant="danger"
+            className="w-full"
+            onClick={() => {
+              if (confirm('Diesen Durchgang löschen?')) { del(brew.id); onBack() }
+            }}
+          >
+            Löschen
+          </Button>
+        </div>
+      </Section>
+    </Screen>
+  )
+}

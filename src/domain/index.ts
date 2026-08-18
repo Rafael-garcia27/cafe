@@ -1,0 +1,165 @@
+/**
+ * Domänen-Layer der App.
+ *
+ * Basis ist `types/domain.ts` — der fachliche Vertrag der Wissensbasis.
+ * Hier kommen nur die Typen dazu, die die App zusätzlich braucht:
+ * App-Zustand, Einstellungen und die beiden Lernmodelle.
+ */
+export * from '@domain'
+
+import type {
+  Bean,
+  Bag,
+  Brew,
+  Grinder,
+  Water,
+  BrewMethod,
+  BrewActual,
+  EquipmentSet,
+} from '@domain'
+
+// ── Einstellungen ─────────────────────────────────────────────────────
+
+export type ExpertLevel = 'basis' | 'advanced' | 'expert'
+
+export interface Settings {
+  activeSetupId?: string
+  activeGrinderId?: string
+  activeWaterId?: string
+  activeBasketMm: 51 | 53 | 54 | 58
+  expertLevel: ExpertLevel
+  /** TDS/EY-Felder anzeigen. Standard aus — die meisten haben kein Refraktometer. */
+  showMeasurements: boolean
+  theme: 'dark' | 'light'
+  /** Personalisierbarer Zielkorridor (Briefing B1) */
+  targetEy: [number, number]
+  targetEySource: 'standard' | 'learned'
+  lastBackupAt?: string
+  lastBeanId?: string
+  lastMethod?: BrewMethod
+  onboardingDone: boolean
+}
+
+export const DEFAULT_SETTINGS: Settings = {
+  activeBasketMm: 58,
+  expertLevel: 'basis',
+  showMeasurements: false,
+  theme: 'dark',
+  targetEy: [18, 22],
+  targetEySource: 'standard',
+  onboardingDone: false,
+}
+
+// ── Lernmodelle (Solution Design §6.3) ────────────────────────────────
+
+/** „Wie ich brühe" — systematische Abweichung und Streuung */
+export interface ProcessModel {
+  /** Ist-Zeit minus vorhergesagte Zeit, gleitender Median (s) */
+  timeBiasS: number
+  /** Streuung der Shotzeiten bei gleichem Rezept (s) */
+  consistencyS: number
+  sampleSize: number
+}
+
+/** „Was mir schmeckt" — persönliche Zielabweichung vom Standard */
+export interface PreferenceModel {
+  ratioBias: number
+  tempBiasC: number
+  grindBiasSteps: number
+  /** 0–1, wächst mit der Datenmenge */
+  confidence: number
+  sampleSize: number
+  /** Nutzertext, erst ab LEARN_THRESHOLDS.biasStatement */
+  statement?: string
+}
+
+export interface PerBeanModel {
+  bestBrewId: string
+  medianParams: Partial<BrewActual>
+  medianGrindSteps?: number
+  /** Tage nach Röstung, an denen die Referenz entstand — für die Frische-Drift */
+  refDaysOffRoast?: number
+  sampleSize: number
+  avgRating: number
+}
+
+export interface LearnedModels {
+  process: Partial<Record<BrewMethod, ProcessModel>>
+  preference: Partial<Record<BrewMethod, PreferenceModel>>
+  /** Schlüssel: `${beanId}:${method}` */
+  perBean: Record<string, PerBeanModel>
+  computedAt?: string
+}
+
+export const EMPTY_LEARNED: LearnedModels = {
+  process: {},
+  preference: {},
+  perBean: {},
+}
+
+// ── Gesamtzustand ─────────────────────────────────────────────────────
+
+export interface AppState {
+  schemaVersion: number
+  beans: Bean[]
+  bags: Bag[]
+  brews: Brew[]
+  grinders: Grinder[]
+  setups: EquipmentSet[]
+  waters: Water[]
+  settings: Settings
+  learned: LearnedModels
+}
+
+export function emptyState(schemaVersion: number): AppState {
+  return {
+    schemaVersion,
+    beans: [],
+    bags: [],
+    brews: [],
+    grinders: [],
+    setups: [],
+    waters: [],
+    settings: { ...DEFAULT_SETTINGS },
+    learned: { ...EMPTY_LEARNED },
+  }
+}
+
+// ── Hilfstypen für die Engine ─────────────────────────────────────────
+
+/** Alles, was die Engine für eine Entscheidung braucht. Rein lesend. */
+export interface EngineContext {
+  bean: Bean
+  bag?: Bag
+  method: BrewMethod
+  grinder?: Grinder
+  water?: Water
+  settings: Settings
+  learned: LearnedModels
+  /** Historie NUR dieser Bohne+Methode, neueste zuerst */
+  beanHistory: Brew[]
+  /** Historie dieser Methode über alle Bohnen, neueste zuerst */
+  methodHistory: Brew[]
+  /** Alle bekannten Bohnen — für den Transfer von ähnlichen Bohnen */
+  allBeans: Bean[]
+  today: Date
+}
+
+export function beanKey(beanId: string, method: BrewMethod): string {
+  return `${beanId}:${method}`
+}
+
+/** Tage seit Röstung. `null`, wenn kein Röstdatum erfasst ist. */
+export function daysOffRoast(bag: Bag | undefined, today: Date): number | null {
+  if (!bag?.roastDate) return null
+  // Bei eingefrorener Ware hält die Frische-Uhr an (kb/05 §5.3).
+  const end = bag.storage === 'frozen' && bag.openedDate ? new Date(bag.openedDate) : today
+  const start = new Date(bag.roastDate)
+  const ms = end.getTime() - start.getTime()
+  return Math.max(0, Math.floor(ms / 86_400_000))
+}
+
+export function daysSince(iso: string | undefined, today: Date): number | null {
+  if (!iso) return null
+  return Math.max(0, Math.floor((today.getTime() - new Date(iso).getTime()) / 86_400_000))
+}

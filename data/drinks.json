@@ -1,0 +1,331 @@
+{
+  "version": "1.0.0",
+  "source": "kb/12-getraenke.md, kb/13-iced-und-cold.md",
+  "referenceBase": {
+    "espressoDoseG": 18,
+    "espressoYieldG": 36,
+    "espressoTdsPct": 10.0,
+    "ristrettoYieldG": 24,
+    "ristrettoTdsPct": 12.0,
+    "milkFinalFactor": 1.09,
+    "note": "milkFinalFactor: Massenzunahme durch Dampfkondensat (F-19). Alle Milchangaben sind FINALE Massen."
+  },
+
+  "drinks": [
+    {
+      "id": "ristretto", "name": "Ristretto", "category": "pure", "baseMethod": "espresso",
+      "baseShotStyle": "ristretto", "baseRatio": 1.33,
+      "components": [], "totalG": 24, "glassMl": [50, 70],
+      "intensityPct": 12.0, "scalable": false,
+      "notes": "Braucht GRÖBEREN Mahlgrad als Espresso — nicht einfach früher stoppen."
+    },
+    {
+      "id": "espresso", "name": "Espresso / Doppio", "category": "pure", "baseMethod": "espresso",
+      "baseShotStyle": "espresso", "baseRatio": 2.0,
+      "components": [], "totalG": 36, "glassMl": [60, 90],
+      "intensityPct": 10.0, "scalable": false, "isDefault": true
+    },
+    {
+      "id": "lungo", "name": "Lungo", "category": "pure", "baseMethod": "espresso",
+      "baseShotStyle": "lungo", "baseRatio": 3.5,
+      "components": [], "totalG": 63, "glassMl": [90, 120],
+      "intensityPct": 5.8, "scalable": false
+    },
+    {
+      "id": "turbo", "name": "Turbo Shot", "category": "pure", "baseMethod": "espresso",
+      "baseShotStyle": "turbo", "baseRatio": 4.0,
+      "components": [], "totalG": 72, "glassMl": [100, 140],
+      "intensityPct": 5.3, "scalable": false,
+      "requiresRoast": ["light", "medium-light"],
+      "notes": "Sehr grob, 6 bar, 15-20 s. Hohe EY ohne Bitterkeit."
+    },
+    {
+      "id": "espresso-con-panna", "name": "Espresso con Panna", "category": "pure", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "cream", "massG": 15 }],
+      "totalG": 51, "glassMl": [80, 100], "intensityPct": 7.06, "scalable": false
+    },
+
+    {
+      "id": "americano", "name": "Americano", "category": "water", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "water", "massG": 120, "tempC": 88 }],
+      "totalG": 156, "glassMl": [180, 250], "intensityPct": 2.31, "scalable": true,
+      "pourOrder": ["espresso", "water"],
+      "notes": "Standardstärke. Rund 70 % stärker als Filterkaffee."
+    },
+    {
+      "id": "long-black", "name": "Long Black", "category": "water", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "water", "massG": 110, "tempC": 88 }],
+      "totalG": 146, "glassMl": [180, 220], "intensityPct": 2.47, "scalable": true,
+      "pourOrder": ["water", "espresso"],
+      "notes": "Wasser zuerst — die Crema bleibt erhalten. Empfohlene Reihenfolge."
+    },
+    {
+      "id": "americano-filter-strength", "name": "Americano (Filterstärke)", "category": "water", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "water", "massG": 231, "tempC": 88 }],
+      "totalG": 267, "glassMl": [300, 350], "intensityPct": 1.35, "scalable": true,
+      "pourOrder": ["water", "espresso"],
+      "formulaRef": "F-13",
+      "notes": "Rechnerisch auf Golden-Cup-Filterstärke gebracht. Espresso:Wasser = 1:6,4."
+    },
+
+    {
+      "id": "espresso-macchiato", "name": "Espresso Macchiato", "category": "milk", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "milk", "massG": 15, "tempC": 60, "foamClass": "airy" }],
+      "totalG": 51, "glassMl": [60, 90], "intensityPct": 7.06, "scalable": false,
+      "milkToPourG": 12, "overrunPct": 90
+    },
+    {
+      "id": "cortado", "name": "Cortado", "category": "milk", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "milk", "massG": 60, "tempC": 60, "foamClass": "microfoam-thin" }],
+      "totalG": 96, "glassMl": [90, 120], "intensityPct": 3.75, "scalable": true,
+      "milkToPourG": 52, "overrunPct": 8, "foamHeightCm": 0.3
+    },
+    {
+      "id": "gibraltar", "name": "Gibraltar", "category": "milk", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "milk", "massG": 60, "tempC": 60, "foamClass": "microfoam-thin" }],
+      "totalG": 96, "glassMl": [120, 140], "intensityPct": 3.75, "scalable": true,
+      "milkToPourG": 52, "overrunPct": 8,
+      "notes": "Cortado im Libbey-Glas."
+    },
+    {
+      "id": "piccolo", "name": "Piccolo Latte", "category": "milk", "baseMethod": "espresso",
+      "baseShotStyle": "ristretto", "baseRatio": 1.5,
+      "components": [{ "kind": "milk", "massG": 74, "tempC": 60, "foamClass": "microfoam-standard" }],
+      "totalG": 101, "glassMl": [100, 120], "intensityPct": 3.56, "scalable": false,
+      "milkToPourG": 63, "overrunPct": 12, "foamHeightCm": 0.5
+    },
+    {
+      "id": "flat-white", "name": "Flat White", "category": "milk", "baseMethod": "espresso",
+      "baseRatio": 2.0, "baseShotStyleOption": ["espresso", "ristretto"],
+      "components": [{ "kind": "milk", "massG": 124, "tempC": 60, "foamClass": "microfoam-standard" }],
+      "totalG": 160, "glassMl": [150, 175], "intensityPct": 2.25, "scalable": true,
+      "milkToPourG": 100, "overrunPct": 15, "foamHeightCm": 0.75,
+      "notes": "Unterscheidet sich vom Cappuccino AUSSCHLIESSLICH durch den Overrun."
+    },
+    {
+      "id": "cappuccino", "name": "Cappuccino (modern)", "category": "milk", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "milk", "massG": 124, "tempC": 60, "foamClass": "airy" }],
+      "totalG": 160, "glassMl": [150, 180], "intensityPct": 2.25, "scalable": true,
+      "milkToPourG": 79, "overrunPct": 65, "foamHeightCm": 1.75
+    },
+    {
+      "id": "cappuccino-classic", "name": "Cappuccino (klassisch)", "category": "milk", "baseMethod": "espresso",
+      "baseShotStyle": "espresso", "baseRatio": 2.0, "singleShot": true, "shotYieldG": 25,
+      "components": [{ "kind": "milk", "massG": 125, "tempC": 62, "foamClass": "airy" }],
+      "totalG": 150, "glassMl": [150, 160], "intensityPct": 2.0, "scalable": false,
+      "milkToPourG": 78, "overrunPct": 70,
+      "notes": "1/3 Espresso, 1/3 Milch, 1/3 Schaum."
+    },
+    {
+      "id": "latte", "name": "Caffè Latte", "category": "milk", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "milk", "massG": 244, "tempC": 60, "foamClass": "microfoam-standard" }],
+      "totalG": 280, "glassMl": [300, 350], "intensityPct": 1.29, "scalable": true,
+      "milkToPourG": 187, "overrunPct": 25, "foamHeightCm": 1.0
+    },
+    {
+      "id": "latte-macchiato", "name": "Latte Macchiato", "category": "milk", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "milk", "massG": 244, "tempC": 62, "foamClass": "airy" }],
+      "totalG": 280, "glassMl": [300, 350], "intensityPct": 1.29, "scalable": true,
+      "milkToPourG": 165, "overrunPct": 45,
+      "pourOrder": ["milk", "espresso"],
+      "notes": "Milch zuerst, Espresso langsam durchgegossen — erzeugt die Schichtung."
+    },
+    {
+      "id": "mocha", "name": "Caffè Mocha", "category": "milk", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [
+        { "kind": "chocolate", "massG": 30 },
+        { "kind": "milk", "massG": 180, "tempC": 60, "foamClass": "microfoam-standard" }
+      ],
+      "totalG": 246, "glassMl": [280, 330], "intensityPct": 1.46, "scalable": true,
+      "milkToPourG": 144, "overrunPct": 15,
+      "notes": "Schokolade zuerst im heißen Espresso auflösen."
+    },
+
+    {
+      "id": "pour-over", "name": "Pour Over (V60)", "category": "pure", "baseMethod": "v60",
+      "baseRatio": 16.7, "doseG": 18,
+      "components": [], "totalG": 264, "glassMl": [300, 350],
+      "intensityPct": 1.38, "scalable": true
+    },
+    {
+      "id": "pour-over-strong", "name": "Pour Over (kräftig)", "category": "pure", "baseMethod": "v60",
+      "baseRatio": 15.0, "doseG": 18,
+      "components": [], "totalG": 234, "glassMl": [250, 300],
+      "intensityPct": 1.55, "scalable": true
+    },
+    {
+      "id": "batch-brew", "name": "Batch Brew", "category": "pure", "baseMethod": "v60",
+      "baseRatio": 16.7, "doseG": 60,
+      "components": [], "totalG": 880, "glassMl": [1000, 1200],
+      "intensityPct": 1.36, "scalable": true
+    },
+    {
+      "id": "aeropress-standard", "name": "AeroPress Standard", "category": "pure", "baseMethod": "aeropress",
+      "baseRatio": 15.0, "doseG": 16,
+      "components": [], "totalG": 216, "glassMl": [250, 300],
+      "intensityPct": 1.45, "scalable": false
+    },
+
+    {
+      "id": "japanese-iced", "name": "Japanese Iced Coffee", "category": "iced", "baseMethod": "v60",
+      "baseRatio": 15.0, "doseG": 20,
+      "icedMode": "flash-chill", "icePct": 0.40,
+      "grindOffset": -1, "tempOffset": 2,
+      "components": [{ "kind": "ice", "massG": 120, "tempC": -18 }],
+      "totalG": 260, "glassMl": [300, 350], "intensityPct": 1.54, "scalable": true,
+      "formulaRef": "F-17",
+      "preferredRoast": ["light", "medium-light"],
+      "notes": "Erhält die Säurestruktur vollständig — die richtige Wahl für helle, fruchtige Kaffees."
+    },
+    {
+      "id": "cold-brew-concentrate", "name": "Cold Brew Konzentrat", "category": "iced", "baseMethod": "aeropress",
+      "baseRatio": 8.0, "doseG": 100,
+      "icedMode": "cold-brew", "steepHours": [12, 16], "steepTempC": 20,
+      "grindOffset": 6,
+      "components": [], "totalG": 600, "expectedTdsPct": 5.0,
+      "dilutionRatio": 2.57, "formulaRef": "F-15",
+      "shelfLifeDays": 14,
+      "preferredRoast": ["medium", "medium-dark", "dark"],
+      "warnings": ["Max. 16 h bei Raumtemperatur, danach kühlen (Lebensmittelsicherheit)."]
+    },
+    {
+      "id": "cold-brew-rtd", "name": "Cold Brew (trinkfertig)", "category": "iced", "baseMethod": "aeropress",
+      "baseRatio": 14.0, "doseG": 70,
+      "icedMode": "cold-brew", "steepHours": [14, 18],
+      "grindOffset": 6,
+      "components": [], "totalG": 860, "intensityPct": 1.3, "shelfLifeDays": 7
+    },
+    {
+      "id": "iced-espresso", "name": "Espresso on Ice", "category": "iced", "baseMethod": "espresso",
+      "baseRatio": 2.0, "icedMode": "over-ice",
+      "components": [{ "kind": "ice", "massG": 60, "tempC": -18 }],
+      "totalG": 96, "glassMl": [150, 200], "intensityPct": 3.75, "scalable": false,
+      "meltAssumption": 0.5
+    },
+    {
+      "id": "iced-americano", "name": "Iced Americano", "category": "iced", "baseMethod": "espresso",
+      "baseRatio": 2.0, "icedMode": "over-ice",
+      "components": [
+        { "kind": "water", "massG": 120, "tempC": 8 },
+        { "kind": "ice", "massG": 80, "tempC": -18 }
+      ],
+      "totalG": 236, "glassMl": [300, 400], "intensityPct": 1.53, "scalable": true,
+      "meltAssumption": 0.5
+    },
+    {
+      "id": "iced-latte", "name": "Iced Latte", "category": "iced", "baseMethod": "espresso",
+      "baseShotStyle": "ristretto", "baseRatio": 1.5, "icedMode": "over-ice",
+      "components": [
+        { "kind": "milk", "massG": 180, "tempC": 5 },
+        { "kind": "ice", "massG": 80, "tempC": -18 }
+      ],
+      "totalG": 287, "glassMl": [350, 400], "intensityPct": 1.08, "scalable": true,
+      "meltAssumption": 0.5,
+      "notes": "Ristretto-Basis: fast gleiche Feststoffmenge bei 25 % weniger Volumen."
+    },
+    {
+      "id": "iced-flat-white", "name": "Iced Flat White", "category": "iced", "baseMethod": "espresso",
+      "baseShotStyle": "ristretto", "baseRatio": 1.5, "icedMode": "over-ice",
+      "components": [
+        { "kind": "milk", "massG": 110, "tempC": 5 },
+        { "kind": "ice", "massG": 60, "tempC": -18 }
+      ],
+      "totalG": 197, "glassMl": [250, 300], "intensityPct": 1.58, "scalable": true,
+      "meltAssumption": 0.5
+    },
+    {
+      "id": "iced-cortado", "name": "Iced Cortado", "category": "iced", "baseMethod": "espresso",
+      "baseRatio": 2.0, "icedMode": "over-ice",
+      "components": [
+        { "kind": "milk", "massG": 60, "tempC": 5 },
+        { "kind": "ice", "massG": 50, "tempC": -18 }
+      ],
+      "totalG": 146, "glassMl": [200, 250], "intensityPct": 2.47, "scalable": false,
+      "meltAssumption": 0.5
+    },
+    {
+      "id": "iced-mocha", "name": "Iced Mocha", "category": "iced", "baseMethod": "espresso",
+      "baseRatio": 2.0, "icedMode": "over-ice",
+      "components": [
+        { "kind": "chocolate", "massG": 30 },
+        { "kind": "milk", "massG": 150, "tempC": 5 },
+        { "kind": "ice", "massG": 70, "tempC": -18 }
+      ],
+      "totalG": 286, "glassMl": [350, 400], "intensityPct": 1.26, "scalable": true,
+      "meltAssumption": 0.5
+    },
+    {
+      "id": "espresso-tonic", "name": "Espresso Tonic", "category": "special", "baseMethod": "espresso",
+      "baseRatio": 2.0, "icedMode": "over-ice",
+      "components": [
+        { "kind": "ice", "massG": 120, "tempC": -18 },
+        { "kind": "tonic", "massG": 165, "tempC": 5 }
+      ],
+      "totalG": 261, "glassMl": [300, 350], "intensityPct": 1.38, "scalable": true,
+      "pourOrder": ["ice", "tonic", "espresso"],
+      "garnish": "Zeste von Orange, Zitrone oder Grapefruit",
+      "preferredRoast": ["light", "medium-light"],
+      "notes": "Tonic ZUERST, sonst schäumt es über. Dunkle Röstungen addieren ihre Bitterkeit zum Chinin."
+    },
+    {
+      "id": "shakerato", "name": "Shakerato", "category": "special", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [
+        { "kind": "ice", "massG": 150, "tempC": -18 },
+        { "kind": "syrup", "massG": 8 }
+      ],
+      "totalG": 110, "glassMl": [150, 200], "intensityPct": 3.27, "scalable": false,
+      "technique": "15-20 s kräftig schütteln, ohne Eis abseihen",
+      "notes": "Der Zucker ist funktional — ohne ihn fällt die Schaumkrone sofort zusammen."
+    },
+    {
+      "id": "affogato", "name": "Affogato", "category": "special", "baseMethod": "espresso",
+      "baseRatio": 2.0,
+      "components": [{ "kind": "cream", "massG": 100, "tempC": -12, "note": "Vanilleeis, 1-2 Kugeln" }],
+      "totalG": 136, "glassMl": [180, 250], "scalable": false,
+      "notes": "Sofort servieren."
+    },
+    {
+      "id": "nitro-cold-brew", "name": "Nitro Cold Brew", "category": "special", "baseMethod": "aeropress",
+      "baseRatio": 14.0, "icedMode": "cold-brew",
+      "components": [], "totalG": 300, "glassMl": [350, 400], "intensityPct": 1.3,
+      "requiresAccessory": "nitrogen",
+      "notes": "N₂ senkt die wahrgenommene Säure und erhöht die wahrgenommene Süße."
+    }
+  ],
+
+  "syrups": {
+    "simple-1-1": { "sugarG": 100, "waterG": 100, "sugarPct": 50, "shelfLifeWeeks": 4 },
+    "rich-2-1":   { "sugarG": 200, "waterG": 100, "sugarPct": 66, "shelfLifeWeeks": 26 }
+  },
+
+  "iceTypes": {
+    "large-cube":   { "sizeCm": 4.5, "meltRate": "slow",      "use": ["iced-espresso", "espresso-tonic"] },
+    "standard-cube":{ "sizeCm": 2.5, "meltRate": "medium",    "use": ["default"] },
+    "crushed":      { "sizeCm": 0.5, "meltRate": "very-fast", "use": ["frappe"] },
+    "coffee-cube":  { "sizeCm": 2.5, "meltRate": "medium",    "use": ["iced-latte"],
+                      "note": "Schmelzwasser ist selbst Kaffee — Intensität bleibt über die Trinkdauer konstant." }
+  },
+
+  "validation": {
+    "intensityHighMilk": { "when": "intensityPct > 4 && category === 'milk'", "message": "Sehr kräftig — bitte prüfen" },
+    "intensityLow":      { "when": "intensityPct < 1", "message": "Sehr dünn — Ratio prüfen" },
+    "tooFewShots":       { "when": "glassMl > 400 && shots === 1", "message": "Ein Shot ist für dieses Volumen zu wenig" },
+    "milkDominates":     { "when": "milkG / espressoG > 10", "message": "Kaffee wird kaum wahrnehmbar sein" },
+    "iceTooLittle":      { "when": "icePct < 0.25", "message": "Zu wenig Eis — Getränk bleibt lauwarm" },
+    "iceTooMuch":        { "when": "icePct > 0.55", "message": "Zu viel Eis — Getränk wird wässrig" },
+    "coldBrewLightRoast":{ "when": "icedMode === 'cold-brew' && roastLevel === 'light'",
+                           "message": "Cold Brew zerstört die Säurestruktur dieser Bohne — Flash Chill empfohlen" }
+  }
+}
