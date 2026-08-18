@@ -563,3 +563,72 @@ describe('Mahlgrad-Plausibilität (docs/03 §2.4)', () => {
     expect(grindPlausibility(5, 'v60', undefined).ok).toBe(true)
   })
 })
+
+describe('Iteration 3 — Konsistenz der Ausgabe', () => {
+  it('deckelt absurd große Mahlgradsprünge und erklärt die Deckelung', async () => {
+    const { correctionFromTime, cappedNote, MAX_STEPS_PER_ROUND } = await import('./grinder')
+    const c = correctionFromTime(2, 28, 'espresso', grinder, 24)!
+    expect(Math.abs(c.steps)).toBeLessThanOrEqual(MAX_STEPS_PER_ROUND)
+    expect(c.capped).toBe(true)
+    expect(Math.abs(c.fullSteps)).toBeGreaterThan(MAX_STEPS_PER_ROUND)
+    expect(cappedNote(c)).toContain('Klicks')
+  })
+
+  it('normale Korrekturen werden nicht gedeckelt', async () => {
+    const { correctionFromTime, cappedNote } = await import('./grinder')
+    const c = correctionFromTime(35, 28, 'espresso', grinder, 24)!
+    expect(c.capped).toBe(false)
+    expect(cappedNote(c)).toBeUndefined()
+  })
+
+  it('Überschrift widerspricht nie der Empfehlung', () => {
+    // 1-Sekunden-Shot mit Tag „bitter": die Empfehlung muss feiner lauten,
+    // die Überschrift darf dann nicht „Zu viel extrahiert" sagen.
+    const d = diagnose({
+      ctx: ctx(),
+      actual: { doseG: 18, yieldG: 36, timeS: 2, grindSetting: { equipmentId: 'gr1', value: 24, unit: 'clicks' } },
+      tasting: { rating: 2, defects: ['bitter'], characters: [], wouldRepeat: false },
+      targetTimeS: [26, 30],
+    })
+    const s = d.suggestions[0]!
+    expect(s.direction).toBe('decrease') // feiner
+    expect(d.headline).toBe('Zu wenig extrahiert')
+  })
+
+  it('Überschrift bei echter Überextraktion', () => {
+    const d = diagnose({
+      ctx: ctx(),
+      actual: { doseG: 18, yieldG: 36, timeS: 40, grindSetting: { equipmentId: 'gr1', value: 24, unit: 'clicks' } },
+      tasting: { rating: 2, defects: ['bitter', 'astringent'], characters: [], wouldRepeat: false },
+      targetTimeS: [26, 30],
+    })
+    expect(d.suggestions[0]!.direction).toBe('increase')
+    expect(d.headline).toBe('Zu viel extrahiert')
+  })
+
+  it('jede Empfehlung hat eine Alternative', () => {
+    const cases = [
+      { defects: ['sour'] as const, timeS: 20 },
+      { defects: ['bitter'] as const, timeS: 40 },
+      { defects: ['thin'] as const, timeS: 28 },
+    ]
+    for (const c of cases) {
+      const d = diagnose({
+        ctx: ctx(),
+        actual: { doseG: 18, yieldG: 36, timeS: c.timeS, waterTempC: 93, grindSetting: { equipmentId: 'gr1', value: 24, unit: 'clicks' } },
+        tasting: { rating: 2, defects: [...c.defects], characters: [], wouldRepeat: false },
+        targetTimeS: [26, 30],
+      })
+      if (d.suggestions[0]) expect(d.suggestions[0].alternative).toBeTruthy()
+    }
+  })
+
+  it('jede Methode hat einen eigenen Mahlgrad-Zielbereich', async () => {
+    const { referenceMicron } = await import('@/kb')
+    const e = referenceMicron('espresso')
+    const a = referenceMicron('aeropress')
+    const v = referenceMicron('v60')
+    expect(e).toBeLessThan(a)
+    expect(a).toBeLessThan(v)
+  })
+})

@@ -20,6 +20,7 @@ import {
   Screen, Header, Section, Card, Button, Chip, SegmentedControl, Stepper, Field,
   Empty, Stat, FreshnessRing, InfoDot, fmtTime,
 } from '@/components/ui'
+import { BackupBanner, SetupNudge } from '@/components/system'
 
 type Phase = 'select' | 'proposal' | 'timer' | 'record' | 'taste' | 'result'
 
@@ -178,6 +179,8 @@ export default function BrewScreen({ navigate }: Props) {
       {/* ══ AUSWAHL ══ */}
       {phase === 'select' && (
         <>
+          <BackupBanner />
+          <SetupNudge onGrinder={() => navigate({ tab: 'setup', detail: 'grinder' })} />
           <Section title="Methode">
             <SegmentedControl
               value={method}
@@ -627,7 +630,7 @@ function BrewTimer({
   const over = target ? sec > target[1] : false
 
   return (
-    <div className="pt-safe pb-safe flex h-full flex-col">
+    <div className="pt-safe pb-safe flex h-[100dvh] flex-col">
       <div className="flex justify-end px-4 pt-3">
         <button onClick={onCancel} className="h-11 px-3 text-[15px] text-mute">
           Abbrechen

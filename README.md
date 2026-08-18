@@ -1,147 +1,149 @@
-# Kaffee-Wissensbasis (Barista-App)
+# Dialed
 
-Fachliche und maschinenlesbare Grundlage für eine Barista-App.
-Kein Endnutzer-Dokument — **Quelle der Wahrheit** für Datenmodell, Rechenkern,
-Empfehlungs- und Diagnose-Engine.
+**Persönliches Dial-in-Werkzeug für Espresso, V60 und AeroPress.**
+Läuft als PWA auf dem iPhone. Vollständig offline, ohne Konto, ohne Cloud.
 
-Abgedeckte Methoden: **Espresso (Siebträger)**, **V60 (Handfilter)**, **AeroPress**.
-Abgedeckte Getränke: Espresso, Ristretto, Lungo, Americano/Long Black, Flat White,
-Cappuccino, Latte, Cortado/Gibraltar, Pour Over, Batch, Cold Brew, Japanese Iced,
-Iced Latte, Espresso Tonic, Affogato, Shakerato u. a. — inkl. Iced-Varianten.
+> Nicht noch eine Rezeptdatenbank. Dialed lernt, wie **du** brühst und was
+> **dir** schmeckt — und sagt ehrlich, wenn das Problem gar nicht in den
+> Parametern liegt.
 
 ---
 
-## Verzeichnisstruktur
+## Was die App anders macht
+
+**1 · Sie sagt, wie stark — nicht nur wohin.**
+Aus „Shot lief 35 s statt 28 s" wird `√(35/28) = 1,12` → **3 Klicks gröber,
+erwartete Zeit danach 28–29 s**. Die Vorhersage ist überprüfbar; trifft sie
+ein, kann man auch der Geschmacksaussage glauben.
+
+**2 · Sie hält den Mund, wenn Raten schädlich wäre.**
+Bei Kanalbildung ist die gemessene Zeit physikalisch bedeutungslos — ein Teil
+des Wassers ist gar nicht durch den Kaffee gelaufen. Dialed sperrt dann **jede**
+Mahlgradempfehlung und verweist auf die Verteilung. Genauso bei „sauer *und*
+bitter": das ist ungleichmäßige Extraktion, kein Mahlgradproblem.
+
+**3 · Sie rechnet die Frische mit.**
+Kaffee gast wochenlang CO₂ aus, das Bett bietet weniger Widerstand, der Shot
+läuft schneller — ohne dass sich am Rezept etwas geändert hätte. Dialed kennt
+das Röstdatum deines letzten guten Shots und korrigiert automatisch:
+*„Die Bohne ist 14 Tage älter — einen Klick feiner."*
+
+**4 · Sie kennt die Grenze deiner Bohne.**
+Ein heller kenianischer Washed ergibt selten einen ausgewogenen Espresso. Das
+ist kein Anwenderfehler, sondern eine Materialeigenschaft — und Dialed sagt es
+**vorher**, statt dich in eine aussichtslose Schleife laufen zu lassen.
+
+**5 · Sie hört auf, wenn Weiterdrehen nichts bringt.**
+Dreimal feiner ohne Besserung, dafür jetzt auch bitter? Das ist das Muster
+einer unterentwickelten Röstung. Dialed bricht ab und benennt es.
+
+---
+
+## Installation auf dem iPhone
+
+1. Diese Seite in **Safari** öffnen
+2. Unten auf **Teilen** tippen (Quadrat mit Pfeil nach oben)
+3. Nach unten wischen zu **Zum Home-Bildschirm**
+4. Oben rechts auf **Hinzufügen**
+
+Danach startet Dialed im Vollbild und funktioniert ohne Internet.
+
+> **Wichtig:** iOS löscht die Daten einer Web-App nach längerer Nichtnutzung.
+> Die App erinnert an die Sicherung — bitte ernst nehmen, die Historie ist der
+> eigentliche Wert.
+
+---
+
+## Der Ablauf
+
+```
+Bohne + Methode  →  Startpunkt mit Begründung  →  Timer  →  Ergebnis erfassen
+                                                              ↓
+        Referenz speichern  ←  eine begründete Korrektur  ←  verkosten
+```
+
+Drei Pflichtinteraktionen: **starten, stoppen, bewerten.** Alles andere ist
+vorbelegt.
+
+---
+
+## Aufbau
 
 ```
 Barista/
-├── README.md                        ← dieses Dokument
-├── kb/                              ← Fachwissen (Markdown, Quelle der Wahrheit)
-│   ├── START-HIER.md            ⭐  Kaffee von null, ohne Vorwissen — 20 Min.
-│   ├── GLOSSAR.md               ⭐  Jeder Fachbegriff einzeln erklärt
-│   ├── 00-domaenenmodell.md         Entitäten, Beziehungen, Enums, App-Architektur
-│   ├── 01-extraktionstheorie.md     Was passiert physikalisch/chemisch
-│   ├── 02-formelsammlung.md         ALLE Formeln, computable, mit Einheiten
-│   ├── 03-variablen-referenz.md     Jede Variable: Range, Default, Wirkrichtung
-│   ├── 04-rohkaffee.md              Herkunft, Varietät, Anbau, Aufbereitung
-│   ├── 05-roestung-frische.md       Röstgrad, Degassing, Alterung
-│   ├── 06-wasser.md                 Wasserchemie, Zielwerte, Rezepte
-│   ├── 07-mahlgut.md                Partikelgrößen, Fines, Mühlen-Kalibrierung
-│   ├── 08-methode-espresso.md       Vollständige Methodenspezifikation
-│   ├── 09-methode-v60.md            Vollständige Methodenspezifikation
-│   ├── 10-methode-aeropress.md      Vollständige Methodenspezifikation
-│   ├── 11-milch.md                  Milchwissenschaft, Texturierung, Ratios
-│   ├── 12-getraenke.md              Getränke-Rezepturen als Kompositionen
-│   ├── 13-iced-und-cold.md          Iced/Cold-Brew inkl. Schmelz-Thermodynamik
-│   ├── 14-diagnostik.md             Symptom → Ursache → Korrektur (Regelwerk)
-│   ├── 15-dial-in.md                Dial-in als deterministische Algorithmen
-│   └── 16-sensorik.md               Verkostung, Deskriptoren, Scoring
-├── data/                            ← App-Daten (JSON, aus kb/ abgeleitet)
-│   ├── glossary.json            ⭐  Begriffserklärungen als App-Inhalt (Tooltips)
-│   ├── variables.json               Variablen-Registry mit Ranges/Defaults
-│   ├── methods.json                 Methodenprofile + Startrezepte
-│   ├── drinks.json                  Getränke-Kompositionen
-│   ├── formulas.json                Formeln als evaluierbare Ausdrücke
-│   ├── diagnostics.json             Diagnose-Regelwerk
-│   ├── origins.json                 Herkunftsprofile
-│   └── grinders.json                Mühlen-Kalibrierungsdaten
-└── types/
-    ├── domain.ts                    TypeScript-Vertrag + Rechenkern (reine Funktionen)
-    └── domain.test.ts               Regressionstest gegen alle Rechenbeispiele aus kb/
+├── kb/          Fachwissen als Markdown — die Quelle der Wahrheit
+│   ├── START-HIER.md   Kaffee von null, ohne Vorwissen (20 Min.)
+│   ├── GLOSSAR.md      44 Begriffe, einzeln erklärt
+│   └── 00–16           Extraktion, Formeln, Bohne, Wasser, Methoden, Diagnostik
+├── data/        Dieselben Inhalte maschinenlesbar (JSON) — von der App geladen
+├── types/       Domänenmodell + Rechenkern (reine Funktionen)
+├── src/
+│   ├── engine/  Startpunkt · Diagnose · Frische · Mühle · Lernen · Eignung
+│   ├── screens/ Brühen · Regal · Logbuch · Setup
+│   └── store/   Zustand + IndexedDB
+└── docs/        Briefing · Solution Design · Vergleich mit dem Vorgänger
 ```
 
-**Verifikation.** Jedes in `kb/` ausgerechnete Beispiel ist in
-`types/domain.test.ts` als Assertion hinterlegt und läuft grün. Wenn
-Dokumentation und Implementierung auseinanderlaufen, gilt
-`kb/02-formelsammlung.md`.
+**Leitprinzip:** Fachwissen liegt in `data/*.json`, nicht im Code. Der Code ist
+nur der Interpreter. Eine fachliche Korrektur ist eine Datenänderung.
+
+---
+
+## Entwicklung
 
 ```bash
-npm test
+npm install
+npm run dev        # Entwicklungsserver
+npm test           # 92 Tests gegen die Abnahmeszenarien
+npm run build      # Produktions-Build
 ```
 
----
+### Tests
 
-## Wenn du noch nie mit Kaffee gearbeitet hast
+Die Tests sind der Beleg, dass die App tut, was zugesagt wurde — vor allem in
+den Fällen, in denen sie **nicht** das Naheliegende tun darf:
 
-**Lies zuerst `kb/START-HIER.md`.** Es erklärt in 20 Minuten und ohne Vorwissen,
-was beim Kaffeekochen physikalisch passiert, warum es genau zwei Fehlerbilder
-gibt und wie die drei Methoden zusammenhängen. Danach ist jedes andere Kapitel
-verständlich.
+| Szenario | Erwartung |
+|---|---|
+| „sauer und bitter" | keine Mahlgradempfehlung, sondern Technikhinweis |
+| Kanalbildung erkannt | Zeit gilt als ungültig, Korrektur gesperrt |
+| Extraktion gut, schmeckt flach | Verdacht aufs Wasser, nicht aufs Rezept |
+| Bohne 3 Tage alt | kein Einmessen empfohlen |
+| 3× feiner ohne Besserung | Abbruch, Verdacht auf die Röstung |
+| 20 Durchgänge protokolliert | persönliche Tendenz wird benannt |
+| Korrektur wäre 19 Klicks | auf 5 gedeckelt, Deckelung wird erklärt |
 
-Einzelne Begriffe schlägt man in `kb/GLOSSAR.md` nach — dort ist jeder
-Fachausdruck der gesamten Wissensbasis erklärt, ohne Voraussetzungen.
-
-> **Wichtig fürs Produkt:** Die Begriffe in `data/glossary.json` sind kein
-> Doku-Beiwerk, sondern **App-Inhalt**. Wer „Overrun", „Extraktionsausbeute"
-> oder „Kanalbildung" nicht kennt, versteht auch keine Empfehlung, die diese
-> Wörter verwendet. Jeder Fachbegriff, der in der UI auftaucht, braucht ein
-> Info-Icon — und der Einsteigermodus zeigt nur Begriffe mit `level: "basis"`.
-
----
-
-## Leseanleitung für die App-Entwicklung
-
-| Ich baue …                    | Ich lese …                                  | Ich importiere …        |
-| ----------------------------- | ------------------------------------------- | ----------------------- |
-| Verständnis der Domäne        | **`kb/START-HIER.md`**                      | –                       |
-| Erklärtexte / Tooltips        | `kb/GLOSSAR.md`                             | `data/glossary.json`    |
-| Datenmodell / DB-Schema       | `kb/00-domaenenmodell.md`                   | `types/domain.ts`       |
-| Rechenkern (TDS, EY, Ratio)   | `kb/02-formelsammlung.md`                   | `data/formulas.json`    |
-| Slider, Eingabefelder, Limits | `kb/03-variablen-referenz.md`               | `data/variables.json`   |
-| „Startpunkt vorschlagen"      | `kb/08`–`kb/10`, `kb/15-dial-in.md`         | `data/methods.json`     |
-| „Was ist schiefgelaufen?"     | `kb/14-diagnostik.md`                       | `data/diagnostics.json` |
-| Getränke-Auswahl & Aufbau     | `kb/12-getraenke.md`, `kb/11-milch.md`      | `data/drinks.json`      |
-| Iced-Modus                    | `kb/13-iced-und-cold.md`                    | `data/drinks.json`      |
-| Bohnen-Anlage & Empfehlung    | `kb/04-rohkaffee.md`, `kb/05-roestung`      | `data/origins.json`     |
-| Frische-Anzeige               | `kb/05-roestung-frische.md`                 | `data/formulas.json`    |
-| Mühlen-Umrechnung             | `kb/07-mahlgut.md`                          | `data/grinders.json`    |
-| Verkostungs-UI                | `kb/16-sensorik.md`                         | `data/variables.json`   |
+Zusätzlich prüft `types/domain.test.ts` jedes in `kb/` ausgerechnete Beispiel
+gegen die Implementierung — von der Extraktionsausbeute bis zur Eismenge beim
+Japanese Iced Coffee.
 
 ---
 
-## Verhältnis zur bestehenden `barista-pwa`
+## Bewusste Nicht-Ziele
 
-Die vorhandene PWA (`../barista-pwa`) deckt bereits ab: `Bean`/`Bag`/`BrewLog`,
-drei Methoden, Taste-Tags, Puck-/Flow-State, Engines für Diagnose, Empfehlung,
-Frische, Mühle, Eignung.
-
-Diese Wissensbasis ist ein **echtes Superset** davon. Erweiterungen gegenüber
-dem aktuellen Modell:
-
-- `Recipe` als eigene Entität mit **Schritt-Sequenz** (Bloom, Guss, Steep, Press)
-  → macht V60/AeroPress reproduzierbar statt nur „Wasser + Zeit"
-- `Drink` getrennt von `Brew` → Flat White ist eine Komposition aus Shot + Milch,
-  kein eigenes Brühverfahren
-- Messgrößen `TDS` / `EY` → Diagnose wird objektiv statt rein sensorisch
-- `Equipment` als Entität (Korbgröße, Mühle, Filter) → Rezepte werden übertragbar
-- `Water` als Entität → erklärt sonst unerklärliche Geschmacksabweichungen
-- Aufbereitung erweitert: `anaerobic`, `carbonic-maceration`, `wet-hulled`
-- Iced/Cold als **Modifikator** jedes Rezepts, nicht als Extra-Methode
-- Diagnose-Regeln mit **quantifizierten Korrektur-Deltas** statt nur Richtung
-
-Details und Migrationshinweise: `kb/00-domaenenmodell.md`, Abschnitt 9.
+- ❌ **Keine KI zur Laufzeit** — die Empfehlung muss reproduzierbar,
+  offline und nachvollziehbar sein. Das Fachwissen steckt in `kb/` und `data/`,
+  eingeflossen zur Bauzeit.
+- ❌ **Kein Konto, keine Cloud, kein Tracking** — alle Daten bleiben auf dem Gerät
+- ❌ **Keine Community-Rezepte** — fremde Rezepte kennen weder deine Mühle noch
+  dein Wasser noch deinen Geschmack
+- ❌ **Kein Refraktometer nötig** — die Engine funktioniert ohne Messgerät
+- ❌ **Nie mehr als eine Empfehlung** — zwei gleichzeitige Änderungen machen das
+  Ergebnis uninterpretierbar
 
 ---
 
-## Konventionen in allen Dokumenten
+## Fachliche Grundlage
 
-- **Einheiten**: Masse in Gramm (g), Temperatur in °C, Zeit in Sekunden (s),
-  Druck in bar, Partikelgröße in µm, Wasserhärte in mg/L CaCO₃ (ppm).
-- **Alles wird gewogen, nichts wird volumetrisch dosiert.** „ml" erscheint nur
-  bei Glasgrößen und Milchvolumen (dort, wo Schaum das Volumen definiert).
-  Für Wasser gilt näherungsweise 1 ml = 1 g (bei 20 °C exakt 0,998 g/ml).
-- **Verhältnisse** werden als `1:n` geschrieben (Kaffee : Wasser bzw.
-  Kaffee : Getränk). Intern immer als Zahl `n` speichern.
-- **Konfidenz-Kennzeichnung** bei jeder Zahl:
-  - 🟢 **gesichert** — physikalisch/chemisch belegt oder normiert (SCA, ISO)
-  - 🟡 **etabliert** — breiter Branchenkonsens, empirisch robust
-  - 🟠 **heuristisch** — Erfahrungswert, setup-abhängig, muss kalibriert werden
-  
-  Die App sollte 🟠-Werte als *anpassbar* behandeln und aus Nutzer-Logs lernen.
+Alle Zahlen stammen aus `kb/` und sind dort mit Konfidenz gekennzeichnet:
+
+- 🟢 **gesichert** — physikalisch belegt oder normiert (SCA)
+- 🟡 **etabliert** — breiter Branchenkonsens
+- 🟠 **heuristisch** — Erfahrungswert, wird aus deinen Daten überschrieben
+
+🟠-Werte darf die App aus deiner Historie lernen. 🟢-Werte sind harte Grenzen
+(Milch über 70 °C, Extraktion über 30 %) und bleiben unantastbar.
 
 ---
 
-## Stand
-
-Aufgebaut am 2026-08-18. Zielsetup des Nutzers: Siebträger + separate
-Espressomühle, V60 + Handmühle, AeroPress.
+*Gebaut für ein iPhone 12, eine Espressomühle, einen V60 und eine AeroPress.*

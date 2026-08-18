@@ -68,15 +68,15 @@ export default function App() {
 
   if (!ready) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-[100dvh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-crema" />
       </div>
     )
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <main className="flex-1 overflow-y-auto">
+    <div className="flex h-[100dvh] flex-col">
+      <main className="scroll-area flex-1 overflow-y-auto">
         {route.tab === 'brew' && <BrewScreen route={route} navigate={navigate} back={back} />}
         {route.tab === 'shelf' && <ShelfScreen route={route} navigate={navigate} back={back} />}
         {route.tab === 'log' && <LogScreen route={route} navigate={navigate} back={back} />}

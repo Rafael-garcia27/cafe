@@ -256,6 +256,12 @@ export const selectActiveGrinder = (s: Store) =>
 export const selectActiveWater = (s: Store) =>
   s.waters.find((w) => w.id === s.settings.activeWaterId)
 
+/**
+ * ACHTUNG: Kein Selektor für `useStore(...)`.
+ * Erzeugt bei jedem Aufruf ein neues Objekt — als Hook-Selektor verwendet
+ * führt das zu einer Render-Endlosschleife. Immer über
+ * `selectSnapshot(useStore.getState())` aufrufen.
+ */
 export const selectSnapshot = (s: Store): AppState => ({
   schemaVersion: s.schemaVersion,
   beans: s.beans,

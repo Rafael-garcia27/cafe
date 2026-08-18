@@ -18,6 +18,7 @@ import {
   Screen, Header, Section, Card, Button, Field, Select, Sheet, Stepper,
   Toggle, SegmentedControl, Stat, TextInput,
 } from '@/components/ui'
+import { InstallGuide } from '@/components/system'
 
 interface Props {
   route: Route
@@ -43,7 +44,9 @@ export default function SetupScreen({ route, back }: Props) {
   const daysSinceBackup = s.settings.lastBackupAt
     ? Math.floor((Date.now() - new Date(s.settings.lastBackupAt).getTime()) / 86_400_000)
     : null
-  const backupOverdue = daysSinceBackup === null || daysSinceBackup > BACKUP_REMINDER_DAYS
+  // Eine Warnung ohne Daten wäre nur Lärm.
+  const hasData = s.brews.length > 0
+  const backupOverdue = hasData && (daysSinceBackup === null || daysSinceBackup > BACKUP_REMINDER_DAYS)
 
   const doBackup = async () => {
     const how = await shareBackup(selectSnapshot(s))
@@ -143,7 +146,9 @@ export default function SetupScreen({ route, back }: Props) {
           <p className="text-[15px] leading-snug">
             {backupOverdue
               ? 'Deine Historie ist ungesichert. iOS löscht die Daten einer PWA nach längerer Nichtnutzung — dann ist alles Gelernte weg.'
-              : `Zuletzt gesichert vor ${daysSinceBackup} Tag${daysSinceBackup === 1 ? '' : 'en'}.`}
+              : !hasData
+                ? 'Noch nichts zu sichern. Sobald du Durchgänge protokollierst, erinnere ich dich hier.'
+                : `Zuletzt gesichert vor ${daysSinceBackup} Tag${daysSinceBackup === 1 ? '' : 'en'}.`}
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button onClick={doBackup}>Sichern</Button>
@@ -217,6 +222,11 @@ export default function SetupScreen({ route, back }: Props) {
           </div>
         </Section>
       )}
+
+      {/* ── Installation ── */}
+      <Section title="App">
+        <InstallGuide />
+      </Section>
 
       {/* ── Nachschlagen ── */}
       <Section title="Nachschlagen">

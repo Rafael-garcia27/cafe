@@ -14,7 +14,7 @@ import { extractionYield, beverageMass, flowRate } from '@domain'
 import type { EngineContext } from '@/domain'
 import { daysOffRoast } from '@/domain'
 import { getRule, lrrFor, TARGET_RANGES, HARD_LIMITS } from '@/kb'
-import { correctionFromTime, describeCorrection, timeIsTrustworthy } from './grinder'
+import { correctionFromTime, describeCorrection, cappedNote, timeIsTrustworthy } from './grinder'
 import { restWindow } from './freshness'
 
 export type Confidence = 'sicher' | 'wahrscheinlich' | 'Versuch'
@@ -394,11 +394,20 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
       ruleId,
       what,
       why,
-      expectation: grindCorr?.expectedTimeS
-        ? `Erwartete Zeit danach: ${grindCorr.expectedTimeS} s. ${finer ? 'Weniger Säure, mehr Süße.' : 'Weniger Bitterkeit und Trockenheit.'}`
-        : finer
-          ? 'Der Kaffee sollte süßer und runder werden.'
-          : 'Der Kaffee sollte klarer und weniger bitter werden.',
+      expectation: [
+        // Bei gedeckelter Korrektur wäre eine präzise Zeitprognose unehrlich —
+        // wir gehen ja bewusst nicht den ganzen Weg.
+        grindCorr?.capped
+          ? `Der Shot wird deutlich langsamer, aber noch nicht am Ziel — ${finer ? 'weniger Säure' : 'weniger Bitterkeit'} sollte schon spürbar sein.`
+          : grindCorr?.expectedTimeS
+            ? `Erwartete Zeit danach: ${grindCorr.expectedTimeS} s. ${finer ? 'Weniger Säure, mehr Süße.' : 'Weniger Bitterkeit und Trockenheit.'}`
+            : finer
+              ? 'Der Kaffee sollte süßer und runder werden.'
+              : 'Der Kaffee sollte klarer und weniger bitter werden.',
+        grindCorr ? cappedNote(grindCorr) : undefined,
+      ]
+        .filter(Boolean)
+        .join(' '),
       confidence: ruleConf(ruleId),
       variable: 'grindSetting',
       direction: finer ? 'decrease' : 'increase',
@@ -599,13 +608,27 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
   return {
     stage: 2,
     blocked: false,
-    headline: hasAny(defects, 'sour', 'salty')
-      ? 'Unterextrahiert'
-      : hasAny(defects, 'bitter', 'astringent')
-        ? 'Überextrahiert'
-        : 'Anpassung',
+    headline: headlineFor(primary, defects),
     summary: primary.why,
     suggestions: [primary],
     metrics,
   }
+}
+
+/**
+ * Die Überschrift muss zur Empfehlung passen, nicht zu den Tags.
+ * Sonst steht „Überextrahiert" über „feiner mahlen" — und der Nutzer glaubt
+ * der App zu Recht nicht mehr.
+ */
+function headlineFor(s: Suggestion, defects: Defect[] | undefined): string {
+  const finer = s.direction === 'decrease' && s.variable === 'grindSetting'
+  const coarser = s.direction === 'increase' && s.variable === 'grindSetting'
+
+  if (finer) return 'Zu wenig extrahiert'
+  if (coarser) return 'Zu viel extrahiert'
+  if (s.variable === 'ratio') return s.direction === 'decrease' ? 'Zu dünn' : 'Zu konzentriert'
+  if (s.variable === 'waterTempC')
+    return s.direction === 'decrease' ? 'Zu viel extrahiert' : 'Zu wenig extrahiert'
+  if (s.variable === 'stirCount') return 'Zu wenig extrahiert'
+  return hasAny(defects, 'bitter', 'astringent') ? 'Zu viel extrahiert' : 'Anpassung'
 }

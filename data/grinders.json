@@ -1,121 +1,518 @@
 {
   "version": "1.0.0",
   "source": "kb/07-mahlgut.md",
-
   "disclaimer": "Alle micronPerStep-Werte sind STARTPUNKTE, keine Wahrheit. Herstellerangaben, Fertigungstoleranzen und Mahlwerksverschleiß streuen erheblich. Nutzer sollten über die Selbstkalibrierung (kb/07 §5.3) auf confidence 'measured' heben.",
-
   "targetMicronByMethod": {
-    "turkish":      [50, 150],
-    "espresso":     [200, 400],
-    "moka":         [350, 500],
-    "aeropress-short": [400, 600],
-    "v60":          [550, 800],
-    "aeropress-long":  [600, 900],
-    "chemex":       [700, 950],
-    "frenchpress":  [900, 1200],
-    "coldbrew":     [1000, 1400]
+    "turkish": [
+      50,
+      150
+    ],
+    "espresso": [
+      200,
+      400
+    ],
+    "moka": [
+      350,
+      500
+    ],
+    "aeropress-short": [
+      400,
+      600
+    ],
+    "aeropress": [
+      450,
+      750
+    ],
+    "v60": [
+      550,
+      800
+    ],
+    "aeropress-long": [
+      600,
+      900
+    ],
+    "chemex": [
+      700,
+      950
+    ],
+    "frenchpress": [
+      900,
+      1200
+    ],
+    "coldbrew": [
+      1000,
+      1400
+    ]
   },
-
   "grinders": [
-    { "id": "1zpresso-j-max", "name": "1Zpresso J-Max", "burrType": "conical", "scaleType": "stepped",
-      "clicksPerRotation": 30, "micronPerStep": 8.8, "zeroPointOffsetMicron": 0,
-      "usableRange": [0, 200], "presets": { "espresso": [20, 34], "v60": [55, 75], "aeropress": [40, 65], "frenchpress": [90, 120] },
-      "confidence": "vendor" },
-    { "id": "1zpresso-jx-pro", "name": "1Zpresso JX-Pro", "burrType": "conical", "scaleType": "stepped",
-      "clicksPerRotation": 40, "micronPerStep": 12.5, "zeroPointOffsetMicron": 0,
-      "usableRange": [0, 120], "presets": { "espresso": [14, 24], "v60": [30, 45], "aeropress": [22, 38], "frenchpress": [55, 75] },
-      "confidence": "vendor" },
-    { "id": "1zpresso-jx", "name": "1Zpresso JX", "burrType": "conical", "scaleType": "stepped",
-      "clicksPerRotation": 20, "micronPerStep": 25, "zeroPointOffsetMicron": 0,
-      "usableRange": [0, 60], "presets": { "espresso": [7, 12], "v60": [15, 22], "aeropress": [11, 19], "frenchpress": [28, 38] },
-      "confidence": "vendor" },
-    { "id": "1zpresso-k-ultra", "name": "1Zpresso K-Ultra", "burrType": "conical", "scaleType": "stepped",
-      "clicksPerRotation": 30, "micronPerStep": 12.5, "zeroPointOffsetMicron": 0,
-      "usableRange": [0, 120], "presets": { "espresso": [14, 24], "v60": [30, 45], "aeropress": [22, 38], "frenchpress": [55, 75] },
-      "confidence": "vendor" },
-    { "id": "comandante-c40", "name": "Comandante C40", "burrType": "conical", "scaleType": "stepped",
-      "clicksPerRotation": 30, "micronPerStep": 30, "zeroPointOffsetMicron": 0,
-      "usableRange": [0, 50], "presets": { "espresso": [6, 12], "v60": [18, 28], "aeropress": [14, 22], "frenchpress": [28, 36] },
-      "confidence": "estimated" },
-    { "id": "timemore-c2", "name": "Timemore Chestnut C2 / C3", "burrType": "conical", "scaleType": "stepped",
-      "clicksPerRotation": 36, "micronPerStep": 30, "zeroPointOffsetMicron": 0,
-      "usableRange": [0, 40], "presets": { "espresso": [6, 11], "v60": [16, 24], "aeropress": [12, 20], "frenchpress": [26, 34] },
-      "confidence": "estimated" },
-    { "id": "kingrinder-k6", "name": "Kingrinder K6", "burrType": "conical", "scaleType": "stepped",
-      "clicksPerRotation": 240, "micronPerStep": 16, "zeroPointOffsetMicron": 0,
-      "usableRange": [0, 150], "presets": { "espresso": [30, 50], "v60": [65, 95], "aeropress": [50, 80], "frenchpress": [110, 140] },
-      "confidence": "vendor" },
-    { "id": "kingrinder-k4", "name": "Kingrinder K4", "burrType": "conical", "scaleType": "stepped",
-      "micronPerStep": 22, "zeroPointOffsetMicron": 0,
-      "usableRange": [0, 110], "presets": { "espresso": [20, 36], "v60": [45, 70], "aeropress": [35, 58], "frenchpress": [80, 105] },
-      "confidence": "vendor" },
-    { "id": "baratza-encore", "name": "Baratza Encore", "burrType": "conical", "scaleType": "stepped",
-      "clicksPerRotation": 40, "micronPerStep": 55, "zeroPointOffsetMicron": 200,
-      "usableRange": [1, 40], "presets": { "v60": [15, 22], "aeropress": [12, 20], "frenchpress": [26, 34] },
-      "espressoCapable": false, "confidence": "estimated",
-      "note": "Ohne Umbau nicht fein genug für Espresso." },
-    { "id": "niche-zero", "name": "Niche Zero", "burrType": "conical", "scaleType": "stepless",
-      "dialRange": [0, 50], "micronPerStep": 10, "zeroPointOffsetMicron": 0,
-      "presets": { "espresso": [10, 18], "v60": [28, 40], "aeropress": [22, 34], "frenchpress": [40, 50] },
-      "confidence": "estimated" },
-    { "id": "df64", "name": "DF64 / DF54", "burrType": "flat", "scaleType": "stepless",
-      "micronPerStep": 10, "zeroPointOffsetMicron": 0, "confidence": "estimated" },
-    { "id": "eureka-mignon", "name": "Eureka Mignon", "burrType": "flat", "scaleType": "stepless",
-      "adjustment": "wormwheel", "confidence": "estimated",
-      "note": "Stufenlos über Schneckengetriebe — nur relativ kalibrierbar." },
-    { "id": "generic-stepped", "name": "Andere (gerastert)", "burrType": "conical", "scaleType": "stepped",
-      "micronPerStep": 20, "zeroPointOffsetMicron": 0, "confidence": "estimated", "isFallback": true },
-    { "id": "generic-stepless", "name": "Andere (stufenlos)", "burrType": "flat", "scaleType": "stepless",
-      "micronPerStep": 10, "zeroPointOffsetMicron": 0, "confidence": "estimated", "isFallback": true }
+    {
+      "id": "1zpresso-j-max",
+      "name": "1Zpresso J-Max",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "clicksPerRotation": 30,
+      "micronPerStep": 8.8,
+      "zeroPointOffsetMicron": 0,
+      "usableRange": [
+        0,
+        200
+      ],
+      "presets": {
+        "espresso": [
+          20,
+          34
+        ],
+        "v60": [
+          55,
+          75
+        ],
+        "aeropress": [
+          40,
+          65
+        ],
+        "frenchpress": [
+          90,
+          120
+        ]
+      },
+      "confidence": "vendor"
+    },
+    {
+      "id": "1zpresso-jx-pro",
+      "name": "1Zpresso JX-Pro",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "clicksPerRotation": 40,
+      "micronPerStep": 12.5,
+      "zeroPointOffsetMicron": 0,
+      "usableRange": [
+        0,
+        120
+      ],
+      "presets": {
+        "espresso": [
+          14,
+          24
+        ],
+        "v60": [
+          30,
+          45
+        ],
+        "aeropress": [
+          22,
+          38
+        ],
+        "frenchpress": [
+          55,
+          75
+        ]
+      },
+      "confidence": "vendor"
+    },
+    {
+      "id": "1zpresso-jx",
+      "name": "1Zpresso JX",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "clicksPerRotation": 20,
+      "micronPerStep": 25,
+      "zeroPointOffsetMicron": 0,
+      "usableRange": [
+        0,
+        60
+      ],
+      "presets": {
+        "espresso": [
+          7,
+          12
+        ],
+        "v60": [
+          15,
+          22
+        ],
+        "aeropress": [
+          11,
+          19
+        ],
+        "frenchpress": [
+          28,
+          38
+        ]
+      },
+      "confidence": "vendor"
+    },
+    {
+      "id": "1zpresso-k-ultra",
+      "name": "1Zpresso K-Ultra",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "clicksPerRotation": 30,
+      "micronPerStep": 12.5,
+      "zeroPointOffsetMicron": 0,
+      "usableRange": [
+        0,
+        120
+      ],
+      "presets": {
+        "espresso": [
+          14,
+          24
+        ],
+        "v60": [
+          30,
+          45
+        ],
+        "aeropress": [
+          22,
+          38
+        ],
+        "frenchpress": [
+          55,
+          75
+        ]
+      },
+      "confidence": "vendor"
+    },
+    {
+      "id": "comandante-c40",
+      "name": "Comandante C40",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "clicksPerRotation": 30,
+      "micronPerStep": 30,
+      "zeroPointOffsetMicron": 0,
+      "usableRange": [
+        0,
+        50
+      ],
+      "presets": {
+        "espresso": [
+          6,
+          12
+        ],
+        "v60": [
+          18,
+          28
+        ],
+        "aeropress": [
+          14,
+          22
+        ],
+        "frenchpress": [
+          28,
+          36
+        ]
+      },
+      "confidence": "estimated"
+    },
+    {
+      "id": "timemore-c2",
+      "name": "Timemore Chestnut C2 / C3",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "clicksPerRotation": 36,
+      "micronPerStep": 30,
+      "zeroPointOffsetMicron": 0,
+      "usableRange": [
+        0,
+        40
+      ],
+      "presets": {
+        "espresso": [
+          6,
+          11
+        ],
+        "v60": [
+          16,
+          24
+        ],
+        "aeropress": [
+          12,
+          20
+        ],
+        "frenchpress": [
+          26,
+          34
+        ]
+      },
+      "confidence": "estimated"
+    },
+    {
+      "id": "kingrinder-k6",
+      "name": "Kingrinder K6",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "clicksPerRotation": 240,
+      "micronPerStep": 16,
+      "zeroPointOffsetMicron": 0,
+      "usableRange": [
+        0,
+        150
+      ],
+      "presets": {
+        "espresso": [
+          30,
+          50
+        ],
+        "v60": [
+          65,
+          95
+        ],
+        "aeropress": [
+          50,
+          80
+        ],
+        "frenchpress": [
+          110,
+          140
+        ]
+      },
+      "confidence": "vendor"
+    },
+    {
+      "id": "kingrinder-k4",
+      "name": "Kingrinder K4",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "micronPerStep": 22,
+      "zeroPointOffsetMicron": 0,
+      "usableRange": [
+        0,
+        110
+      ],
+      "presets": {
+        "espresso": [
+          20,
+          36
+        ],
+        "v60": [
+          45,
+          70
+        ],
+        "aeropress": [
+          35,
+          58
+        ],
+        "frenchpress": [
+          80,
+          105
+        ]
+      },
+      "confidence": "vendor"
+    },
+    {
+      "id": "baratza-encore",
+      "name": "Baratza Encore",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "clicksPerRotation": 40,
+      "micronPerStep": 55,
+      "zeroPointOffsetMicron": 200,
+      "usableRange": [
+        1,
+        40
+      ],
+      "presets": {
+        "v60": [
+          15,
+          22
+        ],
+        "aeropress": [
+          12,
+          20
+        ],
+        "frenchpress": [
+          26,
+          34
+        ]
+      },
+      "espressoCapable": false,
+      "confidence": "estimated",
+      "note": "Ohne Umbau nicht fein genug für Espresso."
+    },
+    {
+      "id": "niche-zero",
+      "name": "Niche Zero",
+      "burrType": "conical",
+      "scaleType": "stepless",
+      "dialRange": [
+        0,
+        50
+      ],
+      "micronPerStep": 10,
+      "zeroPointOffsetMicron": 0,
+      "presets": {
+        "espresso": [
+          10,
+          18
+        ],
+        "v60": [
+          28,
+          40
+        ],
+        "aeropress": [
+          22,
+          34
+        ],
+        "frenchpress": [
+          40,
+          50
+        ]
+      },
+      "confidence": "estimated"
+    },
+    {
+      "id": "df64",
+      "name": "DF64 / DF54",
+      "burrType": "flat",
+      "scaleType": "stepless",
+      "micronPerStep": 10,
+      "zeroPointOffsetMicron": 0,
+      "confidence": "estimated"
+    },
+    {
+      "id": "eureka-mignon",
+      "name": "Eureka Mignon",
+      "burrType": "flat",
+      "scaleType": "stepless",
+      "adjustment": "wormwheel",
+      "confidence": "estimated",
+      "note": "Stufenlos über Schneckengetriebe — nur relativ kalibrierbar."
+    },
+    {
+      "id": "generic-stepped",
+      "name": "Andere (gerastert)",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "micronPerStep": 20,
+      "zeroPointOffsetMicron": 0,
+      "confidence": "estimated",
+      "isFallback": true
+    },
+    {
+      "id": "generic-stepless",
+      "name": "Andere (stufenlos)",
+      "burrType": "flat",
+      "scaleType": "stepless",
+      "micronPerStep": 10,
+      "zeroPointOffsetMicron": 0,
+      "confidence": "estimated",
+      "isFallback": true
+    }
   ],
-
   "selfCalibration": {
     "title": "Mühle selbst kalibrieren",
     "purpose": "micronPerStep bestimmen, ohne Sieb und ohne Herstellerangabe",
     "formulaRef": "F-22",
     "estimatedEspressoMicron": 300,
     "steps": [
-      { "index": 1, "instruction": "Eine Bohne fixieren: gleiche Tüte, gleicher Röstgrad, Altersunterschied < 3 Tage" },
-      { "index": 2, "instruction": "Rezept fixieren: 18 g in, 36 g out, gleiche Temperatur, gleiche Puck-Prep" },
-      { "index": 3, "instruction": "Shot bei Einstellung S1 ziehen, Zeit t1 notieren" },
-      { "index": 4, "instruction": "4 Schritte gröber stellen → S2, Shot ziehen, Zeit t2 notieren" },
-      { "index": 5, "instruction": "Auswerten", "calc": "ratio = sqrt(t1/t2); deltaMicron = 300 * (ratio - 1); micronPerStep = deltaMicron / 4" }
+      {
+        "index": 1,
+        "instruction": "Eine Bohne fixieren: gleiche Tüte, gleicher Röstgrad, Altersunterschied < 3 Tage"
+      },
+      {
+        "index": 2,
+        "instruction": "Rezept fixieren: 18 g in, 36 g out, gleiche Temperatur, gleiche Puck-Prep"
+      },
+      {
+        "index": 3,
+        "instruction": "Shot bei Einstellung S1 ziehen, Zeit t1 notieren"
+      },
+      {
+        "index": 4,
+        "instruction": "4 Schritte gröber stellen → S2, Shot ziehen, Zeit t2 notieren"
+      },
+      {
+        "index": 5,
+        "instruction": "Auswerten",
+        "calc": "ratio = sqrt(t1/t2); deltaMicron = 300 * (ratio - 1); micronPerStep = deltaMicron / 4"
+      }
     ],
     "preconditions": [
       "Beide Shots ohne Channeling (flowState in normal/slow/fast)",
       "Gleiche Bohne, Altersunterschied < 3 Tage",
       "Identische Dosis (±0,2 g)"
     ],
-    "example": { "t1": 34, "t2": 24, "ratio": 1.19, "deltaMicron": 57, "micronPerStep": 14.3 }
+    "example": {
+      "t1": 34,
+      "t2": 24,
+      "ratio": 1.19,
+      "deltaMicron": 57,
+      "micronPerStep": 14.3
+    }
   },
-
   "transfer": {
     "formula": "micronA = grinderA.zeroPointOffsetMicron + settingA * grinderA.micronPerStep; settingB = (micronA - grinderB.zeroPointOffsetMicron) / grinderB.micronPerStep",
     "confidence": "low",
     "displayAs": "Toleranzband ±2 Schritte, nicht als exakte Zahl",
     "note": "Unterschiedliche Mahlwerksgeometrien erzeugen bei gleichem Median verschiedene Verteilungen."
   },
-
   "burrTypeProfiles": {
-    "flat": { "distribution": "enger, unimodaler", "fines": "weniger", "cupProfile": ["clean","bright","defined"],
-              "retention": "höher", "heat": "höher", "forgiveness": "geringer" },
-    "conical": { "distribution": "breiter, bimodal", "fines": "mehr", "cupProfile": ["body","round","sweet"],
-                 "retention": "niedriger", "heat": "niedriger", "forgiveness": "höher" }
+    "flat": {
+      "distribution": "enger, unimodaler",
+      "fines": "weniger",
+      "cupProfile": [
+        "clean",
+        "bright",
+        "defined"
+      ],
+      "retention": "höher",
+      "heat": "höher",
+      "forgiveness": "geringer"
+    },
+    "conical": {
+      "distribution": "breiter, bimodal",
+      "fines": "mehr",
+      "cupProfile": [
+        "body",
+        "round",
+        "sweet"
+      ],
+      "retention": "niedriger",
+      "heat": "niedriger",
+      "forgiveness": "höher"
+    }
   },
-
   "techniques": [
-    { "id": "rdt", "name": "Ross Droplet Technique", "when": "immer",
+    {
+      "id": "rdt",
+      "name": "Ross Droplet Technique",
+      "when": "immer",
       "instruction": "1-2 Tropfen Wasser auf die ganzen Bohnen vor dem Mahlen",
-      "effect": ["Statik bricht zusammen","keine Klumpen","Retention sinkt","Dosiergenauigkeit steigt"],
-      "downside": "keine" },
-    { "id": "wdt", "name": "Weiss Distribution Technique", "when": "Espresso, immer",
+      "effect": [
+        "Statik bricht zusammen",
+        "keine Klumpen",
+        "Retention sinkt",
+        "Dosiergenauigkeit steigt"
+      ],
+      "downside": "keine"
+    },
+    {
+      "id": "wdt",
+      "name": "Weiss Distribution Technique",
+      "when": "Espresso, immer",
       "instruction": "Mit Nadeln 0,3-0,4 mm 8-12 kreisende Bewegungen im Korb, bis fast auf den Boden",
-      "effect": ["wirksamster Einzelschritt gegen Channeling"],
-      "warning": "WDT lockert, Tamping verdichtet — nicht verwechseln" },
-    { "id": "purge", "name": "Purge / Spülschuss", "when": "Single Dosing, Sortenwechsel",
-      "instruction": "Kleine Menge durchmahlen und verwerfen, um Retention zu entfernen" },
-    { "id": "sieving", "name": "Sieben", "when": "Diagnose, nicht Alltag",
+      "effect": [
+        "wirksamster Einzelschritt gegen Channeling"
+      ],
+      "warning": "WDT lockert, Tamping verdichtet — nicht verwechseln"
+    },
+    {
+      "id": "purge",
+      "name": "Purge / Spülschuss",
+      "when": "Single Dosing, Sortenwechsel",
+      "instruction": "Kleine Menge durchmahlen und verwerfen, um Retention zu entfernen"
+    },
+    {
+      "id": "sieving",
+      "name": "Sieben",
+      "when": "Diagnose, nicht Alltag",
       "instruction": "Fines < 200 µm und Boulders > 800 µm absieben",
-      "effect": ["Klarheit ↑","Süße ↑"], "downside": "20-40 % Verlust, hoher Zeitaufwand, beim Espresso Körperverlust" }
+      "effect": [
+        "Klarheit ↑",
+        "Süße ↑"
+      ],
+      "downside": "20-40 % Verlust, hoher Zeitaufwand, beim Espresso Körperverlust"
+    }
   ]
 }

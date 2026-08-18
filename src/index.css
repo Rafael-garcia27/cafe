@@ -67,10 +67,30 @@ html.light {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Auf Touch-Geräten markiert ein leicht gehaltener Tap sonst den Beschriftungstext
+   statt die Schaltfläche auszulösen. */
+button,
+[role='button'],
+label {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* Tastaturfokus muss sichtbar sein — Mausklicks sollen aber keinen Ring zeigen. */
+:focus-visible {
+  outline: 2px solid var(--c-crema);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
 html,
 body,
 #root {
-  height: 100%;
+  /* dvh statt vh: In iOS-Safari ist 100vh größer als der sichtbare Bereich,
+     dadurch rutscht die Tab-Leiste unter den Bildschirmrand. */
+  height: 100dvh;
+  min-height: 100dvh;
 }
 
 body {
@@ -106,6 +126,12 @@ textarea {
 }
 .h-safe-bottom {
   height: env(safe-area-inset-bottom);
+}
+
+/* Scrollbereiche: kein Weiterziehen auf das Dokument */
+.scroll-area {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Bewegung reduzieren respektieren */

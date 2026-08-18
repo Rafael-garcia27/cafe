@@ -19,6 +19,13 @@ export function micronFor(setting: number, grinder?: Grinder): number | null {
   return settingToMicron(setting, grinder)
 }
 
+/**
+ * Obergrenze je Durchgang. Wer 19 Klicks auf einmal springt, verlässt den
+ * Bereich, in dem das Durchflussgesetz überhaupt gilt — und kann das Ergebnis
+ * nicht mehr zuordnen. Lieber zwei kontrollierte Runden als ein Sprung.
+ */
+export const MAX_STEPS_PER_ROUND = 5
+
 export interface GrindCorrection {
   /** Schritte auf der Mühlenskala. Negativ = feiner. */
   steps: number
@@ -29,6 +36,9 @@ export interface GrindCorrection {
   expectedTimeS: number | null
   /** Wenn keine Mühle kalibriert ist, gibt es nur Prozent statt Klicks */
   hasSteps: boolean
+  /** true, wenn die volle Korrektur gedeckelt wurde und eine zweite Runde folgt */
+  capped: boolean
+  fullSteps: number
   math: string
 }
 
@@ -58,22 +68,30 @@ export function correctionFromTime(
       ? settingToMicron(currentSetting, grinder)
       : referenceMicron(method)
 
-  const micronDelta = currentMicron * (factor - 1)
   const hasSteps = !!grinder
-  const steps = hasSteps ? stepsFromFactor(currentMicron, factor, grinder.micronPerStep) : 0
-  // Wenn gerundet 0 Schritte herauskommen, wenigstens einen ganzen Schritt gehen.
-  const finalSteps = hasSteps && steps === 0 ? (factor > 1 ? 1 : -1) : steps
+  const raw = hasSteps ? stepsFromFactor(currentMicron, factor, grinder.micronPerStep) : 0
+  // Gerundet 0 Schritte wäre kein Vorschlag — wenigstens einen ganzen gehen.
+  const fullSteps = hasSteps && raw === 0 ? (factor > 1 ? 1 : -1) : raw
+  const finalSteps = hasSteps
+    ? Math.max(-MAX_STEPS_PER_ROUND, Math.min(MAX_STEPS_PER_ROUND, fullSteps))
+    : 0
+  const capped = hasSteps && Math.abs(fullSteps) > MAX_STEPS_PER_ROUND
+
+  // Auch die Prozentangabe deckeln, wenn keine Mühle bekannt ist.
+  const cappedPercent = hasSteps ? percent : Math.max(-35, Math.min(35, percent))
 
   const newMicron = hasSteps
     ? currentMicron + finalSteps * grinder.micronPerStep
-    : currentMicron + micronDelta
+    : currentMicron * (1 + cappedPercent / 100)
 
   return {
     steps: finalSteps,
-    percent,
-    micronDelta: hasSteps ? finalSteps * grinder.micronPerStep : micronDelta,
+    percent: cappedPercent,
+    micronDelta: hasSteps ? finalSteps * grinder.micronPerStep : newMicron - currentMicron,
     expectedTimeS: Math.round(expectedTimeAfterGrindChange(actualTimeS, currentMicron, newMicron)),
     hasSteps,
+    capped: capped || (!hasSteps && Math.abs(percent) > 35),
+    fullSteps,
     math: `√(${actualTimeS}/${targetTimeS}) = ${factor.toFixed(3)} → ${percent > 0 ? '+' : ''}${percent.toFixed(0)} %`,
   }
 }
@@ -87,6 +105,15 @@ export function describeCorrection(c: GrindCorrection): string {
     return `${n} Klick${n === 1 ? '' : 's'} ${richtung}${um}`
   }
   return `${Math.abs(c.percent).toFixed(0)} % ${richtung}`
+}
+
+/** Zusatz, wenn die volle Korrektur zu groß für einen Durchgang war */
+export function cappedNote(c: GrindCorrection): string | undefined {
+  if (!c.capped) return undefined
+  if (c.hasSteps) {
+    return `Rechnerisch wären ${Math.abs(c.fullSteps)} Klicks nötig. So große Sprünge lassen sich nicht mehr zuordnen — geh erst diese ${Math.abs(c.steps)}, dann sehen wir weiter.`
+  }
+  return 'Die rechnerische Korrektur ist sehr groß — geh sie in zwei Runden an.'
 }
 
 /**

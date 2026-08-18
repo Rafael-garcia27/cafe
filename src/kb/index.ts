@@ -311,7 +311,12 @@ export function getGrinderCatalogEntry(id: string): GrinderCatalogEntry | undefi
 
 /** Referenz-Mahlgrad in µm für eine Methode (Mitte des Zielbereichs) */
 export function referenceMicron(method: BrewMethod): number {
-  const range = GRIND_TARGETS[method] ?? GRIND_TARGETS['v60']!
+  const range = GRIND_TARGETS[method]
+  if (!range) {
+    // Lieber laut scheitern als still den falschen Wert einer anderen
+    // Methode verwenden — das war ein echter Fehler in Iteration 2.
+    throw new Error(`Kein Mahlgrad-Zielbereich für Methode "${method}" hinterlegt`)
+  }
   return (range[0] + range[1]) / 2
 }
 
