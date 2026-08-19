@@ -3,6 +3,8 @@
 **Persönliches Dial-in-Werkzeug für Espresso, V60 und AeroPress.**
 Läuft als PWA auf dem iPhone. Vollständig offline, ohne Konto, ohne Cloud.
 
+### → **[rafael-garcia27.github.io/dialed](https://rafael-garcia27.github.io/dialed/)**
+
 > Nicht noch eine Rezeptdatenbank. Dialed lernt, wie **du** brühst und was
 > **dir** schmeckt — und sagt ehrlich, wenn das Problem gar nicht in den
 > Parametern liegt.
@@ -41,7 +43,7 @@ einer unterentwickelten Röstung. Dialed bricht ab und benennt es.
 
 ## Installation auf dem iPhone
 
-1. Diese Seite in **Safari** öffnen
+1. **[rafael-garcia27.github.io/dialed](https://rafael-garcia27.github.io/dialed/)** in **Safari** öffnen
 2. Unten auf **Teilen** tippen (Quadrat mit Pfeil nach oben)
 3. Nach unten wischen zu **Zum Home-Bildschirm**
 4. Oben rechts auf **Hinzufügen**
