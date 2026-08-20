@@ -44,6 +44,8 @@ export default defineConfig({
         // Die App macht keine Netzwerkanfragen zur Laufzeit —
         // alles wird beim ersten Laden gecacht.
         navigateFallback: `${BASE}index.html`,
+        // Statische Dokumente (Cheat Sheet) nie durch die App-Shell ersetzen.
+        navigateFallbackDenylist: [/asc-barista-cheatsheet\.html$/],
       },
     }),
   ],
