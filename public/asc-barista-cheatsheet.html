@@ -116,6 +116,7 @@
   .part .pt b { color: var(--accent); }
   .part.bean .pt b { color: var(--good); }
   .part::after { content: ""; height: 2px; border-radius: 2px; background: var(--line); flex: 1; }
+  @media (max-width: 620px) { .pt-x { display: none; } }
 
   /* ---------- Recipe band ---------- */
   .recipe {
@@ -304,7 +305,7 @@
 </header>
 
 <!-- ═══════════ PART 1 · THE BEAN ═══════════ -->
-<div class="part bean"><span class="pt"><b>Part 1 · The Bean</b> — origin → harvest → processing</span></div>
+<div class="part bean"><span class="pt"><b>Part 1 · The Bean</b><span class="pt-x"> — origin → harvest → processing</span></span></div>
 
 <div class="cols bean">
 
@@ -395,7 +396,7 @@
 </div><!-- /cols part 1 -->
 
 <!-- ═══════════ PART 2 · THE BAR ═══════════ -->
-<div class="part"><span class="pt"><b>Part 2 · The Bar</b> — grind → brew → taste → serve → clean</span></div>
+<div class="part"><span class="pt"><b>Part 2 · The Bar</b><span class="pt-x"> — grind → brew → taste → serve → clean</span></span></div>
 
 <!-- ================= RECIPE ================= -->
 <section class="recipe">
