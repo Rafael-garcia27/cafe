@@ -1,0 +1,605 @@
+<title>ASC Barista Cheat Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #FBFAF7;
+    --surface: #FFFFFF;
+    --ink: #262019;
+    --muted: #6F6459;
+    --line: #E5DED3;
+    --accent: #5A4230;        /* espresso brown */
+    --accent-soft: #F1EAE0;
+    --chip: #F5F1EA;
+    --sour: #8F7100;          /* under-extracted / sour */
+    --sour-bg: #F7F0DA;
+    --bitter: #9A3B28;        /* over-extracted / bitter */
+    --bitter-bg: #F6E6E0;
+    --good: #35674A;          /* balanced */
+    --good-bg: #E4EEE6;
+    --warn-bg: #F6E9D8;
+    --shadow: 0 1px 2px rgba(38,32,25,.06), 0 4px 14px rgba(38,32,25,.05);
+    /* drink layers (physical colours, tuned per theme for contrast) */
+    --dr-esp: #6B4A2F;
+    --dr-crema: #C9955C;
+    --dr-milk: #EFE3D2;
+    --dr-foam: #FAF4E9;
+    --dr-lungo: #9C6F4A;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171310;
+      --surface: #211C17;
+      --ink: #ECE4DA;
+      --muted: #A79A8C;
+      --line: #383026;
+      --accent: #CBA274;
+      --accent-soft: #2C251D;
+      --chip: #2A241D;
+      --sour: #D9B24A;
+      --sour-bg: #2E2812;
+      --bitter: #E08B72;
+      --bitter-bg: #331E16;
+      --good: #8CC2A0;
+      --good-bg: #1C2B20;
+      --warn-bg: #322817;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+      --dr-esp: #7E5A3B;
+      --dr-crema: #C9955C;
+      --dr-milk: #D9CDBB;
+      --dr-foam: #EFE7D8;
+      --dr-lungo: #A0714B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171310;
+    --surface: #211C17;
+    --ink: #ECE4DA;
+    --muted: #A79A8C;
+    --line: #383026;
+    --accent: #CBA274;
+    --accent-soft: #2C251D;
+    --chip: #2A241D;
+    --sour: #D9B24A;
+    --sour-bg: #2E2812;
+    --bitter: #E08B72;
+    --bitter-bg: #331E16;
+    --good: #8CC2A0;
+    --good-bg: #1C2B20;
+    --warn-bg: #322817;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+    --dr-esp: #7E5A3B;
+    --dr-crema: #C9955C;
+    --dr-milk: #D9CDBB;
+    --dr-foam: #EFE7D8;
+    --dr-lungo: #A0714B;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Archivo", system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    margin: 0;
+    padding: 20px 14px 48px;
+  }
+  .wrap { max-width: 1160px; margin: 0 auto; }
+
+  /* ---------- Header ---------- */
+  header { margin: 6px 2px 18px; }
+  .kicker {
+    font-size: 11px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  h1 {
+    font-size: clamp(24px, 4vw, 34px); font-weight: 800;
+    letter-spacing: -.01em; margin: 2px 0 4px; text-wrap: balance;
+  }
+  .sub { color: var(--muted); font-size: 13px; max-width: 68ch; margin: 0; }
+
+  /* ---------- Part dividers ---------- */
+  .part { display: flex; align-items: center; gap: 10px; margin: 2px 2px 12px; }
+  .part .pt {
+    font-size: 11px; font-weight: 800; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--muted); white-space: nowrap;
+  }
+  .part .pt b { color: var(--accent); }
+  .part::after { content: ""; height: 1px; background: var(--line); flex: 1; }
+
+  /* ---------- Recipe band ---------- */
+  .recipe {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--accent);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 16px 18px 14px;
+    margin-bottom: 20px;
+  }
+  .recipe h2 { margin: 0 0 10px; font-size: 15px; font-weight: 800; }
+  .recipe h2 small { font-weight: 500; color: var(--muted); font-size: 12px; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 8px;
+  }
+  .stat {
+    background: var(--chip); border-radius: 8px;
+    padding: 8px 10px 7px;
+  }
+  .stat .lbl {
+    font-size: 10px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted); display: block;
+  }
+  .stat .val {
+    font-family: "Spline Sans Mono", ui-monospace, "SF Mono", monospace;
+    font-weight: 700; font-size: 19px; letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .stat .val small { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .stat .note { font-size: 10.5px; color: var(--muted); display: block; line-height: 1.3; margin-top: 1px; }
+  .times { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+  .times .tlbl { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .tchip {
+    font-family: "Spline Sans Mono", ui-monospace, monospace;
+    font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+    padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--chip);
+  }
+  .tchip b { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 11px; }
+  .recipe .foot { font-size: 12px; color: var(--muted); margin: 10px 0 0; line-height: 1.5; }
+  .recipe .foot b { color: var(--ink); }
+
+  /* ---------- Card columns ---------- */
+  .cols { columns: 1; column-gap: 20px; }
+  @media (min-width: 880px) { .cols { columns: 2; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 14px 16px 13px;
+    margin: 0 0 20px;
+    break-inside: avoid;
+  }
+  .card h2 {
+    font-size: 11px; font-weight: 800; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--accent);
+    margin: 0 0 3px;
+  }
+  .card h3 { font-size: 13.5px; font-weight: 700; margin: 12px 0 5px; }
+  .card p { margin: 6px 0; font-size: 13px; }
+  .card .lead { color: var(--muted); font-size: 12px; margin: 0 0 9px; }
+  .muted { color: var(--muted); }
+  b { font-weight: 700; }
+
+  /* Definition rows */
+  .defs { display: grid; gap: 7px; }
+  .def {
+    display: grid; grid-template-columns: 108px 1fr; gap: 10px;
+    padding: 6px 0 7px; border-bottom: 1px solid var(--line);
+    font-size: 12.5px;
+  }
+  .def:last-child { border-bottom: none; padding-bottom: 0; }
+  .def dt { font-weight: 700; margin: 0; }
+  .def dt small { display: block; font-weight: 500; color: var(--muted); font-size: 10.5px; }
+  .def dd { margin: 0; }
+
+  /* Numbered steps */
+  ol.steps { margin: 8px 0 0; padding: 0 0 0 2px; list-style: none; counter-reset: s; display: grid; gap: 5px; }
+  ol.steps li { counter-increment: s; display: flex; gap: 9px; font-size: 12.5px; align-items: baseline; }
+  ol.steps li::before {
+    content: counter(s);
+    font-family: "Spline Sans Mono", ui-monospace, monospace;
+    font-weight: 700; font-size: 11px;
+    color: var(--accent); background: var(--accent-soft);
+    border-radius: 6px; min-width: 20px; height: 20px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transform: translateY(2px);
+  }
+
+  /* Extraction / processing blocks */
+  .ext { display: grid; gap: 8px; margin-top: 8px; }
+  .ext-block { border-radius: 8px; padding: 9px 11px; font-size: 12.5px; }
+  .ext-block .tag { font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 2px; }
+  .ext-under  { background: var(--sour-bg); }  .ext-under .tag  { color: var(--sour); }
+  .ext-good   { background: var(--good-bg); }  .ext-good .tag   { color: var(--good); }
+  .ext-over   { background: var(--bitter-bg); }.ext-over .tag   { color: var(--bitter); }
+  .callout {
+    background: var(--warn-bg); border-radius: 8px;
+    padding: 9px 11px; font-size: 12.5px; margin-top: 8px;
+  }
+
+  /* Tables */
+  .scroll { overflow-x: auto; margin-top: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th {
+    text-align: left; font-size: 10px; font-weight: 700;
+    letter-spacing: .09em; text-transform: uppercase; color: var(--muted);
+    padding: 0 10px 5px 0; border-bottom: 1px solid var(--line);
+  }
+  td { padding: 5px 10px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 700; white-space: nowrap; }
+  td.wrap-ok { white-space: normal; }
+  .num { font-family: "Spline Sans Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 11.5px; white-space: nowrap; }
+  .c-sour { color: var(--sour); font-weight: 700; }
+  .c-bitter { color: var(--bitter); font-weight: 700; }
+  .c-good { color: var(--good); font-weight: 700; }
+
+  /* Drink figures */
+  .drinks {
+    display: flex; flex-wrap: wrap; gap: 12px 4px;
+    justify-content: space-between; margin-top: 10px;
+  }
+  .drink { flex: 1 1 62px; min-width: 60px; max-width: 90px; text-align: center; margin: 0; }
+  .drink .cupbox { height: 56px; display: flex; align-items: flex-end; justify-content: center; }
+  .drink .cupbox svg { display: block; }
+  .drink figcaption { margin-top: 4px; }
+  .drink .dn { font-size: 11px; font-weight: 700; line-height: 1.2; display: block; }
+  .drink .dm {
+    font-family: "Spline Sans Mono", ui-monospace, monospace;
+    font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums;
+    display: block; white-space: nowrap;
+  }
+  .drink .ds { font-size: 10px; color: var(--muted); line-height: 1.25; display: block; margin-top: 1px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 10px; font-size: 10.5px; color: var(--muted); align-items: center; }
+  .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 4px; vertical-align: -1px; border: 1px solid var(--line); }
+
+  /* Rules of thumb */
+  .rules { background: var(--accent-soft); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-top: 2px; }
+  .rules h2 { font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
+  .rules ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; }
+  @media (min-width: 880px) { .rules ul { grid-template-columns: 1fr 1fr; gap: 5px 24px; } }
+  .rules li { font-size: 13px; font-weight: 600; padding-left: 14px; position: relative; }
+  .rules li::before { content: "—"; position: absolute; left: 0; color: var(--accent); }
+
+  footer { margin-top: 16px; font-size: 11px; color: var(--muted); text-align: center; }
+
+  @media print {
+    :root { --bg: #fff; --surface: #fff; --shadow: none; }
+    body { padding: 0; font-size: 11px; }
+    .cols { columns: 2; column-gap: 14px; }
+    .card, .recipe { box-shadow: none; margin-bottom: 12px; padding: 10px 12px; }
+    .stat .val { font-size: 16px; }
+  }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="kicker">African School of Coffee · 5-Day Assessment</div>
+  <h1>Barista Cheat Sheet</h1>
+  <p class="sub">Ordered along the coffee lifecycle: origin &amp; history → producers → plant &amp; harvest → processing → espresso recipe → factors &amp; workflow → extraction &amp; tasting → milk → drinks → cleaning.</p>
+</header>
+
+<!-- ═══════════ PART 1 · THE BEAN ═══════════ -->
+<div class="part"><span class="pt"><b>Part 1 · The Bean</b> — origin → harvest → processing</span></div>
+
+<div class="cols">
+
+<!-- ================= ORIGIN & HISTORY ================= -->
+<section class="card">
+  <h2>Origin &amp; History</h2>
+  <div class="defs">
+    <div class="def"><dt>Origin</dt><dd><b>Ethiopia</b> — arabica grows wild there. Legend: goat herder <b>Kaldi</b> (~9th century) notices his goats dancing.</dd></div>
+    <div class="def"><dt>First cultivation</dt><dd><b>Yemen</b>, 15th century — traded through the port of <b>Mocha</b> (hence the name).</dd></div>
+    <div class="def"><dt>To Europe</dt><dd>17th century via Venice; coffee houses London 1652, Vienna 1683.</dd></div>
+    <div class="def"><dt>Today</dt><dd><b>Brazil</b> is the largest producer (~⅓ of the world crop), then Vietnam (robusta), Colombia, Indonesia, Ethiopia.</dd></div>
+    <div class="def"><dt>Bean Belt</dt><dd>Growing belt between the tropics (~23.5° N–S): stable 18–22 °C, altitude, wet + dry season.</dd></div>
+    <div class="def"><dt>Altitude</dt><dd>Higher = cooler = slower ripening = <b>denser bean, more acidity &amp; complexity</b>. SHG/SHB = Strictly High Grown, above ~1,350 m.</dd></div>
+  </div>
+</section>
+
+<!-- ================= TOP PRODUCERS ================= -->
+<section class="card">
+  <h2>Top 10 Coffee Producers</h2>
+  <ol class="steps">
+    <li><b>Brazil</b> — ~⅓ of the world crop; arabica + robusta (conilon), naturals, espresso base</li>
+    <li><b>Vietnam</b> — world's #1 robusta producer; instant &amp; blends</li>
+    <li><b>Colombia</b> — washed arabica, balanced; two harvests a year</li>
+    <li><b>Indonesia</b> — Sumatra wet-hulled: earthy, heavy body; plus robusta</li>
+    <li><b>Ethiopia</b> — birthplace of arabica; landraces, floral &amp; berry</li>
+    <li><b>Uganda</b> — Africa's robusta powerhouse</li>
+    <li><b>India</b> — fine robusta, Monsooned Malabar</li>
+    <li><b>Honduras</b> — Central America's largest producer</li>
+    <li><b>Peru</b> — arabica, strong in certified organic</li>
+    <li><b>Mexico</b> — highland arabica ("altura")</li>
+  </ol>
+</section>
+
+<!-- ================= ORIGINS ================= -->
+<section class="card">
+  <h2>Origin Profiles</h2>
+  <div class="scroll"><table>
+    <tr><th>Country</th><th>Profile</th><th>Remember</th></tr>
+    <tr><td>Ethiopia</td><td class="wrap-ok">washed: jasmine, lemon, tea · natural: blueberry</td><td class="wrap-ok">birthplace of coffee; G1/G2 = defect count</td></tr>
+    <tr><td>Kenya</td><td class="wrap-ok">blackcurrant, juicy acidity</td><td class="wrap-ok"><b>AA/AB = screen size, not a quality grade</b></td></tr>
+    <tr><td>Colombia</td><td class="wrap-ok">caramel, red apple, balanced</td><td class="wrap-ok">2 harvests/year, all-rounder</td></tr>
+    <tr><td>Brazil</td><td class="wrap-ok">chocolate, nuts, low acidity</td><td class="wrap-ok">largest producer; espresso/blend base</td></tr>
+  </table></div>
+</section>
+
+<!-- ================= ARABICA VS ROBUSTA ================= -->
+<section class="card">
+  <h2>Arabica vs. Robusta</h2>
+  <div class="scroll"><table>
+    <tr><th></th><th>Arabica</th><th>Robusta <span style="text-transform:none">(C. canephora)</span></th></tr>
+    <tr><td>World market</td><td class="num">~60 %</td><td class="num">~40 %</td></tr>
+    <tr><td>Caffeine</td><td class="num">~1.2 %</td><td class="num">~2.2 %</td></tr>
+    <tr><td>Altitude</td><td class="num">900–2,000+ m</td><td class="num">0–900 m</td></tr>
+    <tr><td>Taste</td><td class="wrap-ok">complex, sweet, fruity, acidity-driven</td><td class="wrap-ok">strong, earthy, woody, bitter</td></tr>
+    <tr><td>Crema</td><td class="wrap-ok">less</td><td class="wrap-ok">more &amp; more stable</td></tr>
+    <tr><td>Use</td><td class="wrap-ok">specialty, filter</td><td class="wrap-ok">blends, Italian espresso, instant</td></tr>
+  </table></div>
+  <h3>Varieties (arabica cultivars)</h3>
+  <p style="font-size:12.5px"><b>Typica &amp; Bourbon</b> — original forms: clean, sweet, elegant · <b>Caturra / Catuaí</b> — high-yield mutations · <b>SL28 / SL34</b> — Kenya: blackcurrant · <b>Geisha</b> — jasmine, bergamot, record prices · <b>"Ethiopian Heirloom"</b> — umbrella term for Ethiopian landraces, not a variety name.</p>
+  <h3>The coffee cherry</h3>
+  <p style="font-size:12.5px">Skin → pulp with <b>mucilage</b> (sugary slime layer — the key to processing) → parchment → silverskin → <b>2 seeds</b> (peaberry: just one, round).</p>
+  <h3>Harvest</h3>
+  <p style="font-size:12.5px"><b>Selective picking</b> — only ripe cherries, several passes (specialty standard) · <b>strip picking</b> — whole branch at once · <b>mechanical</b> — Brazil, flat terrain. Unripe beans ("quakers") taste like straw and paper and cannot be brewed away.</p>
+</section>
+
+<!-- ================= PROCESSING ================= -->
+<section class="card">
+  <h2>Processing</h2>
+  <p class="lead">How much fruit stays on the bean while it dries — the biggest flavour lever before roasting.</p>
+  <div class="ext">
+    <div class="ext-block ext-good"><span class="tag">Washed · wet</span>
+    De-pulp → ferment 12–72 h → wash → dry. <b>Clean, clear, acidity-driven</b>, shows the terroir. (Colombia, Kenya, Ethiopia)</div>
+    <div class="ext-block ext-under"><span class="tag">Honey · pulped natural</span>
+    De-pulped, but the mucilage stays on during drying. <b>Sweeter and rounder</b> than washed, cleaner than natural. White → yellow → red → black honey = progressively more mucilage &amp; sweetness. (Costa Rica, Brazil)</div>
+    <div class="ext-block ext-over"><span class="tag">Natural · dry</span>
+    Whole cherry dried in the sun for 15–30 days, turned regularly, then hulled. <b>Intensely fruity</b> (berry), heavy, sweet, winey — risk: fermenty, vinegary off-notes. (Ethiopia, Brazil)</div>
+  </div>
+  <p class="muted" style="font-size:12px; margin-top:8px;">Rule of thumb: the more fruit stays on, the fruitier and heavier the cup — and the higher the risk of defects.</p>
+</section>
+
+</div><!-- /cols part 1 -->
+
+<!-- ═══════════ PART 2 · THE BAR ═══════════ -->
+<div class="part"><span class="pt"><b>Part 2 · The Bar</b> — grind → brew → taste → serve → clean</span></div>
+
+<!-- ================= RECIPE ================= -->
+<section class="recipe">
+  <h2>The Espresso Recipe <small>· double shot (doppio), 58 mm basket — the starting point you dial in from</small></h2>
+  <div class="stats">
+    <div class="stat"><span class="lbl">Dose</span><span class="val">18<small> g</small></span><span class="note">grounds in the basket · tolerance ±1 g</span></div>
+    <div class="stat"><span class="lbl">Yield</span><span class="val">36<small> g</small></span><span class="note">in the cup, weighed · tolerance ±3 g</span></div>
+    <div class="stat"><span class="lbl">Ratio</span><span class="val">1:2</span><span class="note">1 g coffee → 2 g beverage</span></div>
+    <div class="stat"><span class="lbl">EBF</span><span class="val">50<small> %</small></span><span class="note">dose ÷ yield × 100</span></div>
+    <div class="stat"><span class="lbl">Temp</span><span class="val">92–94<small> °C</small></span><span class="note">brew water</span></div>
+    <div class="stat"><span class="lbl">Pressure</span><span class="val">9<small> bar</small></span><span class="note">more gains nothing</span></div>
+  </div>
+  <div class="times">
+    <span class="tlbl">Time from pump start · tolerance ±3 s</span>
+    <span class="tchip"><b>Light</b> 27–30 s</span>
+    <span class="tchip"><b>Medium</b> 24–26 s</span>
+    <span class="tchip"><b>Dark</b> 20–23 s</span>
+  </div>
+  <p class="foot"><b>EBF</b> (Espresso Brewing Formula) says the same thing as the ratio, just as a percentage: 1:2 = 50 %, 1:2.5 = 40 %. <b>Why dark runs shorter:</b> dark roasts are porous and dissolve fast — they tip into bitterness early, so shorter and cooler. Light roasts are dense — they need longer, hotter, possibly a wider ratio.<br>
+  <b>Shot family:</b> Ristretto 1:1–1.5 (dense, sweet — grind <i>coarser</i>, don't just stop early) · Espresso 1:2–2.5 · Lungo 1:3–4 (lighter, more bitterness).</p>
+</section>
+
+<div class="cols">
+
+<!-- ================= FACTORS ================= -->
+<section class="card">
+  <h2>Factors</h2>
+  <p class="lead">What you adjust — and what it does.</p>
+  <div class="defs">
+    <div class="def"><dt>Grind Size</dt><dd><b>The strongest lever.</b> Finer = slower &amp; more extraction, coarser = faster &amp; less. This is how you correct the shot time. Espresso: fine sand (200–400 µm).</dd></div>
+    <div class="def"><dt>Dose</dt><dd>Ground coffee in the basket. 58 mm basket: 16–20 g. Too much → no headspace (air gap below the shower screen) → channeling. Too little → the bed floats and tilts.</dd></div>
+    <div class="def"><dt>Yield</dt><dd>Beverage mass in <b>grams on the scale</b> — never in ml, crema fakes the volume.</dd></div>
+    <div class="def"><dt>Time</dt><dd><b>A result, not a setting.</b> If it's off → change the grind. Measured from pump start.</dd></div>
+    <div class="def"><dt>Distribution</dt><dd>WDT: stir the grounds with fine needles 8–12 times, then level. The most effective step against <b>channeling</b> (water punching through one path instead of the whole bed).</dd></div>
+    <div class="def"><dt>Tamping</dt><dd><b>Level beats hard.</b> Beyond ~10–15 kg more force changes nothing — but 1° of tilt creates a channel. Never tap afterwards.</dd></div>
+    <div class="def"><dt>Temperature</dt><dd>Fine-tuning tool: light 94–96 · medium 92–94 · dark 88–92 °C. ±1 °C ≈ 0.2–0.3 points of extraction yield.</dd></div>
+    <div class="def"><dt>Pressure</dt><dd>9 bar is the standard. Above 9 bar only the channeling risk grows.</dd></div>
+  </div>
+</section>
+
+<!-- ================= WORKFLOW ================= -->
+<section class="card">
+  <h2>Espresso Workflow</h2>
+  <ol class="steps">
+    <li>Wipe the portafilter dry — leftover moisture starts local extraction</li>
+    <li>Grind 18.0 g, check on the scale (±0.1 g)</li>
+    <li>WDT: 8–12 circular strokes, break up clumps</li>
+    <li>Level — flat, even surface</li>
+    <li>Tamp: level &gt; hard — do <b>not</b> tap afterwards</li>
+    <li>Flush the group head for 2 s (stabilises temperature, clears residue)</li>
+    <li>Lock in and start <b>immediately</b> — the puck heats up otherwise</li>
+    <li>Cup on the scale, tare, timer runs from pump start</li>
+    <li>Stop at target yield (allow ~1–2 g of drip-through)</li>
+    <li>Knock out the puck, rinse the basket, wipe the bench</li>
+  </ol>
+</section>
+
+<!-- ================= EXTRACTION ================= -->
+<section class="card">
+  <h2>Extraction: under · balanced · over</h2>
+  <p class="lead">Only ~30 % of the bean is soluble. Target: 18–22 % of the bean in the cup (EY = extraction yield). Acids &amp; fruit dissolve early, sweetness &amp; body in the middle, bitter compounds late.</p>
+  <div class="ext">
+    <div class="ext-block ext-under"><span class="tag">Under-extracted — too little dissolved</span>
+    sharp-sour, <b>salty</b> (the most reliable sign), thin, finish cuts off abruptly. → <b>Grind finer</b>; then: hotter, wider ratio.</div>
+    <div class="ext-block ext-good"><span class="tag">Balanced — the target</span>
+    Sweetness carries, acidity lively but integrated, round body, long clean finish. EY 18–22 %, espresso TDS 8–11 %.</div>
+    <div class="ext-block ext-over"><span class="tag">Over-extracted — too much dissolved</span>
+    bitter, astringent (dry, furry mouthfeel like black tea), ashy, finish lingers unpleasantly. → <b>Grind coarser</b>; then: cooler, tighter ratio.</div>
+  </div>
+  <div class="callout"><b>Sour AND bitter at the same time?</b> Uneven extraction (channeling) — fix technique (WDT, level tamp), <b>not</b> the grind.</div>
+</section>
+
+<!-- ================= SENSORY ================= -->
+<section class="card">
+  <h2>Sensory: the 5 Dimensions</h2>
+  <div class="defs">
+    <div class="def"><dt>Acidity</dt><dd>Liveliness, freshness, "juiciness" — sides of the tongue. Judged by <b>quality, not quantity</b>. Acidity + sweetness = origin character; acidity + salt = under-extraction.</dd></div>
+    <div class="def"><dt>Sweetness</dt><dd>Caramel/fruit sweetness developed in the roast — tip of the tongue. The most reliable sign of a good extraction.</dd></div>
+    <div class="def"><dt>Body</dt><dd>Texture and weight in the mouth, thin ↔ syrupy — whole mouth. Body ≠ strength.</dd></div>
+    <div class="def"><dt>Flavor</dt><dd>The overall aromatic impression (fruit, chocolate, florals …) — mostly retronasal, i.e. "smelled" through the back of the throat as you exhale.</dd></div>
+    <div class="def"><dt>Finish<small>aftertaste</small></dt><dd>What stays, how long, how pleasant. Good: sweet, clean, long. Short &amp; abrupt = under-extracted; dry-bitter lingering = over-extracted.</dd></div>
+  </div>
+  <div class="callout"><b>Stir before tasting</b> — an espresso is layered. Acidity is not a defect: a light-roast Kenyan is <i>supposed</i> to taste bright.</div>
+</section>
+
+<!-- ================= MILK ================= -->
+<section class="card">
+  <h2>Milk &amp; Latte Art</h2>
+  <div class="scroll"><table>
+    <tr><th>Temperature</th><th>Meaning</th></tr>
+    <tr><td class="num c-good">55–65 °C</td><td class="wrap-ok"><b>Target window</b> (SCA exam standard); sweetness optimum 55–62 °C</td></tr>
+    <tr><td class="num">~60 °C</td><td class="wrap-ok">hand test: the pitcher becomes uncomfortably hot to hold</td></tr>
+    <tr><td class="num c-bitter">&gt; 70 °C</td><td class="wrap-ok">scorched: proteins denature, foam collapses, tastes "cooked" — can't be saved, never re-steam</td></tr>
+  </table></div>
+  <h3>Two phases</h3>
+  <p><b>1 · Stretching:</b> tip just below the surface, steady paper-like "tss" — introduce air only <b>until the pitcher is body-warm (~37 °C)</b>. All the volume is created here.<br>
+  <b>2 · Rolling:</b> tip deeper and off-centre → a stable whirlpool pulls the bubbles under, up to target temperature. No more air.</p>
+  <p><b>Microfoam check:</b> glossy like wet paint, no visible bubbles. Tap the pitcher, swirl, <b>pour promptly</b> — foam separates after ~30 s.</p>
+  <p><b>Latte art:</b> the prerequisite is texture, not pouring technique. Tilt the cup, start high (milk dives under the crema), from about half full move in close and let the foam float up, finish with a pull-through.</p>
+  <p><b>Whole milk</b> = finer, more stable foam (latte art) · skim = more but coarser foam · oat: barista version, max ~60 °C. <b>Hygiene:</b> wipe the wand with a damp cloth + purge briefly after <i>every</i> use.</p>
+</section>
+
+<!-- ================= DRINKS ================= -->
+<section class="card">
+  <h2>Drinks — base: double shot, 36 g</h2>
+  <p class="lead">Sorted by size — cup height = drink size. All cups share the same width, and the espresso layer is <b>identical in every drink</b>: one double shot, 36 g. Only water, milk and foam change.</p>
+  <div class="drinks">
+    <figure class="drink">
+      <div class="cupbox">
+        <svg width="40" height="15" viewBox="0 0 40 15" role="img" aria-label="Espresso, 30 to 40 millilitres: the double shot itself with a thin crema layer on top">
+          <rect x="8" y="3" width="24" height="2" rx="1" fill="var(--dr-crema)"/>
+          <rect x="8" y="5" width="24" height="7" rx="1" fill="var(--dr-esp)"/>
+          <rect x="6" y="1" width="28" height="13" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <figcaption><span class="dn">Espresso</span><span class="dm">30–40 ml</span><span class="ds">doppio · 1:2</span></figcaption>
+    </figure>
+    <figure class="drink">
+      <div class="cupbox">
+        <svg width="40" height="17" viewBox="0 0 40 17" role="img" aria-label="Macchiato, 30 to 60 millilitres: the same double shot stained with a spoonful of milk foam">
+          <rect x="8" y="3" width="24" height="4" rx="1" fill="var(--dr-foam)"/>
+          <rect x="8" y="7" width="24" height="7" rx="1" fill="var(--dr-esp)"/>
+          <rect x="6" y="1" width="28" height="15" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <figcaption><span class="dn">Macchiato</span><span class="dm">30–60 ml</span><span class="ds">foam spoonful</span></figcaption>
+    </figure>
+    <figure class="drink">
+      <div class="cupbox">
+        <svg width="40" height="30" viewBox="0 0 40 30" role="img" aria-label="Cortado, 170 millilitres: the same double shot topped with steamed milk and almost no foam">
+          <rect x="8" y="3" width="24" height="2" rx="1" fill="var(--dr-foam)"/>
+          <rect x="8" y="5" width="24" height="15" fill="var(--dr-milk)"/>
+          <rect x="8" y="20" width="24" height="7" rx="1" fill="var(--dr-esp)"/>
+          <rect x="6" y="1" width="28" height="28" rx="2" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <figcaption><span class="dn">Cortado</span><span class="dm">170 ml</span><span class="ds">barely foam</span></figcaption>
+    </figure>
+    <figure class="drink">
+      <div class="cupbox">
+        <svg width="40" height="38" viewBox="0 0 40 38" role="img" aria-label="Flat white, 200 to 225 millilitres: the same double shot with steamed milk and only a thin microfoam layer">
+          <rect x="8" y="3" width="24" height="3" rx="1" fill="var(--dr-foam)"/>
+          <rect x="8" y="6" width="24" height="22" fill="var(--dr-milk)"/>
+          <rect x="8" y="28" width="24" height="7" rx="1" fill="var(--dr-esp)"/>
+          <rect x="6" y="1" width="28" height="36" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <figcaption><span class="dn">Flat White</span><span class="dm">200–225 ml</span><span class="ds">microfoam, no cap</span></figcaption>
+    </figure>
+    <figure class="drink">
+      <div class="cupbox">
+        <svg width="40" height="42" viewBox="0 0 40 42" role="img" aria-label="Cappuccino, 225 to 250 millilitres: the same double shot, steamed milk and a thick foam cap">
+          <rect x="8" y="3" width="24" height="12" rx="1" fill="var(--dr-foam)"/>
+          <circle cx="14" cy="7" r="1" fill="var(--dr-milk)"/>
+          <circle cx="21" cy="11" r="1" fill="var(--dr-milk)"/>
+          <circle cx="27" cy="6" r="1" fill="var(--dr-milk)"/>
+          <rect x="8" y="15" width="24" height="17" fill="var(--dr-milk)"/>
+          <rect x="8" y="32" width="24" height="7" rx="1" fill="var(--dr-esp)"/>
+          <rect x="6" y="1" width="28" height="40" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <figcaption><span class="dn">Cappuccino</span><span class="dm">225–250 ml</span><span class="ds">thick foam cap</span></figcaption>
+    </figure>
+    <figure class="drink">
+      <div class="cupbox">
+        <svg width="40" height="44" viewBox="0 0 40 44" role="img" aria-label="Americano, 250 millilitres: the same double shot diluted with hot water, thin crema on top">
+          <rect x="8" y="3" width="24" height="2" rx="1" fill="var(--dr-crema)"/>
+          <rect x="8" y="5" width="24" height="36" rx="1" fill="var(--dr-lungo)"/>
+          <rect x="6" y="1" width="28" height="42" rx="3" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <figcaption><span class="dn">Americano</span><span class="dm">250 ml</span><span class="ds">shot + water</span></figcaption>
+    </figure>
+    <figure class="drink">
+      <div class="cupbox">
+        <svg width="40" height="54" viewBox="0 0 40 54" role="img" aria-label="Latte, 300 to 350 millilitres: the same double shot under a large amount of steamed milk with about one centimetre of foam">
+          <rect x="8" y="3" width="24" height="5" rx="1" fill="var(--dr-foam)"/>
+          <circle cx="15" cy="5.5" r="1" fill="var(--dr-milk)"/>
+          <circle cx="25" cy="5.5" r="1" fill="var(--dr-milk)"/>
+          <rect x="8" y="8" width="24" height="36" fill="var(--dr-milk)"/>
+          <rect x="8" y="44" width="24" height="7" rx="1" fill="var(--dr-esp)"/>
+          <rect x="6" y="1" width="28" height="52" rx="2" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <figcaption><span class="dn">Latte</span><span class="dm">300–350 ml</span><span class="ds">mildest</span></figcaption>
+    </figure>
+  </div>
+  <div class="legend">
+    <span><span class="sw" style="background:var(--dr-esp)"></span>espresso</span>
+    <span><span class="sw" style="background:var(--dr-milk)"></span>steamed milk</span>
+    <span><span class="sw" style="background:var(--dr-foam)"></span>foam</span>
+    <span><span class="sw" style="background:var(--dr-crema)"></span>crema</span>
+    <span><span class="sw" style="background:var(--dr-lungo)"></span>espresso + water</span>
+  </div>
+  <p class="muted" style="font-size:12px; margin-top:8px;">Flat white and cappuccino are nearly the same size — the real difference is the <b>amount of air</b> (overrun = volume gained during steaming). Steam too airy and your flat white automatically becomes a cappuccino.</p>
+  <p class="muted" style="font-size:12px;">Cappuccino, classic definition: <b>⅓ espresso · ⅓ milk · ⅓ foam</b> (the original ~150 ml serve). At café sizes the shot stays a doppio — the thick foam cap is what defines it.</p>
+  <p class="muted" style="font-size:12px;">Americano: hot water onto the shot · Long Black: <b>water first</b>, shot on top → crema survives.</p>
+</section>
+
+<!-- ================= CLEANING ================= -->
+<section class="card">
+  <h2>Cleaning — Step by Step</h2>
+  <p class="lead">Rancid coffee oils make every shot dull and bitter — cleaning is taste maintenance, and hygiene is part of the assessment.</p>
+  <h3>After every shot</h3>
+  <ol class="steps">
+    <li>Knock the puck into the knock box</li>
+    <li>Rinse basket &amp; portafilter under the group, wipe dry</li>
+    <li>Wipe the steam wand with its damp cloth + purge briefly</li>
+  </ol>
+  <h3>Daily (close of day)</h3>
+  <ol class="steps">
+    <li>Backflush with the blind basket, water only, ~5 cycles</li>
+    <li>Brush the group head &amp; gasket, wipe the shower screen</li>
+    <li>Steam wand: wipe, purge — soak the tip if milk is baked on</li>
+    <li>Empty and rinse drip tray and knock box</li>
+    <li>Wipe bench and machine body; separate cloths for wand / bench / portafilter</li>
+  </ol>
+  <h3>Weekly</h3>
+  <ol class="steps">
+    <li>Backflush <b>with espresso detergent</b>, then several water-only rinses</li>
+    <li>Soak baskets &amp; portafilter heads in detergent solution (not the handle)</li>
+    <li>Grinder: empty hopper, brush out chute and burrs — old grounds go rancid</li>
+    <li>Monthly: unscrew the shower screen and deep-clean it</li>
+  </ol>
+</section>
+
+</div><!-- /cols part 2 -->
+
+<!-- ================= RULES OF THUMB ================= -->
+<section class="rules">
+  <h2>Rules of Thumb</h2>
+  <ul>
+    <li>One variable per change — otherwise you learn nothing.</li>
+    <li>Time is a result. The grind is the dial.</li>
+    <li>Level beats hard — when tamping, flatness is what counts.</li>
+    <li>Weigh everything. Volume lies, mass doesn't.</li>
+    <li>Sour + salty = too little · bitter + dry = too much · sour + bitter = technique.</li>
+    <li>Acidity is not a defect — acidity without sweetness is.</li>
+  </ul>
+</section>
+
+<footer>ASC course content (5-Day Professional) · SCA standards as the international reference · As of Aug 2026</footer>
+</div>
