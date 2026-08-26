@@ -33,7 +33,7 @@
       "defaults": {
         "light": {
           "doseG": 18,
-          "ratio": 2.7,
+          "ratio": 2.0,
           "timeS": 31,
           "waterTempC": 95,
           "pressureBar": 9,
@@ -41,7 +41,7 @@
         },
         "medium-light": {
           "doseG": 18,
-          "ratio": 2.4,
+          "ratio": 2.0,
           "timeS": 29,
           "waterTempC": 94,
           "pressureBar": 9,
@@ -49,7 +49,7 @@
         },
         "medium": {
           "doseG": 18,
-          "ratio": 2.1,
+          "ratio": 2.0,
           "timeS": 28,
           "waterTempC": 93,
           "pressureBar": 9,
@@ -57,15 +57,15 @@
         },
         "medium-dark": {
           "doseG": 18,
-          "ratio": 1.95,
+          "ratio": 2.0,
           "timeS": 27,
           "waterTempC": 91,
           "pressureBar": 9,
           "preinfusionS": 4
         },
         "dark": {
-          "doseG": 17,
-          "ratio": 1.85,
+          "doseG": 18,
+          "ratio": 2.0,
           "timeS": 25,
           "waterTempC": 90,
           "pressureBar": 9,
@@ -246,6 +246,52 @@
           "washed": 1,
           "fermented": 2
         }
+      },
+      "targetFlowRateGs": {
+        "_source": "asc-barista-cheatsheet.html — aus den Kurszeiten bei 36 g zurückgerechnet",
+        "_note": "Zielzeit = Zielausbringung / Zielfluss. Reagiert damit auf Dosis UND Ratio.",
+        "_confidence": "medium",
+        "light": 1.26,
+        "medium-light": 1.35,
+        "medium": 1.44,
+        "medium-dark": 1.55,
+        "dark": 1.67,
+        "_range": [
+          1.2,
+          1.7
+        ],
+        "_ascReference": {
+          "light": [
+            27,
+            30
+          ],
+          "medium": [
+            24,
+            26
+          ],
+          "dark": [
+            20,
+            23
+          ],
+          "atYieldG": 36
+        },
+        "_ratioExponent": 0.6,
+        "_ratioExponentNote": "Der Zielfluss ist nicht ratio-unabhängig: Wer die Ratio weitet, mahlt in der Praxis gröber, der Fluss steigt mit. Modell: fluss = fluss(1:2) * (ratio/2)^0.6. Bei 1:2 bleibt ASC exakt erhalten (Exponent wirkt nicht). Exponent empirisch aus üblichen Rezepten kalibriert — heuristisch."
+      },
+      "baseRecipe": {
+        "_source": "asc-barista-cheatsheet.html — The Espresso Recipe",
+        "doseG": 18,
+        "yieldG": 36,
+        "ratio": 2.0,
+        "timeS": 25,
+        "ebfPct": 50
+      },
+      "tolerances": {
+        "_source": "asc-barista-cheatsheet.html — ±-Angaben des Kursrezepts",
+        "_note": "Innerhalb dieser Spannen wird NICHT korrigiert. Sie sind die Wiederholgenauigkeit des Handwerks, nicht ein Fehler.",
+        "doseG": 1,
+        "timeS": 3,
+        "yieldG": 3
       }
     },
     {
@@ -652,6 +698,12 @@
           "natural": 1,
           "fermented": 1
         }
+      },
+      "tolerances": {
+        "_note": "Filter verzeiht mehr als Espresso.",
+        "doseG": 1,
+        "timeS": 15,
+        "waterG": 10
       }
     },
     {
@@ -1074,6 +1126,12 @@
           "washed": 3,
           "fermented": 3
         }
+      },
+      "tolerances": {
+        "_note": "Filter verzeiht mehr als Espresso.",
+        "doseG": 1,
+        "timeS": 10,
+        "waterG": 10
       }
     }
   ],

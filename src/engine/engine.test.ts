@@ -4,6 +4,7 @@
  * Diese Tests sind der Beleg, dass die App tut, was zugesagt wurde —
  * insbesondere die Fälle, in denen sie NICHT das Naheliegende tun darf.
  */
+import type { RoastLevel } from '@domain'
 import { describe, it, expect } from 'vitest'
 import type { Bean, Bag, Brew, Grinder } from '@domain'
 import type { EngineContext } from '@/domain'
@@ -11,6 +12,7 @@ import { DEFAULT_SETTINGS, EMPTY_LEARNED } from '@/domain'
 import { startingPoint } from './starting'
 import { diagnose } from './diagnose'
 import { assessFreshness, driftCorrection, restWindow } from './freshness'
+import { targetTimeRange, tolerances, roastRuleFor } from '@/kb'
 import { correctionFromTime, calibrate, suggestedSetting, timeIsTrustworthy } from './grinder'
 import { recompute } from './learn'
 
@@ -504,17 +506,52 @@ describe('Bohnen-Eignung je Methode (docs/03 §2.1)', () => {
   })
 })
 
-describe('Ruhefenster nach Aufbereitung (docs/03 §2.2)', () => {
-  it('Naturals sind früher trinkreif als Washed', () => {
+const REST_BASE_MEDIUM_ESPRESSO: [number, number] = [7, 21]
+
+describe('Ruhefenster nach Aufbereitung (korrigiert, docs/04 §3-4)', () => {
+  // barista-pwa verschob hier das UNTERE Ende und widersprach dabei dem
+  // eigenen Quellkommentar. ASC sagt zur Ruhezeit nach Aufbereitung nichts.
+  // Belegbar ist nur: fruchtbetonte Aufbereitungen verlieren ihr Aroma früher.
+  it('Aufbereitung verschiebt NUR das obere Fensterende', () => {
     const washed = restWindow('espresso', 'medium', false, 'washed')
     const natural = restWindow('espresso', 'medium', false, 'natural')
-    expect(natural.min).toBeLessThan(washed.min)
+    expect(natural.min).toBe(washed.min)
+    expect(natural.max).toBeLessThan(washed.max)
+  })
+
+  it('der Effekt bleibt klein — höchstens 5 Tage Spanne', () => {
+    const washed = restWindow('espresso', 'medium', false, 'washed')
+    const anaerobic = restWindow('espresso', 'medium', false, 'anaerobic')
+    expect(washed.max - anaerobic.max).toBeLessThanOrEqual(5)
+  })
+
+  it('wird als schwach belegt ausgewiesen', () => {
+    const natural = restWindow('espresso', 'medium', false, 'natural')
+    const r = natural.reasons.find((x) => x.text.includes('Aufbereitung'))
+    expect(r?.confidence).toBe('low')
+  })
+
+  it('Röstgrad bleibt der dominante Faktor', () => {
+    // Der Unterschied hell/dunkel muss deutlich größer sein als washed/natural
+    const roastSpan =
+      restWindow('espresso', 'light').max - restWindow('espresso', 'dark').max
+    const processSpan =
+      restWindow('espresso', 'medium', false, 'washed').max -
+      restWindow('espresso', 'medium', false, 'natural').max
+    expect(roastSpan).toBeGreaterThan(processSpan * 2)
+  })
+
+  it('Anbauhöhe über 1800 m verschiebt das Fenster nach hinten', () => {
+    const flach = restWindow('espresso', 'medium', false, 'washed', [1200, 1400])
+    const hoch = restWindow('espresso', 'medium', false, 'washed', [1900, 2100])
+    expect(hoch.min).toBeGreaterThan(flach.min)
+    expect(hoch.max).toBeGreaterThan(flach.max)
   })
 
   it('ohne Aufbereitungsangabe bleibt es beim Röstgrad-Fenster', () => {
     const a = restWindow('espresso', 'medium')
-    const b = restWindow('espresso', 'medium', false, 'washed')
-    expect(a.min).toBe(b.min)
+    const b = REST_BASE_MEDIUM_ESPRESSO
+    expect([a.min, a.max]).toEqual(b)
   })
 })
 
@@ -630,5 +667,109 @@ describe('Iteration 3 — Konsistenz der Ausgabe', () => {
     const v = referenceMicron('v60')
     expect(e).toBeLessThan(a)
     expect(a).toBeLessThan(v)
+  })
+})
+
+// ════════════════════════════════════════════════════════════════════
+//  ASC-Kursrezept und Toleranzen (docs/04-faktencheck.md)
+// ════════════════════════════════════════════════════════════════════
+
+describe('ASC-Basisrezept', () => {
+  it('reproduziert die Kurszeiten bei 18 g → 36 g', () => {
+    const cases: [RoastLevel, [number, number]][] = [
+      ['light', [27, 30]],
+      ['medium', [24, 26]],
+      ['dark', [20, 23]],
+    ]
+    for (const [roast, asc] of cases) {
+      const range = targetTimeRange('espresso', 18, roast, 36)!
+      const mid = (range[0] + range[1]) / 2
+      // Kursspanne plus die zulässige ±1,5 s Rundung
+      expect(mid).toBeGreaterThanOrEqual(asc[0] - 1.5)
+      expect(mid).toBeLessThanOrEqual(asc[1] + 1.5)
+    }
+  })
+
+  it('Zielzeit reagiert auf die Ratio — der alte Fehler', () => {
+    const eng = targetTimeRange('espresso', 18, 'light', 36)!
+    const weit = targetTimeRange('espresso', 18, 'light', 48.6)!
+    expect(weit[0]).toBeGreaterThan(eng[0])
+  })
+
+  it('Zielzeit reagiert auf die Dosis', () => {
+    const klein = targetTimeRange('espresso', 14, 'medium', 28)!
+    const gross = targetTimeRange('espresso', 22, 'medium', 44)!
+    expect(gross[0]).toBeGreaterThan(klein[0])
+  })
+
+  it('dunkler röstet schneller aus als hell', () => {
+    const hell = targetTimeRange('espresso', 18, 'light', 36)!
+    const dunkel = targetTimeRange('espresso', 18, 'dark', 36)!
+    expect(dunkel[1]).toBeLessThan(hell[0])
+  })
+})
+
+describe('Toleranzen (ASC: Dosis ±1 g · Zeit ±3 s · Ausbringung ±3 g)', () => {
+  it('sind hinterlegt', () => {
+    const t = tolerances('espresso')
+    expect(t.doseG).toBe(1)
+    expect(t.timeS).toBe(3)
+    expect(t.yieldG).toBe(3)
+  })
+
+  it('innerhalb der Zeittoleranz wird NICHT korrigiert', () => {
+    // 27 s bei Ziel 25 s = 2 s Abweichung, liegt innerhalb ±3 s
+    expect(correctionFromTime(27, 25, 'espresso')).toBeNull()
+    expect(correctionFromTime(23, 25, 'espresso')).toBeNull()
+  })
+
+  it('außerhalb der Toleranz wird korrigiert', () => {
+    const c = correctionFromTime(31, 25, 'espresso')
+    expect(c).not.toBeNull()
+    expect(c!.percent).toBeGreaterThan(0) // gröber
+  })
+
+  it('Filter verzeiht mehr als Espresso', () => {
+    expect(tolerances('v60').timeS).toBeGreaterThan(tolerances('espresso').timeS)
+  })
+})
+
+describe('Röstgradabhängige Lesart (wenn Light Roast und sauer, dann …)', () => {
+  it('hell + sauer → Mahlgrad zuerst, Säure als Normalfall gelesen', () => {
+    const r = roastRuleFor('light', ['sour'])
+    expect(r?.id).toBe('R-LIGHT-SOUR')
+    expect(r?.order[0]).toBe('grindSetting')
+    expect(r?.reading).toContain('Normalfall')
+  })
+
+  it('dunkel + sauer → Technik zuerst, weil Säure dort ungewöhnlich ist', () => {
+    const r = roastRuleFor('dark', ['sour'])
+    expect(r?.id).toBe('R-DARK-SOUR')
+    expect(r?.order[0]).toBe('technique')
+  })
+
+  it('dunkel + bitter → Temperatur vor Mahlgrad', () => {
+    const r = roastRuleFor('dark', ['bitter'])
+    expect(r?.order[0]).toBe('waterTempC')
+  })
+
+  it('hell + bitter → Verdacht auf unterentwickelte Röstung', () => {
+    const r = roastRuleFor('light', ['bitter'])
+    expect(r?.suspectRoast).toBe(true)
+  })
+
+  it('hell + flach → zuerst das Wasser, nicht die Brühparameter', () => {
+    const r = roastRuleFor('light', ['flat'])
+    expect(r?.order[0]).toBe('water')
+  })
+
+  it('derselbe Fehler wird bei hell und dunkel verschieden gelesen', () => {
+    const hell = roastRuleFor('light', ['sour'])
+    const dunkel = roastRuleFor('dark', ['sour'])
+    expect(hell?.order[0]).not.toBe(dunkel?.order[0])
+  })
+
+  it('mittlere Röstung nutzt die Standardkaskade', () => {
+    expect(roastRuleFor('medium', ['sour'])).toBeUndefined()
   })
 })

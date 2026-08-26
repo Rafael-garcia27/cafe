@@ -5,7 +5,7 @@
  * durch Systemschrift, Safe Areas und großzügige Touchziele — nicht durch
  * ein importiertes Designsystem.
  */
-import { useEffect, useState, type ReactNode, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { getTerm } from '@/kb'
 import { useStore } from '@/store'
 import { levelForMode } from '@/domain'
@@ -276,6 +276,12 @@ export function Select<T extends string>({
 }
 
 /** Große Touchziele — bedienbar mit nassen Händen (Briefing C9). */
+/**
+ * Zahleneingabe mit großen Touchzielen.
+ *
+ * Gedrückthalten beschleunigt — bei 0,1-g-Schritten wäre Einzeltippen sonst
+ * unzumutbar (36 g aus 10 g heraus wären 260 Taps).
+ */
 export function Stepper({
   value,
   onChange,
@@ -294,11 +300,39 @@ export function Stepper({
   decimals?: number
 }) {
   const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v * 100) / 100))
+  const hold = useRef<{ timer?: number; interval?: number }>({})
+  const valueRef = useRef(value)
+  valueRef.current = value
+
+  const startHold = (dir: 1 | -1) => {
+    stopHold()
+    hold.current.timer = window.setTimeout(() => {
+      let speed = 120
+      const tick = () => {
+        valueRef.current = clamp(valueRef.current + dir * step)
+        onChange(valueRef.current)
+        speed = Math.max(30, speed * 0.85)
+        hold.current.interval = window.setTimeout(tick, speed)
+      }
+      tick()
+    }, 400)
+  }
+  const stopHold = () => {
+    if (hold.current.timer) clearTimeout(hold.current.timer)
+    if (hold.current.interval) clearTimeout(hold.current.interval)
+    hold.current = {}
+  }
+  useEffect(() => stopHold, [])
+
   return (
     <div className="flex items-stretch gap-2">
       <button
         type="button"
         aria-label="weniger"
+        onPointerDown={() => startHold(-1)}
+        onPointerUp={stopHold}
+        onPointerLeave={stopHold}
+        onPointerCancel={stopHold}
         onClick={() => onChange(clamp(value - step))}
         className="h-14 w-14 shrink-0 rounded-2xl border border-line bg-raised text-2xl text-crema active:bg-line"
       >
@@ -311,6 +345,10 @@ export function Stepper({
       <button
         type="button"
         aria-label="mehr"
+        onPointerDown={() => startHold(1)}
+        onPointerUp={stopHold}
+        onPointerLeave={stopHold}
+        onPointerCancel={stopHold}
         onClick={() => onChange(clamp(value + step))}
         className="h-14 w-14 shrink-0 rounded-2xl border border-line bg-raised text-2xl text-crema active:bg-line"
       >

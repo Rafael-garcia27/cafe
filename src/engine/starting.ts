@@ -162,6 +162,7 @@ function applyBeanModifiers(
   p.ratio = Math.round(p.ratio * 10) / 10
   p.yieldG = Math.round(targetYield(p.doseG, p.ratio) * 10) / 10
   if (ctx.method !== 'espresso') p.waterG = Math.round(p.doseG * p.ratio)
+  p.targetTimeS = targetTimeRange(ctx.method, p.doseG, ctx.bean.roastLevel, p.yieldG) ?? undefined
   return p
 }
 
@@ -175,6 +176,7 @@ function applyPreferenceBias(p: Proposal, ctx: EngineContext, lines: RationaleLi
     out.grindSetting = Math.max(0, Math.round(out.grindSetting + pref.grindBiasSteps))
   out.yieldG = Math.round(targetYield(out.doseG, out.ratio) * 10) / 10
   if (ctx.method !== 'espresso') out.waterG = Math.round(out.doseG * out.ratio)
+  out.targetTimeS = targetTimeRange(ctx.method, out.doseG, ctx.bean.roastLevel, out.yieldG) ?? undefined
   lines.push({
     text: pref.statement ?? 'An deine bisherigen Bewertungen angepasst.',
     kind: 'learning',
@@ -202,7 +204,7 @@ function methodBase(ctx: EngineContext): Proposal {
     inverted: d.inverted,
   }
   if (ctx.method !== 'espresso') p.waterG = Math.round(d.doseG * d.ratio)
-  p.targetTimeS = targetTimeRange(ctx.method, d.doseG, ctx.bean.roastLevel) ?? undefined
+  p.targetTimeS = targetTimeRange(ctx.method, d.doseG, ctx.bean.roastLevel, p.yieldG) ?? undefined
   return p
 }
 
@@ -218,7 +220,7 @@ function proposalFromBrew(b: Brew, ctx: EngineContext): Proposal {
     waterTempC: a.waterTempC ?? getMethodDefaults(ctx.method, ctx.bean.roastLevel).waterTempC,
     grindSetting: a.grindSetting?.value,
     targetTimeS:
-      targetTimeRange(ctx.method, a.doseG, ctx.bean.roastLevel) ??
+      targetTimeRange(ctx.method, a.doseG, ctx.bean.roastLevel, a.yieldG) ??
       [Math.round(b.actual.timeS * 0.93), Math.round(b.actual.timeS * 1.07)],
     stirCount: a.stirCount,
     pourCount: a.pourCount,

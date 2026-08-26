@@ -7,7 +7,7 @@
  */
 import formulas from '@data/formulas.json'
 import { freshnessScore as gaussScore, ageGrindDrift } from '@domain'
-import type { BrewMethod, RoastLevel, Bag, Process } from '@domain'
+import type { BrewMethod, RoastLevel, Bag, Bean, Process } from '@domain'
 import { daysOffRoast, daysSince } from '@/domain'
 
 type RestTable = Record<BrewMethod, Record<RoastLevel, [number, number]>>
@@ -15,7 +15,12 @@ type RestTable = Record<BrewMethod, Record<RoastLevel, [number, number]>>
 const REST: RestTable = formulas.restWindows as unknown as RestTable
 const DECAF_FACTOR = formulas.restWindows.decafFactor as number
 const STALE_AFTER = formulas.restWindows.staleAfterDays as number
-const PROCESS_OFFSET = formulas.restWindows.processOffsetDays as unknown as Record<string, number>
+const PROCESS_MOD = (formulas.restWindows as unknown as {
+  processModifiers?: Record<string, number>
+}).processModifiers ?? {}
+const DENSITY_MOD = (formulas.restWindows as unknown as {
+  densityModifier?: Record<string, { min: number; max: number }>
+}).densityModifier ?? {}
 const FRESHNESS_PARAMS = (
   formulas.formulas.find((f) => f.id === 'F-31') as unknown as {
     params: Record<BrewMethod, Record<RoastLevel, { tPeak: number; sigma: number }>>
@@ -27,26 +32,85 @@ export interface RestWindow {
   max: number
 }
 
+/** Woraus sich das Fenster zusammensetzt — für die Begründung in der UI */
+export interface WindowReason {
+  text: string
+  confidence: 'high' | 'medium' | 'low'
+}
+
+export interface RestWindowDetail extends RestWindow {
+  reasons: WindowReason[]
+}
+
 /**
  * Ruhefenster in Tagen nach Röstung.
  *
- * Decaf altert schneller (kb/05 §6). Die Aufbereitung verschiebt das Fenster
- * zusätzlich: Naturals gasen schneller aus und sind früher trinkreif als
- * Washed — Übernahme aus der alten PWA (docs/03 §2.2).
+ * Einflussgrößen, nach Beleglage geordnet:
+ *   Röstgrad          🟡 dominant — dunkler = mehr CO₂ und porösere Struktur
+ *   Entkoffeinierung  🟡 vorgeschädigte Struktur, kürzeres Fenster
+ *   Dichte / Höhe     🟠 dichtere Bohne hält CO₂ länger
+ *   Aufbereitung      🟠 umstritten — klein, und NUR am oberen Ende
+ *
+ * Zur Aufbereitung, geprüft in docs/04-faktencheck.md §3–4:
+ * `barista-pwa` verschob hier das UNTERE Ende um 3–7 Tage und widersprach
+ * dabei dem eigenen Quellkommentar (Kommentar sagte „braucht länger", Tabelle
+ * sagte „braucht kürzer"). Die ASC-Kursunterlage behandelt Aufbereitung
+ * ausschließlich als Trocknungsvorgang auf der Farm und sagt zur Ruhezeit
+ * nach der Röstung nichts.
+ *
+ * Belegbar ist nicht „Naturals gasen schneller aus", sondern „fruchtbetonte
+ * Aufbereitungen verlieren ihre flüchtigen Ester früher". Der Effekt wirkt
+ * deshalb auf das ENDE des Fensters, nicht auf seinen Beginn — und bleibt
+ * klein genug, dass die eigenen Bewertungen ihn überstimmen können.
  */
 export function restWindow(
   method: BrewMethod,
   roast: RoastLevel,
   isDecaf = false,
   process?: Process,
-): RestWindow {
-  const [min, max] = REST[method]?.[roast] ?? [5, 21]
-  const f = isDecaf ? DECAF_FACTOR : 1
-  const off = process ? (PROCESS_OFFSET[process] ?? 0) : 0
-  return {
-    min: Math.max(1, Math.round(min * f + off)),
-    max: Math.max(2, Math.round(max * f + off)),
+  altitudeMasl?: [number, number],
+  densityGL?: number,
+): RestWindowDetail {
+  const [rawMin, rawMax] = REST[method]?.[roast] ?? [5, 21]
+  const reasons: WindowReason[] = []
+  let min = rawMin
+  let max = rawMax
+
+  if (isDecaf) {
+    min = Math.round(min * DECAF_FACTOR)
+    max = Math.round(max * DECAF_FACTOR)
+    reasons.push({ text: 'Entkoffeiniert — poröse Struktur, kürzeres Fenster.', confidence: 'high' })
   }
+
+  const pm = process ? PROCESS_MOD[process] : undefined
+  if (pm !== undefined && pm !== 0) {
+    max += pm
+    reasons.push({
+      text:
+        pm < 0
+          ? `Fruchtbetonte Aufbereitung — Fruchtaroma lässt rund ${Math.abs(pm)} Tage früher nach.`
+          : `Gewaschen — hält die Klarheit rund ${pm} Tage länger.`,
+      confidence: 'low',
+    })
+  }
+
+  const alt = altitudeMasl ? (altitudeMasl[0] + altitudeMasl[1]) / 2 : null
+  if (alt !== null && alt > 1800 && DENSITY_MOD['altitudeAbove1800']) {
+    min += DENSITY_MOD['altitudeAbove1800'].min
+    max += DENSITY_MOD['altitudeAbove1800'].max
+    reasons.push({ text: 'Über 1800 m — dichtere Bohne, gast langsamer aus.', confidence: 'low' })
+  } else if (densityGL && densityGL > 400 && DENSITY_MOD['densityAbove400']) {
+    min += DENSITY_MOD['densityAbove400'].min
+    max += DENSITY_MOD['densityAbove400'].max
+    reasons.push({ text: 'Hohe Dichte — gast langsamer aus.', confidence: 'low' })
+  }
+
+  return { min: Math.max(1, min), max: Math.max(min + 3, max), reasons }
+}
+
+/** Bequemer Aufruf, wenn die Bohne vorliegt */
+export function restWindowFor(bean: Bean, method: BrewMethod): RestWindowDetail {
+  return restWindow(method, bean.roastLevel, !!bean.isDecaf, bean.process, bean.altitudeMasl, bean.densityGL)
 }
 
 export type FreshnessState =

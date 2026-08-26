@@ -93,18 +93,39 @@ export function getMethodDefaults(id: BrewMethod, roast: RoastLevel): MethodDefa
 }
 
 /**
- * Zielzeit hängt beim V60 von der Dosis ab (kb/03 §2, Anti-Regel D-66).
- * Eine feste Zielzeit für alle Mengen ist der häufigste Fehler in V60-Apps.
+ * Zielfluss je Röstgrad (g/s), aus den ASC-Kurszeiten zurückgerechnet.
+ * Dunkler = poröser = schnellerer Fluss, bevor es in die Bitterkeit kippt.
+ */
+export function targetFlowRate(roast: RoastLevel, ratio = 2): number {
+  const f = (getMethod('espresso') as unknown as {
+    targetFlowRateGs?: Record<string, number>
+  }).targetFlowRateGs
+  const base = f?.[roast] ?? 1.44
+  const exp = f?.['_ratioExponent'] ?? 0.6
+  // Wer die Ratio weitet, mahlt gröber — der Fluss steigt mit.
+  // Bei 1:2 wirkt der Term nicht, ASC bleibt damit exakt erhalten.
+  return base * Math.pow(Math.max(0.5, ratio) / 2, exp)
+}
+
+/**
+ * Zielzeit.
+ *
+ * Espresso: aus Zielausbringung und Zielfluss. Damit reagiert die Zielzeit auf
+ * Dosis UND Ratio — der alte Ansatz mit fester Zeit je Röstgrad lieferte bei
+ * 1:3 dieselben 28 s wie bei 1:2 und trieb den Nutzer in die Unterextraktion.
+ * Bei 18 g → 36 g reproduziert das exakt die ASC-Kurszeiten.
+ *
+ * V60: skaliert mit der Dosis (Anti-Regel D-66). Eine feste Zielzeit für alle
+ * Mengen ist der häufigste Fehler in V60-Apps.
  */
 export function targetTimeRange(
   method: BrewMethod,
   doseG: number,
   roast: RoastLevel = 'medium',
+  yieldG?: number,
 ): [number, number] | null {
   const m = getMethod(method)
 
-  // V60: Die Zielzeit skaliert mit der Dosis. Eine feste Zeit für alle
-  // Mengen ist der häufigste Fehler in V60-Apps (Anti-Regel D-66).
   if (m.targetTimeByDose?.length) {
     const table = m.targetTimeByDose
     let best = table[0]!
@@ -114,10 +135,41 @@ export function targetTimeRange(
     return best.timeS
   }
 
-  // Espresso / AeroPress: Zielzeit hängt am Röstgrad, nicht an der Dosis.
+  if (method === 'espresso') {
+    const out = yieldG ?? doseG * (m.defaults[roast]?.ratio ?? 2)
+    const ratio = out / doseG
+    const mid = out / targetFlowRate(roast, ratio)
+    // ASC nennt ±3 s Toleranz auf die Kurszeiten.
+    return [Math.round(mid - 3), Math.round(mid + 3)]
+  }
+
   const t = m.defaults[roast]?.timeS ?? m.defaults['medium']?.timeS
   if (t) return [Math.round(t - 2), Math.round(t + 2)]
   return null
+}
+
+export interface Tolerances {
+  doseG: number
+  timeS: number
+  yieldG?: number
+  waterG?: number
+}
+
+/**
+ * Toleranzen des Kursrezepts (ASC). Innerhalb dieser Spannen ist eine
+ * Abweichung KEIN Fehler, sondern die Wiederholgenauigkeit des Handwerks —
+ * die Engine darf dort nicht korrigieren.
+ */
+export function tolerances(method: BrewMethod): Tolerances {
+  const t = (getMethod(method) as unknown as { tolerances?: Tolerances }).tolerances
+  return t ?? { doseG: 1, timeS: 3 }
+}
+
+/** Basisrezept, von dem aus eingemessen wird */
+export function baseRecipe(method: BrewMethod) {
+  return (getMethod(method) as unknown as {
+    baseRecipe?: { doseG: number; yieldG: number; ratio: number; timeS: number }
+  }).baseRecipe
 }
 
 /** Mahlgrad-Offset, wenn die Dosis stark vom Referenzpunkt abweicht */
@@ -210,6 +262,37 @@ export const RULES = diagnosticsRaw.rules as unknown as DiagnosticRuleDef[]
 export const ENGINE_META = diagnosticsRaw.engine
 export const LOOP_DETECTION = diagnosticsRaw.loopDetection
 export const PROHIBITIONS = diagnosticsRaw.prohibitions as string[]
+
+export interface RoastRule {
+  id: string
+  when: { roast: RoastLevel[]; defect: string }
+  reading: string
+  order: string[]
+  hint: string
+  tempCeiling?: number
+  tempFloor?: number
+  ratioCeiling?: number
+  suspectRoast?: boolean
+  confidence: 'high' | 'medium' | 'low'
+}
+
+const ROAST_RULES = ((diagnosticsRaw as unknown as {
+  roastConditioned?: { rules: RoastRule[] }
+}).roastConditioned?.rules ?? []) as RoastRule[]
+
+/**
+ * Röstgradabhängige Lesart eines Fehlers.
+ *
+ * Derselbe Fehler bedeutet je nach Röstgrad etwas anderes: Säure bei heller
+ * Röstung ist der Normalfall und meist echte Unterextraktion; Säure bei
+ * dunkler Röstung ist ungewöhnlich und deutet eher auf Technik hin.
+ */
+export function roastRuleFor(roast: RoastLevel, defects: string[]): RoastRule | undefined {
+  for (const r of ROAST_RULES) {
+    if (r.when.roast.includes(roast) && defects.includes(r.when.defect)) return r
+  }
+  return undefined
+}
 
 export function getRule(id: string): DiagnosticRuleDef | undefined {
   return RULES.find((r) => r.id === id)

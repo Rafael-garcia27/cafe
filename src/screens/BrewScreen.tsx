@@ -13,6 +13,7 @@ import { startingPoint } from '@/engine/starting'
 import { diagnose, type Diagnosis } from '@/engine/diagnose'
 import { assessFreshness } from '@/engine/freshness'
 import GrinderDial from '@/components/GrinderDial'
+import BrewAnimation from '@/components/BrewAnimation'
 import { consistencyWarning, brewsUntilPersonal } from '@/engine/learn'
 import { suitability, SUITABILITY_LABEL, bestMethodFor } from '@/engine/suitability'
 import { grindPlausibility, formatSetting, vendorRange } from '@/engine/grinder'
@@ -170,7 +171,15 @@ export default function BrewScreen({ navigate }: Props) {
 
   // ══ TIMER (Vollbild) ══════════════════════════════════════════════
   if (phase === 'timer') {
-    return <BrewTimer target={targetT} onStop={(sec) => { setElapsed(sec); setPhase('record') }} onCancel={reset} />
+    return (
+      <BrewTimer
+        method={method}
+        target={targetT}
+        targetYieldG={isEspresso ? yieldG : undefined}
+        onStop={(sec) => { setElapsed(sec); setPhase('record') }}
+        onCancel={reset}
+      />
+    )
   }
 
   return (
@@ -369,11 +378,11 @@ export default function BrewScreen({ navigate }: Props) {
               </Field>
               {isEspresso ? (
                 <Field label="Ziel-Ausbringung" term="yield">
-                  <Stepper value={yieldG} onChange={setYieldG} step={0.5} min={10} max={90} unit="g" decimals={1} />
+                  <Stepper value={yieldG} onChange={setYieldG} step={0.1} min={10} max={90} unit="g" decimals={1} />
                 </Field>
               ) : (
                 <Field label="Wasser" hint={`Verhältnis 1:${(waterG / doseG).toFixed(1)}`}>
-                  <Stepper value={waterG} onChange={setWaterG} step={5} min={80} max={900} unit="g" />
+                  <Stepper value={waterG} onChange={setWaterG} step={1} min={80} max={900} unit="g" />
                 </Field>
               )}
               <Field label="Temperatur">
@@ -418,9 +427,9 @@ export default function BrewScreen({ navigate }: Props) {
 
           <Section title={isEspresso ? 'Tatsächlich im Glas' : 'Tatsächlich aufgegossen'}>
             {isEspresso ? (
-              <Stepper value={yieldG} onChange={setYieldG} step={0.5} min={5} max={120} unit="g" decimals={1} />
+              <Stepper value={yieldG} onChange={setYieldG} step={0.1} min={5} max={120} unit="g" decimals={1} />
             ) : (
-              <Stepper value={waterG} onChange={setWaterG} step={5} min={50} max={1000} unit="g" />
+              <Stepper value={waterG} onChange={setWaterG} step={1} min={50} max={1000} unit="g" />
             )}
           </Section>
 
@@ -642,11 +651,15 @@ export default function BrewScreen({ navigate }: Props) {
 // ══ Timer ═══════════════════════════════════════════════════════════
 
 function BrewTimer({
+  method,
   target,
+  targetYieldG,
   onStop,
   onCancel,
 }: {
+  method: BrewMethod
   target?: [number, number]
+  targetYieldG?: number
   onStop: (sec: number) => void
   onCancel: () => void
 }) {
@@ -672,8 +685,9 @@ function BrewTimer({
       {/* Ganzflächig antippbar — blindbedienbar mit nassen Händen */}
       <button
         onClick={() => onStop(sec)}
-        className="flex flex-1 flex-col items-center justify-center gap-3"
+        className="flex flex-1 flex-col items-center justify-center gap-1"
       >
+        <BrewAnimation method={method} elapsedS={sec} target={target} targetYieldG={targetYieldG} />
         <span
           className={`tnum text-[96px] leading-none font-light tabular-nums ${
             over ? 'text-bad' : inTarget ? 'text-ok' : 'text-ink'

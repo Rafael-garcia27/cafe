@@ -12,7 +12,7 @@ import {
   canUseTimeForGrind,
 } from '@domain'
 import type { Grinder, BrewMethod, FlowState } from '@domain'
-import { getGrinderCatalogEntry, referenceMicron, GRIND_TARGETS, GRINDER_CATALOG } from '@/kb'
+import { getGrinderCatalogEntry, referenceMicron, GRIND_TARGETS, GRINDER_CATALOG, tolerances } from '@/kb'
 
 export function micronFor(setting: number, grinder?: Grinder): number | null {
   if (!grinder) return null
@@ -58,9 +58,14 @@ export function correctionFromTime(
 ): GrindCorrection | null {
   if (actualTimeS <= 0 || targetTimeS <= 0) return null
 
+  // Innerhalb der Kurstoleranz wird nicht korrigiert (ASC: Espresso ±3 s).
+  // Eine Abweichung, die kleiner ist als die eigene Wiederholgenauigkeit,
+  // ist kein Signal — wer darauf reagiert, jagt Rauschen.
+  const tol = tolerances(method).timeS
+  if (Math.abs(actualTimeS - targetTimeS) <= tol) return null
+
   const factor = grindScaleFactor(actualTimeS, targetTimeS)
   const percent = (factor - 1) * 100
-  // Unter 4 % ist die Änderung kleiner als die Streuung der Zubereitung.
   if (Math.abs(percent) < 4) return null
 
   const currentMicron =

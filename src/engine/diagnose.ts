@@ -13,7 +13,7 @@ import type { BrewActual, Observation, Measurement, Tasting, Defect, Brew } from
 import { extractionYield, beverageMass, flowRate } from '@domain'
 import type { EngineContext } from '@/domain'
 import { daysOffRoast } from '@/domain'
-import { getRule, lrrFor, TARGET_RANGES, HARD_LIMITS } from '@/kb'
+import { getRule, lrrFor, TARGET_RANGES, HARD_LIMITS, tolerances, roastRuleFor } from '@/kb'
 import { correctionFromTime, describeCorrection, cappedNote, timeIsTrustworthy } from './grinder'
 import { restWindow } from './freshness'
 
@@ -192,7 +192,11 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
 
   const targetT = input.targetTimeS
   const targetMid = targetT ? (targetT[0] + targetT[1]) / 2 : undefined
-  const timeInTarget = targetT ? actual.timeS >= targetT[0] && actual.timeS <= targetT[1] : true
+  const tol = tolerances(method)
+  // Zielband plus Kurstoleranz — innerhalb davon gilt die Zeit als getroffen.
+  const timeInTarget = targetMid !== undefined
+    ? Math.abs(actual.timeS - targetMid) <= tol.timeS
+    : true
 
   // ════ STUFE 0 — GATES ════════════════════════════════════════════════
 
@@ -590,14 +594,26 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
     }
   }
 
+  // ── Röstgradabhängige Lesart ──
+  // Sie ändert die Reihenfolge der Kaskade und liefert die Begründung,
+  // warum derselbe Fehler hier etwas anderes bedeutet als anderswo.
+  const rr = roastRuleFor(ctx.bean.roastLevel, defects ?? [])
+
   // ── Kardinalregel: genau EINE Empfehlung ──
   // Reihenfolge: Mahlgrad → Ratio → Temperatur → Technik (kb/14 §6),
   // außer bei AeroPress, wo Agitation und Temperatur vorrücken.
-  const order =
-    method === 'aeropress'
+  const order = rr
+    ? // Röstgrad schlägt die Standardkaskade: bei dunkel+bitter zuerst die
+      // Temperatur, bei dunkel+sauer zuerst die Technik.
+      [...rr.order, 'grindSetting', 'ratio', 'waterTempC', 'stirCount', 'pourCount']
+    : method === 'aeropress'
       ? ['stirCount', 'waterTempC', 'grindSetting', 'ratio', 'steepS']
       : ['grindSetting', 'ratio', 'waterTempC', 'stirCount', 'pourCount']
-  sugg.sort((a, b) => order.indexOf(a.variable) - order.indexOf(b.variable))
+  const rank = (v: string) => {
+    const i = order.indexOf(v)
+    return i === -1 ? 99 : i
+  }
+  sugg.sort((a, b) => rank(a.variable) - rank(b.variable))
 
   const primary = sugg[0]!
   const secondary = sugg[1]

@@ -94,7 +94,7 @@ export function recompute(brews: Brew[], beans: Bean[], bags: Bag[], today: Date
     const times: number[] = []
     for (const b of ofMethod) {
       const bean = beanById.get(b.beanId)
-      const range = targetTimeRange(m, b.actual.doseG, bean?.roastLevel)
+      const range = targetTimeRange(m, b.actual.doseG, bean?.roastLevel, b.actual.yieldG)
       times.push(b.actual.timeS)
       if (range) deviations.push(b.actual.timeS - (range[0] + range[1]) / 2)
     }

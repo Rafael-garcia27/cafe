@@ -689,19 +689,33 @@
     },
     "decafFactor": 0.7,
     "staleAfterDays": 60,
-    "processOffsetDays": {
-      "_source": "barista-pwa/engine/freshness.ts, fachlich bestätigt",
-      "_note": "Naturals gasen schneller aus und sind früher trinkreif; Washed brauchen länger.",
-      "washed": 0,
-      "honey-yellow": -2,
-      "honey-red": -2,
-      "honey-black": -3,
-      "natural": -3,
+    "_processNote": "Aufbereitung wirkt NUR auf das obere Fensterende. Begründung: Die belegbare Aussage ist nicht 'Naturals brauchen länger zum Ausgasen' (dafür gibt es widersprüchliche Belege und die ASC-Unterlage sagt nichts dazu), sondern 'fruchtbetonte Aufbereitungen verlieren ihre flüchtigen Fruchtester früher'. Effekt daher klein und als heuristisch markiert. barista-pwa setzte hier ±3-7 Tage am UNTEREN Ende an und widersprach dabei dem eigenen Kommentar.",
+    "processModifiers": {
+      "_confidence": "low",
+      "_unit": "Tage auf das obere Fensterende",
+      "washed": 2,
+      "honey-yellow": 1,
+      "honey-red": 0,
+      "honey-black": -1,
+      "natural": -2,
       "anaerobic": -3,
       "carbonic-maceration": -3,
-      "wet-hulled": -1,
+      "wet-hulled": 1,
       "experimental": -2
-    }
+    },
+    "densityModifier": {
+      "_confidence": "low",
+      "_note": "Dichtere Bohnen halten CO₂ länger — Fenster beginnt und endet später.",
+      "altitudeAbove1800": {
+        "min": 1,
+        "max": 2
+      },
+      "densityAbove400": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "_learnableNote": "Alle Modifikatoren sind Startwerte. Sobald für eine Bohne genügend bewertete Durchgänge vorliegen, gewinnt das gemessene persönliche Optimum."
   },
   "roastModifiers": {
     "_source": "kb/03 §6, kb/05 §7",
@@ -835,5 +849,13 @@
       3600
     ],
     "implausibleEyAbove": 26
+  },
+  "wasteFactor": {
+    "_source": "barista-pwa WASTE_FACTOR 1.12, aufgeteilt nach Methode",
+    "_note": "Retention in der Mühle, Spülschuss, Verschütten. Espresso verliert durch Einzeldosierung und Purge mehr als ein abgewogener Filter.",
+    "_confidence": "low",
+    "espresso": 1.12,
+    "v60": 1.05,
+    "aeropress": 1.05
   }
 }
