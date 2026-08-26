@@ -3,14 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Persönliches Dial-in-Werkzeug für Espresso, V60 und AeroPress",
+  "description": "Pers\u00f6nliches Dial-in-Werkzeug f\u00fcr Espresso, V60 und AeroPress",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy:direct": "bash scripts/deploy-direct.sh",
+    "deploy:restore": "bash scripts/deploy-restore.sh"
   },
   "dependencies": {
     "idb": "^8.0.3",

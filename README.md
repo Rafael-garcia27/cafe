@@ -149,3 +149,27 @@ Alle Zahlen stammen aus `kb/` und sind dort mit Konfidenz gekennzeichnet:
 ---
 
 *Gebaut für ein iPhone 12, eine Espressomühle, einen V60 und eine AeroPress.*
+
+## Deployment
+
+Im Normalfall macht das die CI: Push auf `main` → Typprüfung + Tests → Build →
+GitHub Pages. Nichts weiter zu tun.
+
+**Wenn GitHub Actions ausgefallen ist** ([Status prüfen](https://www.githubstatus.com)):
+
+```bash
+npm run deploy:direct
+```
+
+Baut, pusht das Ergebnis auf `gh-pages` und stößt einen Pages-Build an — ohne
+Actions. Danach steht Pages auf `legacy`. Sobald Actions wieder läuft:
+
+```bash
+npm run deploy:restore
+```
+
+> **Achtung, zwei Konten:** Auf diesem Rechner liegt im Schlüsselbund die
+> CogniCore-Anmeldung (`Rafael-278`) für github.com, und sie antwortet vor dem
+> gh-Helfer. Neue Repos pushen deshalb standardmäßig unter dem falschen Konto.
+> Die Deploy-Skripte umgehen das. Dauerhafte Behebung: siehe
+> `docs/04-faktencheck.md` §10.

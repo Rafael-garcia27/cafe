@@ -293,3 +293,72 @@ Die Mahlgradkorrektur rechnet über `micronPerStep` von Prozent in Klicks um.
 Mit 12,5 statt 20 µm ergibt dieselbe relative Änderung **mehr Klicks** —
 eine 12-%-Korrektur bei 300 µm sind jetzt 3 Klicks statt 2. Das entspricht
 der Erfahrung an Handmühlen besser.
+
+---
+
+## 10. Betriebsnotiz: zwei GitHub-Konten auf einem Rechner
+
+Beim Notfall-Deployment während des Actions-Ausfalls am 26.08.2026 kam:
+
+```
+remote: Permission to Rafael-garcia27/dialed.git denied to Rafael-278.
+```
+
+### Ursache
+
+Auf dem Rechner sind zwei Konten hinterlegt:
+
+| Konto | Rolle |
+|---|---|
+| `Rafael-garcia27` | privat — Eigentümer von `dialed` |
+| `Rafael-278` | „Rafael CCIT", Org `CogniCoreitsolutions` |
+
+Git fragt die Anmeldehelfer **der Reihe nach**. Auf macOS steht
+`osxkeychain` vor `!gh auth git-credential` — und im Schlüsselbund liegt
+genau **ein** Eintrag für `github.com`:
+
+```
+"srvr" = github.com
+"acct" = Rafael-278
+```
+
+Gemessen:
+
+| Kontext | Liefert |
+|---|---|
+| frisches Repo, nur globale Konfiguration | **`Rafael-278`** |
+| gh-Helfer allein, Schlüsselbund umgangen | `Rafael-garcia27` ✓ |
+
+Global ist **keine einzige** `credential`-Einstellung gesetzt. Das
+Barista-Repo funktioniert nur, weil es lokale Überschreibungen trägt:
+
+```
+credential.https://github.com.username = Rafael-garcia27
+```
+
+### Tragweite
+
+**Jedes neue Repo auf diesem Rechner pusht standardmäßig als CogniCore.**
+Das ist eine stille Falle: Der Push schlägt bei fremden Repos fehl (gut
+sichtbar), bei eigenen könnte er aber unter dem Firmenkonto durchgehen.
+
+### Behebung
+
+Nicht durchgeführt — es ist eine Änderung an der Rechnerkonfiguration des
+Nutzers. Der saubere Weg wäre, für github.com den gh-Helfer vorzuziehen:
+
+```bash
+git config --global credential.https://github.com.helper ""
+git config --global --add credential.https://github.com.helper "!gh auth git-credential"
+```
+
+Die erste Zeile leert die Helferliste **nur für github.com**, die zweite
+setzt den gh-Helfer davor. Andere Hosts bleiben auf dem Schlüsselbund.
+Danach folgt Git immer dem Konto, auf das `gh auth switch` zeigt.
+
+### Was das NICHT war
+
+Der Actions-Ausfall hatte damit nichts zu tun. Belegt durch: Repo gehört dem
+privaten Konto, Actions sind erlaubt, alle Läufe wurden von
+`Rafael-garcia27` ausgelöst, das Repo ist öffentlich (unbegrenzte Minuten) —
+und dieselbe Konstellation lief am selben Tag dreimal erfolgreich durch.
