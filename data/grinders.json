@@ -52,7 +52,7 @@
       "scaleType": "stepped",
       "clicksPerRotation": 10,
       "clicksPerNumber": 10,
-      "micronPerStep": 20,
+      "micronPerStep": 12.5,
       "zeroPointOffsetMicron": 0,
       "usableRange": [
         0,
@@ -91,15 +91,15 @@
           80
         ],
         "aeropress": [
-          40,
-          60
+          36,
+          48
         ],
         "frenchpress": [
           80,
           90
         ]
       },
-      "confidence": "vendor",
+      "confidence": "measured",
       "note": "Skala in Nummern mit je 10 Klicks. Anzeige als Nummer (2,4 = Nummer 2 plus 4 Klicks).",
       "_specs": {
         "_comment": "Nur Referenz — wird in der App NICHT angezeigt.",
@@ -142,7 +142,40 @@
           ]
         }
       ],
-      "wordmark": "MYLO"
+      "wordmark": "MYLO",
+      "_resolutionNote": "Das Datenblatt nennt 20 µm Auflösung — das beschreibt aber den Mahlscheibenabstand, nicht die entstehende Partikelgröße. Mit 20 µm/Klick läge Espresso bei 400-600 µm (Standard: 200-400) und French Press bei 1600-1800 µm (Standard: 900-1200) — beides unmöglich. Aus dem Aufdruck der Mühle gegen bekannte Partikelgrößen zurückgerechnet (Anker: Espresso-Mitte 300 µm bei Klick 25, French-Press-Mitte 1050 µm bei Klick 85) ergeben sich 12,5 µm/Klick bei Nullpunkt ~0. Damit liegen ALLE vier Werksempfehlungen in ihren Standardbereichen. Hergeleitet in docs/04-faktencheck.md §9.",
+      "_aeropressNote": "AeroPress steht nicht auf der Mühle. 36-48 Klicks (Skala 3,6-4,8) gilt für das Standardrezept mit 90 s Ziehzeit. AeroPress hat die größte Rezeptspanne der drei Methoden — der Mahlgrad folgt deshalb dem Rezept, siehe grindByVariant.",
+      "grindByVariant": {
+        "_unit": "Klicks",
+        "espresso-style": [
+          20,
+          28
+        ],
+        "championship": [
+          28,
+          36
+        ],
+        "hoffmann": [
+          32,
+          40
+        ],
+        "concentrate-bypass": [
+          32,
+          44
+        ],
+        "standard": [
+          36,
+          48
+        ],
+        "long-steep": [
+          48,
+          64
+        ],
+        "cold-brew": [
+          80,
+          104
+        ]
+      }
     },
     {
       "id": "1zpresso-j-max",

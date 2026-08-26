@@ -375,6 +375,8 @@ export interface GrinderCatalogEntry {
   vendorPresetsByNumber?: Record<string, [number, number]>
   /** Welche presets NICHT vom Hersteller stammen, sondern abgeleitet sind */
   presetsDerived?: string[]
+  /** Mahlgrad je Rezeptvariante — AeroPress hat die größte Rezeptspanne */
+  grindByVariant?: Record<string, [number, number]>
   /** Aufdruck auf dem Verstellring, wie er auf der Mühle steht */
   ringLabels?: { text: string; range: [number, number] }[]
   wordmark?: string
@@ -400,6 +402,21 @@ export const GRIND_TECHNIQUES = grindersRaw.techniques as {
 
 export function getGrinderCatalogEntry(id: string): GrinderCatalogEntry | undefined {
   return GRINDER_CATALOG.find((g) => g.id === id)
+}
+
+/**
+ * Mahlgradbereich für eine konkrete Rezeptvariante.
+ * Fällt auf den Methodenwert zurück, wenn die Variante nichts Eigenes hat.
+ */
+export function grindRangeForVariant(
+  grinderName: string,
+  method: BrewMethod,
+  variantId?: string,
+): [number, number] | undefined {
+  const e = GRINDER_CATALOG.find((g) => g.name === grinderName)
+  if (!e) return undefined
+  if (variantId && e.grindByVariant?.[variantId]) return e.grindByVariant[variantId]
+  return e.presets?.[method]
 }
 
 /** Voreingestellte Mühle beim ersten Start */

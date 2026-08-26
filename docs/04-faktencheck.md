@@ -208,3 +208,88 @@ verliert mehr als ein abgewogener V60.
 | 5 | AeroPress-Mahlgrad ungeklärt | Rückfrage |
 | 6 | Eignungs-Punktzahlen unbelegt | nur als Klasse |
 | 7 | Schwundfaktor fehlt in `dialed` | übernehmen, methodenabhängig |
+
+---
+
+## 9. Nachtrag: Die Mühlenskala stimmte nicht
+
+Anlass war die offene Frage aus §5 (AeroPress-Mahlgrad). Sie ließ sich nicht
+beantworten, ohne zuerst zu klären, was ein Klick auf der Mylo überhaupt
+bedeutet — und dabei fiel ein Fehler in `dialed` auf.
+
+### Das Datenblatt beschreibt etwas anderes als gedacht
+
+Hinterlegt war `micronPerStep: 20`, aus der Herstellerangabe
+*„Adjustment resolution 20 microns"*. Gegenprobe gegen den Aufdruck der Mühle:
+
+| Aufdruck | bei 20 µm/Klick | Standardbereich | |
+|---|---|---|---|
+| ESPRESSO 2–3 | 400–600 µm | 200–400 µm | ✗ |
+| MOKAPOT 3–4 | 600–800 µm | 350–500 µm | ✗ |
+| POUR OVER 5–8 | 1000–1600 µm | 550–800 µm | ✗ |
+| FRENCH PRESS 8–9 | 1600–1800 µm | 900–1200 µm | ✗ |
+
+**Keine einzige Werksempfehlung landet in ihrem Standardbereich.** Die Angabe
+beschreibt den **Mahlscheibenabstand**, nicht die entstehende Partikelgröße.
+Das ist nicht dasselbe: Bohnen brechen entlang ihrer Zellstruktur, das Mahlgut
+fällt kleiner aus als der eingestellte Spalt.
+
+### Rückrechnung aus dem Aufdruck
+
+Zwei Anker, beide aus dem Aufdruck der Mühle gegen Branchenkonsens:
+
+```
+Klick 25  ≈  300 µm   (Espresso-Mitte)
+Klick 85  ≈ 1050 µm   (French-Press-Mitte)
+
+⇒ (1050 − 300) / (85 − 25) = 12,5 µm pro Klick, Nullpunkt ≈ 0
+```
+
+Gegenprobe mit 12,5 µm/Klick:
+
+| Aufdruck | ergibt | Standardbereich | |
+|---|---|---|---|
+| ESPRESSO 2–3 | 238–363 µm | 200–400 µm | ✓ |
+| MOKAPOT 3–4 | 363–488 µm | 350–500 µm | ✓ |
+| POUR OVER 5–8 | 613–988 µm | 550–800 µm | ✓ |
+| FRENCH PRESS 8–9 | 988–1113 µm | 900–1200 µm | ✓ |
+
+**Alle vier passen.** Der Wert ist zusätzlich plausibel: 12,5 µm/Klick ist
+genau die Auflösung vergleichbarer 38-mm-Kegelmahlwerke.
+
+Konfidenz von `vendor` auf **`measured`** gehoben — die Herleitung ist besser
+belegt als die Herstellerangabe.
+
+### Damit ist §5 beantwortet
+
+AeroPress steht nicht auf der Mühle, hat aber die größte Rezeptspanne der drei
+Methoden. Ein einzelner Bereich wäre die falsche Antwort:
+
+| Stil | Ziel µm | Klicks | Mylo-Skala |
+|---|---|---|---|
+| Espresso-Style (Prismo) | 250–350 | 20–28 | 2,0–2,8 |
+| Championship (45 s) | 350–450 | 28–36 | 2,8–3,6 |
+| Hoffmann (2:30) | 400–500 | 32–40 | 3,2–4,0 |
+| Konzentrat + Bypass | 400–550 | 32–44 | 3,2–4,4 |
+| **Standard (90 s)** | **450–600** | **36–48** | **3,6–4,8** |
+| Lange Ziehzeit (3–5 min) | 600–800 | 48–64 | 4,8–6,4 |
+| Cold Brew | 1000–1300 | 80–104 | 8,0–10,4 |
+
+**Auflösung des Widerspruchs:**
+
+| Quelle | Angabe | Bewertung |
+|---|---|---|
+| `barista-pwa` | 3,0–5,0 | nah dran; unten etwas zu fein |
+| `dialed` (alt) | 4,0–6,0 | oben deutlich zu grob |
+| **hergeleitet** | **3,6–4,8** | für das Standardrezept |
+
+Der Auftraggeber hatte den alten Wert nach eigener Aussage nicht bewusst
+bestätigt — der Kommentar „user-confirmed" in `barista-pwa` war also selbst
+eine unbelegte Behauptung. Gut, dass wir nicht darauf gebaut haben.
+
+### Nebenwirkung
+
+Die Mahlgradkorrektur rechnet über `micronPerStep` von Prozent in Klicks um.
+Mit 12,5 statt 20 µm ergibt dieselbe relative Änderung **mehr Klicks** —
+eine 12-%-Korrektur bei 300 µm sind jetzt 3 Klicks statt 2. Das entspricht
+der Erfahrung an Handmühlen besser.

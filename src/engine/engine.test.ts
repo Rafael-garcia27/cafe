@@ -12,7 +12,7 @@ import { DEFAULT_SETTINGS, EMPTY_LEARNED } from '@/domain'
 import { startingPoint } from './starting'
 import { diagnose } from './diagnose'
 import { assessFreshness, driftCorrection, restWindow } from './freshness'
-import { targetTimeRange, tolerances, roastRuleFor } from '@/kb'
+import { targetTimeRange, tolerances, roastRuleFor, GRINDER_CATALOG, grindRangeForVariant } from '@/kb'
 import { correctionFromTime, calibrate, suggestedSetting, timeIsTrustworthy } from './grinder'
 import { recompute } from './learn'
 
@@ -771,5 +771,70 @@ describe('Röstgradabhängige Lesart (wenn Light Roast und sauer, dann …)', ()
 
   it('mittlere Röstung nutzt die Standardkaskade', () => {
     expect(roastRuleFor('medium', ['sour'])).toBeUndefined()
+  })
+})
+
+describe('Mylo-Skala gegen bekannte Partikelgrößen (docs/04 §9)', () => {
+  // Das Datenblatt nennt 20 µm/Klick — das beschreibt den Mahlscheibenabstand,
+  // nicht die Partikelgröße. Aus dem Aufdruck hergeleitet: 12,5 µm/Klick.
+  const mylo = GRINDER_CATALOG.find((g) => g.id === 'mylo-sg2')!
+  const micron = (clicks: number) => mylo.zeroPointOffsetMicron + clicks * mylo.micronPerStep
+
+  const STANDARD: Record<string, [number, number]> = {
+    espresso: [200, 400],
+    moka: [350, 500],
+    v60: [550, 800],
+    frenchpress: [900, 1200],
+  }
+
+  it('jede Werksempfehlung liegt im Standardbereich ihrer Methode', () => {
+    for (const [key, [lo, hi]] of Object.entries(STANDARD)) {
+      const preset = mylo.presets?.[key]
+      expect(preset, `Preset fehlt: ${key}`).toBeDefined()
+      const a = micron(preset![0])
+      const b = micron(preset![1])
+      // Bereiche müssen sich überlappen
+      expect(a, `${key} zu grob`).toBeLessThan(hi)
+      expect(b, `${key} zu fein`).toBeGreaterThan(lo)
+    }
+  })
+
+  it('die Datenblattangabe 20 µm/Klick ist nachweislich falsch', () => {
+    // Gegenprobe: Mit 20 µm/Klick läge KEINE Werksempfehlung mehr in ihrem
+    // Standardbereich. French Press ist der eindeutigste Fall.
+    const fpAt20 = [80 * 20, 90 * 20] // 1600–1800 µm
+    expect(fpAt20[0]).toBeGreaterThan(STANDARD.frenchpress![1]) // > 1200
+    // Und Espresso läge im Mittel bei 500 µm statt bei 300
+    const espMidAt20 = (20 * 20 + 30 * 20) / 2
+    expect(espMidAt20).toBeGreaterThan(STANDARD.espresso![1])
+    // Mit dem hergeleiteten Wert stimmt beides
+    expect(micron(85)).toBeGreaterThan(STANDARD.frenchpress![0])
+    expect(micron(85)).toBeLessThan(STANDARD.frenchpress![1])
+  })
+
+  it('AeroPress liegt zwischen Espresso und Pour Over', () => {
+    const ap = mylo.presets!['aeropress']!
+    expect(ap[0]).toBeGreaterThan(mylo.presets!['espresso']![1])
+    expect(ap[1]).toBeLessThan(mylo.presets!['v60']![1])
+  })
+
+  it('AeroPress-Standard trifft 450-600 µm', () => {
+    const ap = mylo.presets!['aeropress']!
+    expect(micron(ap[0])).toBeGreaterThanOrEqual(430)
+    expect(micron(ap[1])).toBeLessThanOrEqual(620)
+  })
+
+  it('Mahlgrad folgt der Rezeptvariante', () => {
+    const espStyle = grindRangeForVariant('Mylo SG2', 'aeropress', 'espresso-style')!
+    const std = grindRangeForVariant('Mylo SG2', 'aeropress', 'standard')!
+    const cold = grindRangeForVariant('Mylo SG2', 'aeropress', 'cold-brew')!
+    expect(espStyle[1]).toBeLessThan(std[0])
+    expect(cold[0]).toBeGreaterThan(std[1])
+  })
+
+  it('unbekannte Variante fällt auf den Methodenwert zurück', () => {
+    expect(grindRangeForVariant('Mylo SG2', 'aeropress', 'gibt-es-nicht')).toEqual(
+      mylo.presets!['aeropress'],
+    )
   })
 })
