@@ -88,7 +88,7 @@
         ],
         "v60": [
           50,
-          80
+          64
         ],
         "aeropress": [
           36,
@@ -97,6 +97,10 @@
         "frenchpress": [
           80,
           90
+        ],
+        "pourover_wide": [
+          50,
+          80
         ]
       },
       "confidence": "measured",
@@ -175,7 +179,8 @@
           80,
           104
         ]
-      }
+      },
+      "_v60Note": "Das Werksband POUR OVER 5,0-8,0 (625-1000 µm) deckt auch Chemex und Batch mit ab. Für einen klassischen V60 mit 18 g liegt das Ziel bei 550-800 µm — deshalb nur die untere Hälfte des Bands: 50-64 Klicks (Skala 5,0-6,4), Mitte 713 µm. Die Werksuntergrenze 5,0 bleibt dabei respektiert."
     },
     {
       "id": "1zpresso-j-max",

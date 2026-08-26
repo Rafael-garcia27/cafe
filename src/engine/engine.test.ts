@@ -13,7 +13,7 @@ import { startingPoint } from './starting'
 import { diagnose } from './diagnose'
 import { assessFreshness, driftCorrection, restWindow } from './freshness'
 import { targetTimeRange, tolerances, roastRuleFor, GRINDER_CATALOG, grindRangeForVariant } from '@/kb'
-import { correctionFromTime, calibrate, suggestedSetting, timeIsTrustworthy } from './grinder'
+import { correctionFromTime, calibrate, suggestedSetting, timeIsTrustworthy, formatSetting, grinderFromCatalog } from './grinder'
 import { recompute } from './learn'
 
 const TODAY = new Date('2026-08-18T08:00:00Z')
@@ -836,5 +836,41 @@ describe('Mylo-Skala gegen bekannte Partikelgrößen (docs/04 §9)', () => {
     expect(grindRangeForVariant('Mylo SG2', 'aeropress', 'gibt-es-nicht')).toEqual(
       mylo.presets!['aeropress'],
     )
+  })
+})
+
+describe('Mylo-Skala: 1 Klick = 0,1 (vom Nutzer bestätigt)', () => {
+  const mylo = GRINDER_CATALOG.find((g) => g.id === 'mylo-sg2')!
+  const g = grinderFromCatalog('mylo-sg2', 't')!
+
+  it('10 Klicks ergeben eine Skalenzahl', () => {
+    expect(mylo.clicksPerNumber).toBe(10)
+    expect(formatSetting(10, g)).toBe('1,0')
+    expect(formatSetting(100, g)).toBe('10,0')
+  })
+
+  it('25 Klicks sind die Espresso-Standardeinstellung — Skala 2,5', () => {
+    expect(formatSetting(25, g)).toBe('2,5')
+    expect(suggestedSetting(g, 'espresso')).toBe(25)
+  })
+
+  it('jeder Methoden-Startpunkt liegt im Standardbereich seiner Partikelgröße', () => {
+    const bands: Record<string, [number, number]> = {
+      espresso: [200, 400],
+      v60: [550, 800],
+      aeropress: [450, 600],
+    }
+    for (const [m, [lo, hi]] of Object.entries(bands)) {
+      const clicks = suggestedSetting(g, m as 'espresso' | 'v60' | 'aeropress')!
+      const micron = clicks * g.micronPerStep
+      expect(micron, `${m}: ${micron} µm außerhalb ${lo}-${hi}`).toBeGreaterThanOrEqual(lo)
+      expect(micron, `${m}: ${micron} µm außerhalb ${lo}-${hi}`).toBeLessThanOrEqual(hi)
+    }
+  })
+
+  it('Korrekturen kommen in ganzen Klicks, nicht in Skalenzahlen', () => {
+    const c = correctionFromTime(35, 25, 'espresso', g, 25)!
+    expect(Number.isInteger(c.steps)).toBe(true)
+    expect(Math.abs(c.steps)).toBeGreaterThanOrEqual(1)
   })
 })
