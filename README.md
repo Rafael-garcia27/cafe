@@ -96,7 +96,7 @@ nur der Interpreter. Eine fachliche Korrektur ist eine Datenänderung.
 ```bash
 npm install
 npm run dev        # Entwicklungsserver
-npm test           # 92 Tests gegen die Abnahmeszenarien
+npm test           # 121 Tests gegen die Abnahmeszenarien
 npm run build      # Produktions-Build
 ```
 
@@ -148,8 +148,6 @@ Alle Zahlen stammen aus `kb/` und sind dort mit Konfidenz gekennzeichnet:
 
 ---
 
-*Gebaut für ein iPhone 12, eine Espressomühle, einen V60 und eine AeroPress.*
-
 ## Deployment
 
 Im Normalfall macht das die CI: Push auf `main` → Typprüfung + Tests → Build →
@@ -173,3 +171,7 @@ npm run deploy:restore
 > gh-Helfer. Neue Repos pushen deshalb standardmäßig unter dem falschen Konto.
 > Die Deploy-Skripte umgehen das. Dauerhafte Behebung: siehe
 > `docs/04-faktencheck.md` §10.
+
+---
+
+*Gebaut für ein iPhone 12, eine Espressomühle, einen V60 und eine AeroPress.*
