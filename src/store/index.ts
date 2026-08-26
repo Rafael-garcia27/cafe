@@ -6,12 +6,14 @@
  * testbar (Solution Design §4).
  */
 import { create } from 'zustand'
-import type { AppState, Settings, ExpertLevel } from '@/domain'
+import type { AppState, Settings, AppMode } from '@/domain'
 import type { Bean, Bag, Brew, Grinder, Water, BrewMethod } from '@domain'
 import { emptyState } from '@/domain'
 import { SCHEMA_VERSION } from '@/config'
 import { loadState, saveState, flush } from './persist'
 import { recompute } from '@/engine/learn'
+import { grinderFromCatalog } from '@/engine/grinder'
+import { defaultGrinderEntry } from '@/kb'
 
 export const uid = (): string =>
   globalThis.crypto?.randomUUID?.() ?? `id-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -41,7 +43,7 @@ interface StoreActions {
   upsertWater: (w: Water) => void
 
   setSettings: (patch: Partial<Settings>) => void
-  setExpertLevel: (l: ExpertLevel) => void
+  setMode: (m: AppMode) => void
   setTheme: (t: 'dark' | 'light') => void
 
   replaceState: (s: AppState) => void
@@ -77,7 +79,22 @@ export const useStore = create<Store>((set) => ({
   ready: false,
 
   hydrate: async () => {
-    const s = await loadState()
+    let s = await loadState()
+
+    // Erststart: die Mühle des Nutzers ist voreingestellt, damit Empfehlungen
+    // sofort in echten Klicks kommen statt in Prozent.
+    if (s.grinders.length === 0) {
+      const g = grinderFromCatalog(defaultGrinderEntry().id, uid())
+      if (g) {
+        s = {
+          ...s,
+          grinders: [g],
+          settings: { ...s.settings, activeGrinderId: g.id },
+        }
+        saveState(s)
+      }
+    }
+
     set({ ...s, ready: true })
     document.documentElement.classList.toggle('light', s.settings.theme === 'light')
   },
@@ -207,8 +224,16 @@ export const useStore = create<Store>((set) => ({
     set((s) => ({ settings: { ...s.settings, ...patch } }))
     commit(set, false)
   },
-  setExpertLevel: (l) => {
-    set((s) => ({ settings: { ...s.settings, expertLevel: l } }))
+  setMode: (m) => {
+    set((s) => ({
+      settings: {
+        ...s.settings,
+        mode: m,
+        // Refraktometer-Felder gehören zu Pro. Beim Zurückschalten
+        // abschalten, sonst tauchen im Basis-Modus leere Felder auf.
+        showMeasurements: m === 'pro' ? s.settings.showMeasurements : false,
+      },
+    }))
     commit(set, false)
   },
   setTheme: (t) => {
@@ -229,6 +254,12 @@ export const useStore = create<Store>((set) => ({
 }))
 
 export { flush }
+
+// Nur in der Entwicklung: Store am Fenster, damit sich Abläufe automatisiert
+// prüfen lassen. Im Produktionsbündel entfernt der Bundler diesen Block.
+if (import.meta.env.DEV) {
+  ;(globalThis as unknown as { __dialed?: unknown }).__dialed = useStore
+}
 
 // ── Selektoren ────────────────────────────────────────────────────────
 

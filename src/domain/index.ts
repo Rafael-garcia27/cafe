@@ -20,15 +20,30 @@ import type {
 
 // ── Einstellungen ─────────────────────────────────────────────────────
 
+/** Der eine Schalter der App. Basis = alles Nötige, Pro = alles Mögliche. */
+export type AppMode = 'basic' | 'pro'
+
+/** Interne Sichtbarkeitsstufe der Glossarbegriffe (data/glossary.json) */
 export type ExpertLevel = 'basis' | 'advanced' | 'expert'
+
+export function levelForMode(mode: AppMode): ExpertLevel {
+  return mode === 'pro' ? 'expert' : 'basis'
+}
+
+/** Was der Pro-Modus zusätzlich freischaltet — eine Liste, ein Ort. */
+export const PRO_FEATURES = [
+  { id: 'measurements', label: 'Refraktometer', hint: 'TDS und Extraktionsausbeute erfassen und auswerten' },
+  { id: 'water', label: 'Wasserhärte', hint: 'GH und KH — erklärt Fehler, die kein Mahlgrad behebt' },
+  { id: 'glossary', label: 'Glossar', hint: 'Alle Fachbegriffe zum Nachschlagen' },
+] as const
 
 export interface Settings {
   activeSetupId?: string
   activeGrinderId?: string
   activeWaterId?: string
   activeBasketMm: 51 | 53 | 54 | 58
-  expertLevel: ExpertLevel
-  /** TDS/EY-Felder anzeigen. Standard aus — die meisten haben kein Refraktometer. */
+  mode: AppMode
+  /** TDS/EY-Felder anzeigen. Nur im Pro-Modus verfügbar. */
   showMeasurements: boolean
   theme: 'dark' | 'light'
   /** Personalisierbarer Zielkorridor (Briefing B1) */
@@ -42,7 +57,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   activeBasketMm: 58,
-  expertLevel: 'basis',
+  mode: 'basic',
   showMeasurements: false,
   theme: 'dark',
   targetEy: [18, 22],

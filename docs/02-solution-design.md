@@ -345,3 +345,69 @@ Mühle (+ Kalibrier-Assistent), Sieb, Dripper, Filter, Wasser, Expertenlevel,
 | **Engine wirkt bevormundend** | Jede Empfehlung ist ein Vorschlag mit „Übernehmen"/„Ignorieren". Ignorieren wird gelernt. |
 | **Feature-Kriechen** | Nicht-Ziele aus Briefing Teil E sind bindend |
 | **Fachliche Fehler** | Alle Zahlen stammen aus `kb/`; `types/domain.test.ts` prüft die Rechenkette |
+
+---
+
+## 12. Nachträge
+
+### 12.1 Ein Schalter statt drei Stufen (ersetzt §6/§8.4)
+
+Die ursprünglich geplanten drei Sichtbarkeitsstufen (`basis` / `advanced` /
+`expert`) waren selbst schon eine Komplexität — der Nutzer musste eine
+Abstufung verstehen, bevor er Kaffee kochen konnte.
+
+**Ersetzt durch einen Schalter ganz oben in den Einstellungen:**
+
+| | Basis | Pro |
+|---|---|---|
+| Regal, Brühen, Logbuch, Diagnose | ✅ | ✅ |
+| Mühle inkl. Einmessen | ✅ | ✅ |
+| Datensicherung | ✅ | ✅ |
+| **Refraktometer** (TDS/EY) | – | ✅ |
+| **Wasserhärte** (GH/KH) | – | ✅ |
+| **Glossar** | – | ✅ |
+| Puck-Zustand, Drawdown | – | ✅ |
+| Parameter anpassen | eingeklappt | offen |
+
+Der Basis-Modus verliert **keine** Diagnosefähigkeit: Alle Gates aus kb/14
+laufen weiter, nur ihre Eingaben sind reduziert. Info-Icons für Begriffe der
+Stufe „basis" bleiben auch im Basis-Modus sichtbar — sie reduzieren
+Verwirrung, statt sie zu erzeugen.
+
+Zurückschalten löscht nichts: erfasste Wasserwerte und Messungen bleiben
+gespeichert und werden nur ausgeblendet.
+
+Bestandsdaten aus der Vorversion migrieren beim Laden
+(`expertLevel: 'basis'` → Basis, alles andere → Pro).
+
+### 12.2 Mahlgrad-Ring statt Zahlenfeld
+
+Die Mühle des Nutzers (**Mylo SG2**, 38 mm Kegel, 20 µm Auflösung) ist
+voreingestellt. Ihre werkseitigen Empfehlungen sind hinterlegt und schlagen
+die Rückrechnung aus Mikrometern — der Hersteller kennt den Nullpunkt seiner
+Skala, wir schätzen ihn nur:
+
+| Aufdruck | Skala | intern (Klicks) |
+|---|---|---|
+| ESPRESSO 2-3 | 2–3 | 20–30 |
+| MOKAPOT 3-4 | 3–4 | 30–40 |
+| POUR OVER 5-8 | 5–8 | 50–80 |
+| FRENCH PRESS 8-9 | 8–9 | 80–90 |
+
+AeroPress ist auf der Mühle nicht notiert und aus den Nachbarwerten
+abgeleitet — in der Oberfläche als „abgeleitet" gekennzeichnet.
+
+**Bedienung:** Der Verstellring ist als Grafik nachgebildet — gerändelter
+Ringkörper, weiße Zahlenskala (0 links … 10 rechts), aufgedruckte
+Methodenbezeichnungen, darunter das weiße Dreieck als fester Index.
+Zahlen und Aufdruck laufen mit dem Ring, das Dreieck steht still.
+Zylinderprojektion (`sin`/`cos`) staucht und dunkelt die Skala zu den
+Rändern — wie an einem echten Ring.
+
+Intern wird in **Klicks** gerechnet (10 je Skalenzahl), angezeigt wird die
+Zahl, die auf der Mühle steht: 24 Klicks = „2,4". Feinkorrektur über
+±1-Klick-Tasten, weil Ziehen allein nicht klickgenau ist.
+
+Technische Daten der Mühle (Mahlwerksgröße, Material, Kapazität) liegen als
+Referenz in `data/grinders.json` unter `_specs` und werden in der Oberfläche
+bewusst **nicht** angezeigt.

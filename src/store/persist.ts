@@ -107,6 +107,15 @@ export async function storageEstimate(): Promise<{ usedKb: number; quotaMb: numb
 function migrate(state: AppState): AppState {
   let s = state
   if (s.schemaVersion === undefined) s = { ...s, schemaVersion: 1 }
+
+  // Vorversion kannte drei Detailstufen. Alles außer „basis" wird Pro.
+  const legacy = (s.settings as unknown as { expertLevel?: string })?.expertLevel
+  if (legacy && !(s.settings as { mode?: string }).mode) {
+    s = {
+      ...s,
+      settings: { ...s.settings, mode: legacy === 'basis' ? 'basic' : 'pro' },
+    }
+  }
   // Künftige Migrationen hier, jeweils mit Versionssprung.
   const base = emptyState(SCHEMA_VERSION)
   return {

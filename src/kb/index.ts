@@ -281,11 +281,21 @@ export interface GrinderCatalogEntry {
   burrType: 'flat' | 'conical'
   scaleType: 'stepped' | 'stepless'
   clicksPerRotation?: number
+  clicksPerNumber?: number
   micronPerStep: number
   zeroPointOffsetMicron: number
   usableRange?: [number, number]
   dialRange?: [number, number]
+  /** Herstellerempfehlungen in Klicks */
   presets?: Record<string, [number, number]>
+  /** Dieselben Empfehlungen als Skalennummer, wie auf der Mühle notiert */
+  vendorPresetsByNumber?: Record<string, [number, number]>
+  /** Welche presets NICHT vom Hersteller stammen, sondern abgeleitet sind */
+  presetsDerived?: string[]
+  /** Aufdruck auf dem Verstellring, wie er auf der Mühle steht */
+  ringLabels?: { text: string; range: [number, number] }[]
+  wordmark?: string
+  isDefault?: boolean
   confidence: 'measured' | 'vendor' | 'estimated'
   espressoCapable?: boolean
   isFallback?: boolean
@@ -307,6 +317,11 @@ export const GRIND_TECHNIQUES = grindersRaw.techniques as {
 
 export function getGrinderCatalogEntry(id: string): GrinderCatalogEntry | undefined {
   return GRINDER_CATALOG.find((g) => g.id === id)
+}
+
+/** Voreingestellte Mühle beim ersten Start */
+export function defaultGrinderEntry(): GrinderCatalogEntry {
+  return GRINDER_CATALOG.find((g) => g.isDefault) ?? GRINDER_CATALOG[0]!
 }
 
 /** Referenz-Mahlgrad in µm für eine Methode (Mitte des Zielbereichs) */

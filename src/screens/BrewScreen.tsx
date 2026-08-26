@@ -12,9 +12,11 @@ import type { EngineContext } from '@/domain'
 import { startingPoint } from '@/engine/starting'
 import { diagnose, type Diagnosis } from '@/engine/diagnose'
 import { assessFreshness } from '@/engine/freshness'
+import GrinderDial from '@/components/GrinderDial'
 import { consistencyWarning, brewsUntilPersonal } from '@/engine/learn'
 import { suitability, SUITABILITY_LABEL, bestMethodFor } from '@/engine/suitability'
-import { grindPlausibility, formatSetting } from '@/engine/grinder'
+import { grindPlausibility, formatSetting, vendorRange } from '@/engine/grinder'
+import { GRINDER_CATALOG } from '@/kb'
 import { METHOD_LABEL, DEFECT_LABEL, COMMON_DEFECTS, CHARACTER_LABEL, COMMON_CHARACTERS, FLOW_LABEL, FLOW_CHOICES, PUCK_LABEL, PUCK_CHOICES, BLOOM_LABEL, BLOOM_CHOICES } from '@/labels'
 import {
   Screen, Header, Section, Card, Button, Chip, SegmentedControl, Stepper, Field,
@@ -91,6 +93,7 @@ export default function BrewScreen({ navigate }: Props) {
   const [defects, setDefects] = useState<Defect[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
   const [result, setResult] = useState<Diagnosis | null>(null)
+  const [showTweak, setShowTweak] = useState(false)
 
   // Vorschlag in die Ist-Felder übernehmen
   useEffect(() => {
@@ -123,10 +126,12 @@ export default function BrewScreen({ navigate }: Props) {
   const consistency = consistencyWarning(s.learned, method)
   const untilPersonal = brewsUntilPersonal(s.learned, bean.id, method)
   const isEspresso = method === 'espresso'
+  const isPro = s.settings.mode === 'pro'
+  const catalogEntry = GRINDER_CATALOG.find((g) => g.name === grinder?.name)
   const targetT = sp.proposal.targetTimeS
 
   const reset = () => {
-    setPhase('select'); setElapsed(0); setRating(0)
+    setPhase('select'); setElapsed(0); setRating(0); setShowTweak(false)
     setDefects([]); setCharacters([]); setResult(null)
     setFlow(undefined); setPuck(undefined); setBloom(undefined); setDrawdown(0)
   }
@@ -335,7 +340,29 @@ export default function BrewScreen({ navigate }: Props) {
             )}
           </Section>
 
-          <Section title="Anpassen">
+          {grinder && (
+            <Section title="Mahlgrad">
+              <GrinderDial
+                clicks={grindVal}
+                onChange={setGrindVal}
+                clicksPerNumber={grinder.clicksPerNumber ?? 10}
+                maxNumber={Math.round(
+                  (grinder.usableRange?.[1] ?? 100) / (grinder.clicksPerNumber ?? 10),
+                )}
+                ringLabels={catalogEntry?.ringLabels}
+                wordmark={catalogEntry?.wordmark}
+                highlight={(() => {
+                  const v = vendorRange(grinder, method)
+                  return v
+                    ? { range: v.clicks, label: METHOD_LABEL[method], derived: v.isDerived }
+                    : undefined
+                })()}
+              />
+            </Section>
+          )}
+
+          {isPro || showTweak ? (
+            <Section title="Anpassen">
             <div className="space-y-4">
               <Field label="Dosis" term="dose">
                 <Stepper value={doseG} onChange={setDoseG} step={0.1} min={5} max={30} unit="g" decimals={1} />
@@ -352,13 +379,15 @@ export default function BrewScreen({ navigate }: Props) {
               <Field label="Temperatur">
                 <Stepper value={tempC} onChange={setTempC} step={1} min={70} max={100} unit="°C" />
               </Field>
-              {grinder && (
-                <Field label={`Mahlgrad · ${grinder.name}`} term="grind">
-                  <Stepper value={grindVal} onChange={setGrindVal} step={1} min={0} max={200} />
-                </Field>
-              )}
             </div>
-          </Section>
+            </Section>
+          ) : (
+            <Section>
+              <Button variant="secondary" className="w-full" onClick={() => setShowTweak(true)}>
+                Werte anpassen
+              </Button>
+            </Section>
+          )}
 
           <Section>
             <Button size="lg" className="w-full" onClick={() => setPhase('timer')}>
@@ -410,6 +439,7 @@ export default function BrewScreen({ navigate }: Props) {
                   ))}
                 </div>
               </Section>
+              {isPro && (
               <Section title="Puck danach">
                 <div className="flex flex-wrap gap-2">
                   {PUCK_CHOICES.map((p) => (
@@ -423,6 +453,7 @@ export default function BrewScreen({ navigate }: Props) {
                   ))}
                 </div>
               </Section>
+              )}
             </>
           )}
 
@@ -441,9 +472,11 @@ export default function BrewScreen({ navigate }: Props) {
                   ))}
                 </div>
               </Section>
-              <Section title="Drawdown" action={<InfoDot termId="drawdown" />}>
-                <Stepper value={drawdown} onChange={setDrawdown} step={5} min={0} max={180} unit="s" />
-              </Section>
+              {isPro && (
+                <Section title="Drawdown" action={<InfoDot termId="drawdown" />}>
+                  <Stepper value={drawdown} onChange={setDrawdown} step={5} min={0} max={180} unit="s" />
+                </Section>
+              )}
             </>
           )}
 

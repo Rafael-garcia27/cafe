@@ -46,6 +46,105 @@
   },
   "grinders": [
     {
+      "id": "mylo-sg2",
+      "name": "Mylo SG2",
+      "burrType": "conical",
+      "scaleType": "stepped",
+      "clicksPerRotation": 10,
+      "clicksPerNumber": 10,
+      "micronPerStep": 20,
+      "zeroPointOffsetMicron": 0,
+      "usableRange": [
+        0,
+        100
+      ],
+      "isDefault": true,
+      "vendorPresetsByNumber": {
+        "espresso": [
+          2,
+          3
+        ],
+        "moka": [
+          3,
+          4
+        ],
+        "pourover": [
+          5,
+          8
+        ],
+        "frenchpress": [
+          8,
+          9
+        ]
+      },
+      "presets": {
+        "espresso": [
+          20,
+          30
+        ],
+        "moka": [
+          30,
+          40
+        ],
+        "v60": [
+          50,
+          80
+        ],
+        "aeropress": [
+          40,
+          60
+        ],
+        "frenchpress": [
+          80,
+          90
+        ]
+      },
+      "confidence": "vendor",
+      "note": "Skala in Nummern mit je 10 Klicks. Anzeige als Nummer (2,4 = Nummer 2 plus 4 Klicks).",
+      "_specs": {
+        "_comment": "Nur Referenz — wird in der App NICHT angezeigt.",
+        "burrDiameterMm": 38,
+        "burrMaterial": "Edelstahl, titanbeschichtet",
+        "resolutionMicron": 20,
+        "grindSettings": 50,
+        "capacityG": 30
+      },
+      "presetsDerived": [
+        "aeropress"
+      ],
+      "ringLabels": [
+        {
+          "text": "ESPRESSO 2-3",
+          "range": [
+            20,
+            30
+          ]
+        },
+        {
+          "text": "MOKAPOT 3-4",
+          "range": [
+            30,
+            40
+          ]
+        },
+        {
+          "text": "POUR OVER 5-8",
+          "range": [
+            50,
+            80
+          ]
+        },
+        {
+          "text": "FRENCH PRESS 8-9",
+          "range": [
+            80,
+            90
+          ]
+        }
+      ],
+      "wordmark": "MYLO"
+    },
+    {
       "id": "1zpresso-j-max",
       "name": "1Zpresso J-Max",
       "burrType": "conical",

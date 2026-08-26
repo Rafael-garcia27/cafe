@@ -8,7 +8,8 @@ import { useEffect, useState } from 'react'
 import type { Route } from '@/router'
 import { useStore, selectActiveGrinder, selectSnapshot, uid } from '@/store'
 import type { BrewMethod } from '@domain'
-import type { ExpertLevel } from '@/domain'
+import type { AppMode } from '@/domain'
+import { levelForMode, PRO_FEATURES } from '@/domain'
 import { GRINDER_CATALOG, GLOSSARY, termsForLevel } from '@/kb'
 import { grinderFromCatalog, calibrate, suggestedSetting } from '@/engine/grinder'
 import { METHOD_LABEL } from '@/labels'
@@ -35,6 +36,7 @@ export default function SetupScreen({ route, back }: Props) {
   const [storage, setStorage] = useState<{ usedKb: number; quotaMb: number } | null>(null)
   const [persisted, setPersisted] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const isPro = s.settings.mode === 'pro'
 
   useEffect(() => {
     void storageEstimate().then(setStorage)
@@ -60,6 +62,35 @@ export default function SetupScreen({ route, back }: Props) {
   return (
     <Screen>
       <Header title="Setup" onBack={route.detail ? back : undefined} />
+
+      {/* ── Modus: der eine Schalter, ganz oben ── */}
+      <Section>
+        <Card tone={isPro ? 'accent' : 'default'}>
+          <SegmentedControl<AppMode>
+            value={s.settings.mode}
+            onChange={s.setMode}
+            options={[
+              { value: 'basic', label: 'Basis' },
+              { value: 'pro', label: 'Pro' },
+            ]}
+          />
+          <p className="mt-3 text-[14px] leading-snug text-mute">
+            {isPro
+              ? 'Alles sichtbar. Zurück auf Basis blendet die Zusätze wieder aus — deine Daten bleiben erhalten.'
+              : 'Alles Nötige, nichts weiter. Pro schaltet zusätzlich frei:'}
+          </p>
+          {!isPro && (
+            <ul className="mt-2 space-y-1.5">
+              {PRO_FEATURES.map((f) => (
+                <li key={f.id} className="text-[14px] leading-snug">
+                  <span className="text-crema">{f.label}</span>
+                  <span className="text-mute"> — {f.hint}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </Section>
 
       {/* ── Mühle ── */}
       <Section title="Mühle">
@@ -114,7 +145,8 @@ export default function SetupScreen({ route, back }: Props) {
         )}
       </Section>
 
-      {/* ── Wasser ── */}
+      {/* ── Wasser: Pro ── */}
+      {isPro && (
       <Section title="Wasser">
         <Card onClick={() => setSheet('water')}>
           {s.waters[0] ? (
@@ -139,6 +171,7 @@ export default function SetupScreen({ route, back }: Props) {
           )}
         </Card>
       </Section>
+      )}
 
       {/* ── Datensicherung ── */}
       <Section title="Datensicherung">
@@ -177,31 +210,23 @@ export default function SetupScreen({ route, back }: Props) {
       {/* ── Darstellung ── */}
       <Section title="Darstellung">
         <Card>
-          <Field label="Detailtiefe" hint="Bestimmt, welche Fachbegriffe überhaupt auftauchen">
-            <SegmentedControl<ExpertLevel>
-              value={s.settings.expertLevel}
-              onChange={s.setExpertLevel}
-              options={[
-                { value: 'basis', label: 'Basis' },
-                { value: 'advanced', label: 'Mehr' },
-                { value: 'expert', label: 'Alles' },
-              ]}
-            />
-          </Field>
-          <div className="mt-4">
-            <Toggle
-              checked={s.settings.theme === 'light'}
-              onChange={(v) => s.setTheme(v ? 'light' : 'dark')}
-              label="Heller Modus"
-            />
-          </div>
-          <div className="mt-2">
-            <Toggle
-              checked={s.settings.showMeasurements}
-              onChange={(v) => s.setSettings({ showMeasurements: v })}
-              label="Refraktometer-Werte erfassen"
-            />
-          </div>
+          <Toggle
+            checked={s.settings.theme === 'light'}
+            onChange={(v) => s.setTheme(v ? 'light' : 'dark')}
+            label="Heller Modus"
+          />
+          {isPro && (
+            <div className="mt-2 border-t border-line pt-2">
+              <Toggle
+                checked={s.settings.showMeasurements}
+                onChange={(v) => s.setSettings({ showMeasurements: v })}
+                label="Refraktometer-Werte erfassen"
+              />
+              <p className="mt-1 text-[12px] text-faint">
+                Blendet TDS- und Extraktionsfelder beim Verkosten ein.
+              </p>
+            </div>
+          )}
         </Card>
       </Section>
 
@@ -228,7 +253,8 @@ export default function SetupScreen({ route, back }: Props) {
         <InstallGuide />
       </Section>
 
-      {/* ── Nachschlagen ── */}
+      {/* ── Nachschlagen: Pro ── */}
+      {isPro && (
       <Section title="Nachschlagen">
         <Card onClick={() => setSheet('glossary')}>
           <p className="font-medium">Glossar</p>
@@ -237,6 +263,7 @@ export default function SetupScreen({ route, back }: Props) {
           </p>
         </Card>
       </Section>
+      )}
 
       <Section>
         <p className="px-1 text-[12px] text-faint">
@@ -252,8 +279,8 @@ export default function SetupScreen({ route, back }: Props) {
 
       {sheet === 'grinder' && <GrinderSheet onClose={() => setSheet(null)} />}
       {sheet === 'calibrate' && <CalibrateSheet onClose={() => setSheet(null)} />}
-      {sheet === 'water' && <WaterSheet onClose={() => setSheet(null)} />}
-      {sheet === 'glossary' && <GlossarySheet onClose={() => setSheet(null)} />}
+      {sheet === 'water' && isPro && <WaterSheet onClose={() => setSheet(null)} />}
+      {sheet === 'glossary' && isPro && <GlossarySheet onClose={() => setSheet(null)} />}
       {sheet === 'import' && <ImportSheet onClose={() => setSheet(null)} />}
     </Screen>
   )
@@ -426,7 +453,7 @@ function WaterSheet({ onClose }: { onClose: () => void }) {
 // ── Glossar ───────────────────────────────────────────────────────────
 
 function GlossarySheet({ onClose }: { onClose: () => void }) {
-  const level = useStore((s) => s.settings.expertLevel)
+  const level = levelForMode(useStore((s) => s.settings.mode))
   const [q, setQ] = useState('')
   const terms = termsForLevel(level).filter(
     (t) => !q || t.term.toLowerCase().includes(q.toLowerCase()) || t.short.toLowerCase().includes(q.toLowerCase()),

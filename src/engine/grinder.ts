@@ -12,7 +12,7 @@ import {
   canUseTimeForGrind,
 } from '@domain'
 import type { Grinder, BrewMethod, FlowState } from '@domain'
-import { getGrinderCatalogEntry, referenceMicron, GRIND_TARGETS } from '@/kb'
+import { getGrinderCatalogEntry, referenceMicron, GRIND_TARGETS, GRINDER_CATALOG } from '@/kb'
 
 export function micronFor(setting: number, grinder?: Grinder): number | null {
   if (!grinder) return null
@@ -190,6 +190,7 @@ export function grinderFromCatalog(catalogId: string, id: string): Grinder | nul
     burrType: e.burrType,
     scaleType: e.scaleType,
     clicksPerRotation: e.clicksPerRotation,
+    clicksPerNumber: e.clicksPerNumber,
     micronPerStep: e.micronPerStep,
     zeroPointOffsetMicron: e.zeroPointOffsetMicron,
     usableRange: e.usableRange ?? e.dialRange,
@@ -197,12 +198,49 @@ export function grinderFromCatalog(catalogId: string, id: string): Grinder | nul
   }
 }
 
-/** Startwert für den Mahlgrad einer Methode auf einer konkreten Mühle */
+/**
+ * Startwert für den Mahlgrad einer Methode auf einer konkreten Mühle.
+ *
+ * Herstellerempfehlungen schlagen die Rückrechnung aus Mikrometern: Der
+ * Hersteller kennt den Nullpunkt seiner Skala, wir schätzen ihn nur.
+ */
 export function suggestedSetting(grinder: Grinder | undefined, method: BrewMethod): number | null {
   if (!grinder) return null
+
+  const entry = GRINDER_CATALOG.find((g) => g.name === grinder.name)
+  const preset = entry?.presets?.[method]
+  if (preset) return Math.round((preset[0] + preset[1]) / 2)
+
   const target = referenceMicron(method)
   const raw = (target - grinder.zeroPointOffsetMicron) / grinder.micronPerStep
   return Math.max(0, Math.round(raw))
+}
+
+/** Vom Hersteller empfohlener Bereich, falls hinterlegt (in Klicks) */
+export function vendorRange(
+  grinder: Grinder | undefined,
+  method: BrewMethod,
+): { clicks: [number, number]; isDerived: boolean } | null {
+  if (!grinder) return null
+  const entry = GRINDER_CATALOG.find((g) => g.name === grinder.name)
+  const preset = entry?.presets?.[method]
+  if (!preset) return null
+  return { clicks: preset, isDerived: !!entry?.presetsDerived?.includes(method) }
+}
+
+/** Einheitenbezeichnung für die Oberfläche */
+export function settingUnitLabel(grinder: Grinder | undefined): string {
+  return grinder?.clicksPerNumber && grinder.clicksPerNumber > 1 ? 'Skala' : 'Klicks'
+}
+
+/** Formulierung einer Änderung: „4 Klicks gröber (Skala 2,4 → 2,8)" */
+export function describeSettingChange(
+  grinder: Grinder | undefined,
+  from: number,
+  to: number,
+): string {
+  if (!grinder?.clicksPerNumber || grinder.clicksPerNumber <= 1) return ''
+  return `Skala ${formatSetting(from, grinder)} → ${formatSetting(to, grinder)}`
 }
 
 // ── Plausibilitätsprüfung (Übernahme aus barista-pwa, docs/03 §2.4) ───
@@ -244,6 +282,10 @@ export function grindPlausibility(
  */
 export function formatSetting(setting: number, grinder?: Grinder): string {
   if (!grinder) return String(setting)
+  // Nummerierte Skala (z. B. Mylo SG2: 10 Klicks je Nummer): so anzeigen,
+  // wie der Nutzer sie auf der Mühle abliest — 24 Klicks sind „2,4".
+  const per = grinder.clicksPerNumber
+  if (per && per > 1) return (setting / per).toFixed(1).replace('.', ',')
   if (grinder.scaleType === 'stepless') return setting.toFixed(1)
   const rev = grinder.clicksPerRotation
   if (rev && rev >= 10) {

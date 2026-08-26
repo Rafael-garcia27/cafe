@@ -8,6 +8,7 @@
 import { useEffect, useState, type ReactNode, type CSSProperties } from 'react'
 import { getTerm } from '@/kb'
 import { useStore } from '@/store'
+import { levelForMode } from '@/domain'
 
 // ── Layout ────────────────────────────────────────────────────────────
 
@@ -355,7 +356,7 @@ export function Toggle({
 export function InfoDot({ termId }: { termId: string }) {
   const [open, setOpen] = useState(false)
   const term = getTerm(termId)
-  const level = useStore((s) => s.settings.expertLevel)
+  const level = levelForMode(useStore((s) => s.settings.mode))
   if (!term) return null
   const order = { basis: 0, advanced: 1, expert: 2 }
   if (order[term.level] > order[level] + 1) return null

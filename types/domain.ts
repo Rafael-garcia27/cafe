@@ -140,6 +140,8 @@ export interface Grinder {
   burrDiameterMm?: number
   scaleType: 'stepped' | 'stepless'
   clicksPerRotation?: number
+  /** Klicks je aufgedruckter Skalennummer. 10 = „2,4" heißt Nummer 2 plus 4 Klicks. */
+  clicksPerNumber?: number
   micronPerStep: number
   zeroPointOffsetMicron: number
   usableRange?: [number, number]
