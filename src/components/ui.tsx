@@ -6,6 +6,7 @@
  * ein importiertes Designsystem.
  */
 import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import { getTerm } from '@/kb'
 import { useStore } from '@/store'
 import { levelForMode } from '@/domain'
@@ -29,7 +30,9 @@ export function Header({
 }) {
   return (
     <header className="pt-safe sticky top-0 z-20 border-b border-line bg-paper/90 backdrop-blur-xl">
-      <div className="flex items-center gap-3 px-4 pt-3 pb-3">
+      {/* Feste Höhe: Der Kopf darf nicht springen, wenn ein Untertitel
+          fehlt oder eine Schaltfläche dazukommt. */}
+      <div className="flex h-[58px] items-center gap-3 px-4">
         {onBack && (
           <button
             onClick={onBack}
@@ -430,6 +433,19 @@ export function InfoDot({ termId }: { termId: string }) {
 
 // ── Overlay ───────────────────────────────────────────────────────────
 
+/**
+ * Modales Blatt von unten.
+ *
+ * Wird per Portal direkt an `document.body` gehängt. Das ist keine Kosmetik:
+ * Ein Sheet, das innerhalb eines `<label>` gerendert wird (z. B. das
+ * Glossar-Popup in einem `Field`), bekommt seine Klicks vom Label an das
+ * zugehörige Formularfeld weitergereicht — die Schließen-Schaltfläche
+ * reagiert dann nicht mehr. Der Portal löst das Blatt aus jedem
+ * Eltern-Kontext heraus.
+ *
+ * Verschachtelte Blätter funktionieren dadurch ebenfalls: Portale werden in
+ * Einhängereihenfolge angehängt, das zuletzt geöffnete liegt oben.
+ */
 export function Sheet({
   title,
   onClose,
@@ -444,23 +460,26 @@ export function Sheet({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
+    // Zähler statt Flag: Beim Schließen eines verschachtelten Blattes darf
+    // die Sperre nicht aufgehoben werden, solange das äußere noch offen ist.
+    lockScroll()
     return () => {
       window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
+      unlockScroll()
     }
   }, [onClose])
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end" role="dialog" aria-modal="true">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex flex-col justify-end" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="scroll-area relative max-h-[88dvh] overflow-y-auto rounded-t-3xl border-t border-line bg-card">
-        <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-line bg-card px-4 py-3">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-line bg-card px-4 py-3">
           <h3 className="text-[17px] font-semibold">{title}</h3>
           <button
+            type="button"
             onClick={onClose}
             aria-label="Schließen"
-            className="-mr-1 flex h-10 w-10 items-center justify-center rounded-full text-mute active:bg-raised"
+            className="-mr-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-mute active:bg-raised"
           >
             ✕
           </button>
@@ -469,8 +488,19 @@ export function Sheet({
         {footer && <div className="pb-safe sticky bottom-0 border-t border-line bg-card px-4 py-3">{footer}</div>}
         <div className="h-safe-bottom" />
       </div>
-    </div>
+    </div>,
+    document.body,
   )
+}
+
+let scrollLocks = 0
+function lockScroll() {
+  scrollLocks++
+  document.body.style.overflow = 'hidden'
+}
+function unlockScroll() {
+  scrollLocks = Math.max(0, scrollLocks - 1)
+  if (scrollLocks === 0) document.body.style.overflow = ''
 }
 
 // ── Anzeige ───────────────────────────────────────────────────────────

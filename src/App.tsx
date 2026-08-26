@@ -92,7 +92,7 @@ export default function App() {
                 key={t.id}
                 onClick={() => navigate({ tab: t.id })}
                 aria-current={active ? 'page' : undefined}
-                className={`flex flex-1 flex-col items-center gap-1 py-2 ${active ? 'text-crema' : 'text-faint'}`}
+                className={`flex h-[54px] flex-1 flex-col items-center justify-center gap-1 ${active ? 'text-crema' : 'text-faint'}`}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
                   {t.icon}

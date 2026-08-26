@@ -11,6 +11,9 @@ import type { Bean, RoastLevel, Process, BrewMethod } from '@domain'
 import { assessFreshness } from '@/engine/freshness'
 import { suitability, bestMethodFor, SUITABILITY_LABEL } from '@/engine/suitability'
 import { ORIGIN_NAMES } from '@/kb'
+
+/** Sammelwert für Mischungen — dann greifen keine Herkunfts-Modifikatoren. */
+const BLEND = 'Blend'
 import { ROAST_LABEL, PROCESS_LABEL, METHOD_LABEL } from '@/labels'
 import {
   Screen, Header, Section, Card, Button, Field, TextInput, Select, Sheet,
@@ -276,7 +279,6 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [roaster, setRoaster] = useState('')
   const [country, setCountry] = useState('Kolumbien')
-  const [farm, setFarm] = useState('')
   const [roast, setRoast] = useState<RoastLevel>('medium')
   const [process, setProcess] = useState<Process>('washed')
   const [altitude, setAltitude] = useState(1500)
@@ -290,7 +292,7 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
     const id = addBean({
       name: name.trim(),
       roaster: roaster.trim() || undefined,
-      origins: [{ country, farm: farm.trim() || undefined }],
+      origins: [{ country }],
       process,
       roastLevel: roast,
       altitudeMasl: [altitude - 100, altitude + 100],
@@ -322,11 +324,11 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
           <Select
             value={country}
             onChange={setCountry}
-            options={ORIGIN_NAMES.map((n) => ({ value: n, label: n }))}
+            options={[
+              { value: BLEND, label: 'Blend (mehrere Herkünfte)' },
+              ...ORIGIN_NAMES.map((n) => ({ value: n, label: n })),
+            ]}
           />
-        </Field>
-        <Field label="Farm / Washing Station">
-          <TextInput value={farm} onChange={setFarm} placeholder="optional" />
         </Field>
         <Field label="Röstgrad" hint="Die wichtigste Angabe für den Startpunkt">
           <Select

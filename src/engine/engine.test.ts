@@ -874,3 +874,23 @@ describe('Mylo-Skala: 1 Klick = 0,1 (vom Nutzer bestätigt)', () => {
     expect(Math.abs(c.steps)).toBeGreaterThanOrEqual(1)
   })
 })
+
+describe('Blend als Herkunft', () => {
+  it('greift auf keine Herkunfts-Modifikatoren zu und stürzt nicht ab', () => {
+    const blend: Bean = {
+      ...bean({ roastLevel: 'medium', process: 'washed' }),
+      origins: [{ country: 'Blend' }],
+    }
+    const sp = startingPoint(ctx({ bean: blend }))
+    expect(sp.proposal.doseG).toBeGreaterThan(0)
+    expect(sp.proposal.ratio).toBeGreaterThan(0)
+    expect(sp.rationale.length).toBeGreaterThan(0)
+  })
+
+  it('liefert denselben Startpunkt wie eine unbekannte Einzelherkunft', () => {
+    const a = startingPoint(ctx({ bean: { ...bean({}), origins: [{ country: 'Blend' }] } }))
+    const b = startingPoint(ctx({ bean: { ...bean({}), origins: [{ country: 'Fantasialand' }] } }))
+    expect(a.proposal.ratio).toBe(b.proposal.ratio)
+    expect(a.proposal.waterTempC).toBe(b.proposal.waterTempC)
+  })
+})

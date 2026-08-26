@@ -174,6 +174,8 @@ export default function BrewScreen({ navigate }: Props) {
     return (
       <BrewTimer
         method={method}
+        title={bean.name}
+        subtitle={`${METHOD_LABEL[method]} · ${fresh.label}`}
         target={targetT}
         targetYieldG={isEspresso ? yieldG : undefined}
         onStop={(sec) => { setElapsed(sec); setPhase('record') }}
@@ -652,12 +654,16 @@ export default function BrewScreen({ navigate }: Props) {
 
 function BrewTimer({
   method,
+  title,
+  subtitle,
   target,
   targetYieldG,
   onStop,
   onCancel,
 }: {
   method: BrewMethod
+  title: string
+  subtitle: string
   target?: [number, number]
   targetYieldG?: number
   onStop: (sec: number) => void
@@ -676,16 +682,25 @@ function BrewTimer({
   const over = target ? sec > target[1] : false
 
   return (
-    <div className="pt-safe pb-safe flex h-[100dvh] flex-col">
-      <div className="flex justify-end px-4 pt-3">
-        <button onClick={onCancel} className="h-11 px-3 text-[15px] text-mute">
-          Abbrechen
-        </button>
-      </div>
-      {/* Ganzflächig antippbar — blindbedienbar mit nassen Händen */}
+    <Screen>
+      {/* Bewusst dieselbe Kopfzeile wie in jedem anderen Bereich — die
+          Rahmung darf zwischen den Ansichten nicht springen. */}
+      <Header
+        title={title}
+        subtitle={subtitle}
+        right={
+          <button onClick={onCancel} className="h-11 shrink-0 px-2 text-[15px] text-mute">
+            Abbrechen
+          </button>
+        }
+      />
+      {/* Ganzflächig antippbar — blindbedienbar mit nassen Händen.
+          Höhe: Bildschirm minus Kopfzeile (58) minus Tab-Leiste (54)
+          minus Sicherheitsbereiche. */}
       <button
         onClick={() => onStop(sec)}
-        className="flex flex-1 flex-col items-center justify-center gap-1"
+        className="flex w-full flex-col items-center justify-center gap-1"
+        style={{ minHeight: 'calc(100dvh - 58px - 54px - env(safe-area-inset-top) - env(safe-area-inset-bottom))' }}
       >
         <BrewAnimation method={method} elapsedS={sec} target={target} targetYieldG={targetYieldG} />
         <span
@@ -698,10 +713,10 @@ function BrewTimer({
         <span className="text-[15px] text-mute">
           {target ? `Ziel ${target[0]}–${target[1]} s` : 'Sekunden'}
         </span>
-        <span className="mt-8 rounded-full border border-line px-6 py-3 text-[15px] text-mute">
+        <span className="mt-6 rounded-full border border-line px-6 py-3 text-[15px] text-mute">
           Tippen zum Stoppen
         </span>
       </button>
-    </div>
+    </Screen>
   )
 }

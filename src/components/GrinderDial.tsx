@@ -267,12 +267,9 @@ export default function GrinderDial({
           <div className="pointer-events-none absolute inset-0" style={{ background: CURVE }} />
           <span
             className="absolute inset-x-0 text-center"
-            style={{ top: 20, fontSize: 12, letterSpacing: '0.34em', color: '#8d8a85' }}
+            style={{ top: 26, fontSize: 12, letterSpacing: '0.34em', color: '#8d8a85' }}
           >
             {wordmark ?? ''}
-          </span>
-          <span className="absolute inset-x-0 text-center text-[10px] text-faint" style={{ top: 38 }}>
-            {active ? 'loslassen zum Übernehmen' : 'Ring seitlich schieben'}
           </span>
         </div>
       </div>
