@@ -1,4 +1,4 @@
-export const APP_NAME = 'Dialed'
+export const APP_NAME = 'Café'
 export const APP_TAGLINE = 'Dein Dial-in, nicht irgendeins'
 export const SCHEMA_VERSION = 1
 

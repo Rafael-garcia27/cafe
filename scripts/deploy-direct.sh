@@ -30,7 +30,7 @@ cd "$ROOT"
 npx tsc --noEmit
 npx vitest run
 rm -rf dist
-DEPLOY_BASE="/dialed/" npm run build
+npm run build
 
 [ -f dist/asc-barista-cheatsheet.html ] || { echo "✗ Cheat Sheet fehlt im Build"; exit 1; }
 
@@ -60,7 +60,7 @@ gh api -X POST "repos/$REPO/pages/builds" >/dev/null
 echo "▸ Warten"
 for _ in $(seq 1 24); do
   st="$(gh api "repos/$REPO/pages/builds/latest" --jq .status 2>/dev/null || echo '?')"
-  [ "$st" = "built" ] && { echo "✓ live: https://rafael-garcia27.github.io/dialed/"; break; }
+  [ "$st" = "built" ] && { echo "✓ live: https://cafe.garciahub.de/"; break; }
   [ "$st" = "errored" ] && { gh api "repos/$REPO/pages/builds/latest" --jq '.error.message'; exit 1; }
   sleep 15
 done

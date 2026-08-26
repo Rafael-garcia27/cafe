@@ -40,8 +40,8 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Build
-        # Pages liefert unter /<repo>/ aus — die PWA braucht den Pfad zur Bauzeit.
-        run: DEPLOY_BASE="/${GITHUB_REPOSITORY#*/}/" npm run build
+        # Eigene Domain: die App liegt im Wurzelverzeichnis, kein Pfadpräfix.
+        run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

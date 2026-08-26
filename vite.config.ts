@@ -4,7 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
 
-// Repo-Name für GitHub Pages. Bei eigener Domain auf '/' setzen.
+// Eigene Domain (cafe.garciahub.de) → die App liegt im Wurzelverzeichnis.
+// DEPLOY_BASE bleibt als Notausgang, falls wieder unter /<repo>/ ausgeliefert
+// werden muss.
 const BASE = process.env.DEPLOY_BASE ?? '/'
 
 export default defineConfig({
@@ -23,8 +25,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Dialed — Barista',
-        short_name: 'Dialed',
+        name: 'Café — dein Dial-in',
+        short_name: 'Café',
         description: 'Persönliches Dial-in-Werkzeug für Espresso, V60 und AeroPress',
         lang: 'de',
         theme_color: '#171310',
