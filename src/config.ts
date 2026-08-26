@@ -1,6 +1,6 @@
 export const APP_NAME = 'Café'
 export const APP_TAGLINE = 'Dein Dial-in, nicht irgendeins'
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2
 
 /** Ab wie vielen guten Brews die Personalisierung greift (Solution Design §6.3) */
 export const LEARN_THRESHOLDS = {

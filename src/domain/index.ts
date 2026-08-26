@@ -59,7 +59,7 @@ export const DEFAULT_SETTINGS: Settings = {
   activeBasketMm: 58,
   mode: 'basic',
   showMeasurements: false,
-  theme: 'dark',
+  theme: 'light',
   targetEy: [18, 22],
   targetEySource: 'standard',
   onboardingDone: false,

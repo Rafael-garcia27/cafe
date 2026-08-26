@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "deploy:direct": "bash scripts/deploy-direct.sh",
-    "deploy:restore": "bash scripts/deploy-restore.sh"
+    "deploy:restore": "bash scripts/deploy-restore.sh",
+    "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
     "idb": "^8.0.3",

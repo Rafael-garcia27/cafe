@@ -15,6 +15,15 @@ import { recompute } from '@/engine/learn'
 import { grinderFromCatalog } from '@/engine/grinder'
 import { defaultGrinderEntry } from '@/kb'
 
+/**
+ * Hell ist der Standard (:root), dunkel wird über die Klasse `dark`
+ * zugeschaltet. Reihenfolge nicht umdrehen — die Palette in index.css
+ * hängt daran.
+ */
+export function applyTheme(theme: 'dark' | 'light'): void {
+  document.documentElement.classList.toggle('dark', theme === 'dark')
+}
+
 export const uid = (): string =>
   globalThis.crypto?.randomUUID?.() ?? `id-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -96,7 +105,7 @@ export const useStore = create<Store>((set) => ({
     }
 
     set({ ...s, ready: true })
-    document.documentElement.classList.toggle('light', s.settings.theme === 'light')
+    applyTheme(s.settings.theme)
   },
 
   // ── Bohnen ──
@@ -237,14 +246,14 @@ export const useStore = create<Store>((set) => ({
     commit(set, false)
   },
   setTheme: (t) => {
-    document.documentElement.classList.toggle('light', t === 'light')
+    applyTheme(t)
     set((s) => ({ settings: { ...s.settings, theme: t } }))
     commit(set, false)
   },
 
   replaceState: (s) => {
     set({ ...s, ready: true })
-    document.documentElement.classList.toggle('light', s.settings.theme === 'light')
+    applyTheme(s.settings.theme)
     commit(set)
   },
   resetAll: () => {

@@ -33,6 +33,9 @@ function zoneOf(elapsed: number, target?: [number, number]): Zone {
   return 'window'
 }
 
+/** Die Farbe des Getränks selbst — in beiden Modi dasselbe Kaffeebraun. */
+const COFFEE = '#4a2c1c'
+
 const ZONE_COLOR: Record<Zone, string> = {
   early: 'var(--c-mute)',
   window: 'var(--c-ok)',
@@ -69,7 +72,7 @@ function Espresso({ p, zone, yieldG }: { p: number; zone: Zone; yieldG?: number 
   // Blonding: Der Strahl hellt auf, je weiter der Shot läuft.
   // Genau das sieht man am bodenlosen Siebträger — hier ohne Erklärtext.
   const blond = Math.max(0, Math.min(1, (p - 0.55) / 0.55))
-  const streamCol = `color-mix(in srgb, var(--c-crema) ${25 + blond * 65}%, #4a2c1a)`
+  const streamCol = `color-mix(in srgb, var(--c-crema) ${25 + blond * 65}%, #33200f)`
   const flowing = p > 0.02 && p < 1.12
 
   return (
@@ -108,7 +111,7 @@ function Espresso({ p, zone, yieldG }: { p: number; zone: Zone; yieldG?: number 
 
       {/* Inhalt */}
       <g clipPath="url(#cup)">
-        <rect x={cx - topHW} y={fillY} width={topHW * 2} height={fillH} fill="#3d2317" />
+        <rect x={cx - topHW} y={fillY} width={topHW * 2} height={fillH} fill={COFFEE} />
         {cremaH > 0 && (
           <rect x={cx - topHW} y={fillY} width={topHW * 2} height={cremaH} fill="var(--c-crema)" opacity="0.9" />
         )}
@@ -161,7 +164,7 @@ function V60({ p, zone }: { p: number; zone: Zone }) {
       {/* Kaffeebett — bläht sich beim Bloom auf */}
       <path
         d={`M ${cx - 20 + (1 - bedRise) * 3},${37 - bedRise * 4} L ${cx + 20 - (1 - bedRise) * 3},${37 - bedRise * 4} L ${cx + 6},58 L ${cx - 6},58 Z`}
-        fill="#3d2317"
+        fill={COFFEE}
         opacity={0.9}
       />
       {phase === 'bloom' &&
@@ -170,13 +173,13 @@ function V60({ p, zone }: { p: number; zone: Zone }) {
         ))}
 
       {/* Tropfen */}
-      {p > 0.2 && p < 1.05 && <circle cx={cx} cy={66} r="1.6" fill="#3d2317" opacity="0.8" />}
+      {p > 0.2 && p < 1.05 && <circle cx={cx} cy={66} r="1.6" fill={COFFEE} opacity="0.8" />}
 
       {/* Kanne */}
       <rect x={cx - 20} y={70} width={40} height={30} rx="3"
         fill="var(--c-card)" stroke="var(--c-line)" strokeWidth="1.6" />
       <g clipPath="url(#carafe)">
-        <rect x={cx - 20} y={100 - carafe * 30} width={40} height={carafe * 30} fill="#3d2317" opacity="0.85" />
+        <rect x={cx - 20} y={100 - carafe * 30} width={40} height={carafe * 30} fill={COFFEE} opacity="0.85" />
       </g>
 
       <text x={cx} y={118} textAnchor="middle" fontSize="7" fill="var(--c-faint)">
@@ -218,7 +221,7 @@ function AeroPress({ p, zone }: { p: number; zone: Zone }) {
 
       {/* Aufguss */}
       <g clipPath="url(#chamber)">
-        <rect x={cx - 17} y={plungerY + 7} width={34} height={72 - plungerY} fill="#3d2317" opacity="0.85" />
+        <rect x={cx - 17} y={plungerY + 7} width={34} height={72 - plungerY} fill={COFFEE} opacity="0.85" />
         {steeping &&
           [0, 1, 2].map((i) => (
             <circle key={i} cx={cx - 8 + i * 8} cy={40 + ((p * 60 + i * 13) % 26)} r="1.3"
@@ -233,7 +236,7 @@ function AeroPress({ p, zone }: { p: number; zone: Zone }) {
       <path d={`M ${cx - 16},80 L ${cx + 16},80 L ${cx + 12},99 L ${cx - 12},99 Z`}
         fill="var(--c-card)" stroke="var(--c-line)" strokeWidth="1.5" />
       {press > 0 && (
-        <rect x={cx - 15} y={99 - press * 17} width={30} height={press * 17} fill="#3d2317" opacity="0.85" />
+        <rect x={cx - 15} y={99 - press * 17} width={30} height={press * 17} fill={COFFEE} opacity="0.85" />
       )}
 
       <text x={cx} y={118} textAnchor="middle" fontSize="7" fill="var(--c-faint)">

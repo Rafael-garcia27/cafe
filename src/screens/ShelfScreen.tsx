@@ -56,7 +56,6 @@ export default function ShelfScreen({ route, navigate, back }: Props) {
     <Screen>
       <Header
         title="Regal"
-        subtitle={beans.length ? `${beans.length} Bohne${beans.length === 1 ? '' : 'n'}` : undefined}
         right={
           <Button size="sm" onClick={() => setShowNew(true)}>
             + Bohne
@@ -71,7 +70,7 @@ export default function ShelfScreen({ route, navigate, back }: Props) {
           action={<Button onClick={() => setShowNew(true)}>Erste Bohne anlegen</Button>}
         />
       ) : (
-        <Section title="Nach Frische sortiert">
+        <Section title="Bohnen" action={<span className="text-[12px] text-faint">nach Frische</span>}>
           <div className="space-y-2">
             {ranked.map(({ bean, fresh, count, best }) => (
               <Card key={bean.id} onClick={() => navigate({ tab: 'shelf', detail: 'bean', id: bean.id })}>

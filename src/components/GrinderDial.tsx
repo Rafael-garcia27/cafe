@@ -129,7 +129,7 @@ export default function GrinderDial({
       <div
         ref={measure}
         className="relative touch-none overflow-hidden rounded-[20px]"
-        style={{ background: '#0f0f10', border: '1px solid var(--c-line)' }}
+        style={{ background: '#241a15', border: '1px solid var(--c-line)' }}
       >
         {/* ── Verstellring ── */}
         <div
@@ -154,7 +154,7 @@ export default function GrinderDial({
           {/* Rändelung oben */}
           <div
             className="absolute inset-x-0 top-0"
-            style={{ height: 26, background: `${KNURL}, linear-gradient(180deg,#26262a,#171719)` }}
+            style={{ height: 26, background: `${KNURL}, linear-gradient(180deg,#3a2b22,#251b15)` }}
           />
 
           {/* Zahlenskala */}
@@ -238,7 +238,7 @@ export default function GrinderDial({
           {/* Rändelung unten */}
           <div
             className="absolute inset-x-0"
-            style={{ top: 106, height: 20, background: `${KNURL}, linear-gradient(180deg,#1d1d20,#141416)` }}
+            style={{ top: 106, height: 20, background: `${KNURL}, linear-gradient(180deg,#2e221b,#1f1712)` }}
           />
 
           {/* Zylinderwölbung über allem */}
@@ -262,12 +262,12 @@ export default function GrinderDial({
         {/* ── Mühlenkörper ── */}
         <div
           className="relative"
-          style={{ height: 58, background: `${GRID}, linear-gradient(180deg,#161618,#0e0e0f)` }}
+          style={{ height: 58, background: `${GRID}, linear-gradient(180deg,#2a1f19,#1b1410)` }}
         >
           <div className="pointer-events-none absolute inset-0" style={{ background: CURVE }} />
           <span
             className="absolute inset-x-0 text-center"
-            style={{ top: 26, fontSize: 12, letterSpacing: '0.34em', color: '#8d8a85' }}
+            style={{ top: 26, fontSize: 12, letterSpacing: '0.34em', color: '#9c8778' }}
           >
             {wordmark ?? ''}
           </span>

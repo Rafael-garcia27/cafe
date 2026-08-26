@@ -15,6 +15,7 @@
   --color-faint: var(--c-faint);
   --color-crema: var(--c-crema);
   --color-crema-dim: var(--c-crema-dim);
+  --color-on-crema: var(--c-on-crema);
   --color-ok: var(--c-ok);
   --color-warn: var(--c-warn);
   --color-bad: var(--c-bad);
@@ -25,40 +26,52 @@
   --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', monospace;
 }
 
-/* Dunkel (Standard) */
+/* ── Kaffee-Palette ───────────────────────────────────────────────────
+   Ausgangspunkte: Pantone 476 C (#4E3629, Espressobraun) und
+   Pantone 7401 C (#F5E1A4, Creme). Pantone sind Druck-Sonderfarben, die
+   Umrechnung nach RGB ist eine Näherung — 7401 C ist vollflächig auf dem
+   Bildschirm zudem sehr gelb und wurde für Hintergründe zurückgenommen.
+
+   HELL ist der Standard: Die genannten Töne — braun, hellbraun, beige,
+   creme, weiß — beschreiben eine helle Palette. Dunkel bleibt als
+   Espresso-Variante erhalten, ebenfalls durchgehend in Kaffeetönen. */
+
+/* Hell — „Milchkaffee" (Standard) */
 :root {
-  --c-paper: #171310;
-  --c-card: #211b17;
-  --c-raised: #2c241e;
-  --c-line: #382e26;
-  --c-ink: #f5efe9;
-  --c-mute: #a3968b;
-  --c-faint: #6d5f55;
-  --c-crema: #e0a86a;
-  --c-crema-dim: #8a6338;
-  --c-ok: #7fb069;
-  --c-warn: #e0a86a;
-  --c-bad: #d1584f;
-
-  color-scheme: dark;
-}
-
-/* Hell — nur wenn explizit gewählt */
-html.light {
-  --c-paper: #faf7f4;
-  --c-card: #ffffff;
-  --c-raised: #f2ece6;
-  --c-line: #e2d8ce;
-  --c-ink: #1f1813;
-  --c-mute: #6b5d52;
-  --c-faint: #9c8d80;
-  --c-crema: #a9601c;
-  --c-crema-dim: #d9b48a;
-  --c-ok: #4a7c3f;
-  --c-warn: #a9601c;
-  --c-bad: #b03a31;
+  --c-paper: #faf4ea;      /* Milchschaum */
+  --c-card: #fffdf9;       /* Porzellan */
+  --c-raised: #f3e8d6;     /* Beige, abgeleitet von 7401 C */
+  --c-line: #e2d2ba;       /* Sandkante */
+  --c-ink: #4e3629;        /* Pantone 476 C — Espressobraun */
+  --c-mute: #8a6f58;       /* Milchkaffee */
+  --c-faint: #807263;      /* Hafer, dunkel genug für 4,5:1 */
+  --c-crema: #8c5a2b;      /* geröstetes Braun, der Akzent */
+  --c-on-crema: #fdf7ed;   /* Creme auf dem Akzent */
+  --c-crema-dim: #d9b98c;  /* Crema, aufgehellt */
+  --c-ok: #5f7a4a;         /* Kaffeeblatt */
+  --c-warn: #9c6825;       /* Honig, dunkel genug für 4,5:1 */
+  --c-bad: #a6402f;        /* Kaffeekirsche */
 
   color-scheme: light;
+}
+
+/* Dunkel — „Espresso" */
+html.dark {
+  --c-paper: #1c1512;      /* Espresso in der Tasse */
+  --c-card: #261d18;       /* Röstbohne */
+  --c-raised: #33261f;     /* feuchter Puck */
+  --c-line: #453529;       /* Kante */
+  --c-ink: #f7efe3;        /* Creme, abgeleitet von 7401 C */
+  --c-mute: #b8a291;       /* Milchschaum im Schatten */
+  --c-faint: #806a58;      /* Pergamenthaut */
+  --c-crema: #d9a566;      /* Crema — der Akzent auf dunkel */
+  --c-on-crema: #2a1c12;   /* Espresso auf dem Akzent */
+  --c-crema-dim: #8a6338;  /* Crema im Schatten */
+  --c-ok: #8fb36b;
+  --c-warn: #d9a566;
+  --c-bad: #d96a56;
+
+  color-scheme: dark;
 }
 
 /* ── Basis ──────────────────────────────────────────────────────────── */

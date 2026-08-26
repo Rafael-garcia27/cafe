@@ -36,7 +36,7 @@ export default function LogScreen({ route, navigate, back }: Props) {
 
   return (
     <Screen>
-      <Header title="Logbuch" subtitle={`${brews.length} Durchgänge`} />
+      <Header title="Logbuch" />
 
       {brews.length === 0 ? (
         <Empty
@@ -46,7 +46,7 @@ export default function LogScreen({ route, navigate, back }: Props) {
         />
       ) : (
         <>
-          <Section>
+          <Section title="Filter">
             <div className="flex flex-wrap gap-2">
               <Chip label="Alle" active={filterMethod === 'all'} onClick={() => setFilterMethod('all')} />
               {(['espresso', 'v60', 'aeropress'] as BrewMethod[]).map((m) => (
@@ -73,7 +73,7 @@ export default function LogScreen({ route, navigate, back }: Props) {
             )}
           </Section>
 
-          <Section title={`${filtered.length} Einträge`}>
+          <Section title="Durchgänge">
             <div className="space-y-2">
               {filtered.map((b) => (
                 <Card key={b.id} onClick={() => navigate({ tab: 'log', detail: 'brew', id: b.id })}>

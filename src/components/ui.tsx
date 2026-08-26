@@ -130,7 +130,7 @@ export function Button({
   className?: string
 }) {
   const variants = {
-    primary: 'bg-crema text-[#20160c] font-semibold active:bg-crema/85',
+    primary: 'bg-crema text-on-crema font-semibold active:bg-crema/85',
     secondary: 'bg-raised text-ink border border-line active:bg-line',
     ghost: 'text-crema active:bg-raised',
     danger: 'bg-bad/15 text-bad border border-bad/30 active:bg-bad/25',
@@ -194,7 +194,7 @@ export function SegmentedControl<T extends string>({
           key={o.value}
           onClick={() => onChange(o.value)}
           className={`h-11 flex-1 rounded-xl text-[15px] transition-colors ${
-            value === o.value ? 'bg-crema font-semibold text-[#20160c]' : 'text-mute active:bg-line'
+            value === o.value ? 'bg-crema font-semibold text-on-crema' : 'text-mute active:bg-line'
           }`}
         >
           {o.label}

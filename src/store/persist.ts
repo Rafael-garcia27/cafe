@@ -11,7 +11,7 @@
  */
 import { openDB, type IDBPDatabase } from 'idb'
 import type { AppState } from '@/domain'
-import { emptyState } from '@/domain'
+import { emptyState, DEFAULT_SETTINGS } from '@/domain'
 import { SCHEMA_VERSION } from '@/config'
 
 // ACHTUNG: Der Datenbankname bleibt 'dialed', obwohl die App inzwischen
@@ -111,6 +111,15 @@ export async function storageEstimate(): Promise<{ usedKb: number; quotaMb: numb
 function migrate(state: AppState): AppState {
   let s = state
   if (s.schemaVersion === undefined) s = { ...s, schemaVersion: 1 }
+
+  // Schema 1 → 2: Der alte Standard war 'dark'. Wer die App nie umgestellt
+  // hat, trägt diesen Wert nur, weil er einmal voreingestellt war — nicht
+  // weil er gewählt wurde. Beim Wechsel auf die Kaffee-Palette wird er
+  // deshalb einmalig auf den neuen Standard gesetzt. Eine bewusste
+  // Entscheidung lässt sich mit einem Tipp wiederherstellen.
+  if ((s.schemaVersion ?? 1) < 2) {
+    s = { ...s, settings: { ...s.settings, theme: DEFAULT_SETTINGS.theme } }
+  }
 
   // Vorversion kannte drei Detailstufen. Alles außer „basis" wird Pro.
   const legacy = (s.settings as unknown as { expertLevel?: string })?.expertLevel

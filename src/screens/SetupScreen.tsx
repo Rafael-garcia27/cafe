@@ -64,7 +64,7 @@ export default function SetupScreen({ route, back }: Props) {
       <Header title="Setup" onBack={route.detail ? back : undefined} />
 
       {/* ── Modus: der eine Schalter, ganz oben ── */}
-      <Section>
+      <Section title="Modus">
         <Card tone={isPro ? 'accent' : 'default'}>
           <SegmentedControl<AppMode>
             value={s.settings.mode}
@@ -211,9 +211,9 @@ export default function SetupScreen({ route, back }: Props) {
       <Section title="Darstellung">
         <Card>
           <Toggle
-            checked={s.settings.theme === 'light'}
-            onChange={(v) => s.setTheme(v ? 'light' : 'dark')}
-            label="Heller Modus"
+            checked={s.settings.theme === 'dark'}
+            onChange={(v) => s.setTheme(v ? 'dark' : 'light')}
+            label="Dunkler Modus"
           />
           {isPro && (
             <div className="mt-2 border-t border-line pt-2">
