@@ -11,7 +11,7 @@
 #
 set -euo pipefail
 
-REPO="Rafael-garcia27/dialed"
+REPO="Rafael-garcia27/cafe"
 ACCOUNT="Rafael-garcia27"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 

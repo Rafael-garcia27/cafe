@@ -2,7 +2,7 @@
 # Pages zurück auf den Actions-Workflow stellen, nachdem deploy-direct
 # als Notlösung benutzt wurde.
 set -euo pipefail
-REPO="Rafael-garcia27/dialed"
+REPO="Rafael-garcia27/cafe"
 
 state="$(curl -s https://www.githubstatus.com/api/v2/components.json \
   | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{const j=JSON.parse(d);const a=j.components.find(c=>c.name==='Actions');console.log(a?a.status:'unknown')}catch(e){console.log('unknown')}})")"

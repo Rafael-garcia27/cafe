@@ -1,9 +1,9 @@
 {
-  "name": "dialed",
+  "name": "cafe",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Pers\u00f6nliches Dial-in-Werkzeug f\u00fcr Espresso, V60 und AeroPress",
+  "description": "Caf\u00e9 \u2014 pers\u00f6nliches Dial-in-Werkzeug f\u00fcr Espresso, V60 und AeroPress",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b --noEmit && vite build",

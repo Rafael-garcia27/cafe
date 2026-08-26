@@ -12,6 +12,16 @@ Erstellt **vor** Sichtung der bestehenden `barista-pwa` (Briefing F5).
 
 Umbenennen jederzeit an einer Stelle möglich (`src/config.ts`).
 
+> **Nachtrag 26.08.2026:** Umbenannt in **Café**, erreichbar unter
+> `cafe.garciahub.de`. Grund: Der Auftraggeber wollte einen klaren, sofort
+> verständlichen Namen statt eines Fachbegriffs. Die älteren Dokumente in
+> `docs/` sprechen weiterhin von „Dialed" — sie sind Momentaufnahmen und
+> werden bewusst nicht rückwirkend umgeschrieben.
+>
+> Der Name der IndexedDB-Datenbank bleibt ebenfalls `dialed`. Er ist ein
+> interner Schlüssel: Eine Umbenennung würde alle gespeicherten Daten
+> verwaisen lassen.
+
 ---
 
 ## 2. Leitentscheidungen

@@ -258,7 +258,7 @@ export { flush }
 // Nur in der Entwicklung: Store am Fenster, damit sich Abläufe automatisiert
 // prüfen lassen. Im Produktionsbündel entfernt der Bundler diesen Block.
 if (import.meta.env.DEV) {
-  ;(globalThis as unknown as { __dialed?: unknown }).__dialed = useStore
+  ;(globalThis as unknown as { __cafe?: unknown }).__cafe = useStore
 }
 
 // ── Selektoren ────────────────────────────────────────────────────────

@@ -14,6 +14,10 @@ import type { AppState } from '@/domain'
 import { emptyState } from '@/domain'
 import { SCHEMA_VERSION } from '@/config'
 
+// ACHTUNG: Der Datenbankname bleibt 'dialed', obwohl die App inzwischen
+// Café heißt. Eine Umbenennung würde eine NEUE, leere Datenbank anlegen und
+// alle bisherigen Bohnen, Tüten und Protokolle verwaisen lassen. Der Name ist
+// ein interner Schlüssel, kein Anzeigetext — er darf nie geändert werden.
 const DB_NAME = 'dialed'
 const DB_VERSION = 1
 const STORE = 'state'
@@ -130,7 +134,8 @@ function migrate(state: AppState): AppState {
 // ── Export / Import ───────────────────────────────────────────────────
 
 export interface BackupFile {
-  app: 'dialed'
+  /** Seit der Umbenennung 'cafe'. Alte Sicherungen tragen 'dialed'. */
+  app: 'cafe' | 'dialed'
   schemaVersion: number
   exportedAt: string
   state: AppState
@@ -138,7 +143,7 @@ export interface BackupFile {
 
 export function buildBackup(state: AppState): BackupFile {
   return {
-    app: 'dialed',
+    app: 'cafe',
     schemaVersion: SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     state,
@@ -148,14 +153,16 @@ export function buildBackup(state: AppState): BackupFile {
 export function backupFilename(): string {
   const d = new Date()
   const p = (n: number) => String(n).padStart(2, '0')
-  return `dialed-backup-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`
+  return `cafe-backup-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`
 }
 
 export function parseBackup(text: string): { state: AppState } | { error: string } {
   try {
     const parsed = JSON.parse(text) as BackupFile
-    if (parsed.app !== 'dialed' || !parsed.state)
-      return { error: 'Das ist keine Dialed-Sicherung.' }
+    // Beide Kennungen akzeptieren: Sicherungen von vor der Umbenennung
+    // müssen sich weiterhin einspielen lassen.
+    if ((parsed.app !== 'cafe' && parsed.app !== 'dialed') || !parsed.state)
+      return { error: 'Das ist keine Café-Sicherung.' }
     return { state: migrate(parsed.state) }
   } catch {
     return { error: 'Die Datei ließ sich nicht lesen.' }
@@ -174,7 +181,7 @@ export async function shareBackup(state: AppState): Promise<'shared' | 'copied' 
   const file = new File([json], name, { type: 'application/json' })
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: 'Dialed — Sicherung' })
+      await navigator.share({ files: [file], title: 'Café — Sicherung' })
       return 'shared'
     } catch {
       /* Nutzer hat abgebrochen — auf die nächste Ebene fallen */
