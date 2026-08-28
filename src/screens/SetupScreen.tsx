@@ -11,13 +11,13 @@ import type { BrewMethod } from '@domain'
 import type { AppMode } from '@/domain'
 import { levelForMode, PRO_FEATURES } from '@/domain'
 import { GRINDER_CATALOG, GLOSSARY, termsForLevel } from '@/kb'
-import { grinderFromCatalog, calibrate, suggestedSetting } from '@/engine/grinder'
+import { grinderFromCatalog, calibrate, suggestedSetting, formatSetting } from '@/engine/grinder'
 import { METHOD_LABEL } from '@/labels'
 import { shareBackup, parseBackup, storageEstimate, requestPersistence } from '@/store/persist'
 import { APP_NAME, BACKUP_REMINDER_DAYS } from '@/config'
 import {
   Screen, Header, Section, Card, Button, Field, Select, Sheet, Stepper,
-  Toggle, SegmentedControl, Stat, TextInput,
+  Toggle, SegmentedControl, Stat, TextInput, num,
 } from '@/components/ui'
 import { InstallGuide } from '@/components/system'
 
@@ -93,14 +93,14 @@ export default function SetupScreen({ route, back }: Props) {
       </Section>
 
       {/* ── Mühle ── */}
-      <Section title="Mühle">
+      <Section title={s.grinders.length > 1 ? 'Mühlen' : 'Mühle'}>
         {grinder ? (
           <Card>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-medium">{grinder.name}</p>
                 <p className="mt-0.5 text-[13px] text-mute">
-                  {grinder.micronPerStep} µm pro Schritt ·{' '}
+                  {num(grinder.micronPerStep)} µm pro Schritt ·{' '}
                   {grinder.confidence === 'measured'
                     ? 'selbst eingemessen'
                     : grinder.confidence === 'vendor'
@@ -115,9 +115,32 @@ export default function SetupScreen({ route, back }: Props) {
 
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-line pt-3">
               {(['espresso', 'v60', 'aeropress'] as BrewMethod[]).map((m) => (
-                <Stat key={m} label={METHOD_LABEL[m]} value={suggestedSetting(grinder, m) ?? '—'} />
+                <Stat
+                  key={m}
+                  label={METHOD_LABEL[m]}
+                  value={(() => {
+                    const v = suggestedSetting(grinder, m)
+                    return v === null ? '—' : formatSetting(v, grinder)
+                  })()}
+                />
               ))}
             </div>
+
+            {/* Zweite Mühle: Wer im Brühen-Menü umschaltet, muss hier sehen,
+                dass es sie gibt und wofür sie gilt. */}
+            {s.grinders
+              .filter((g) => g.id !== grinder.id)
+              .map((g) => (
+                <div key={g.id} className="mt-4 border-t border-line pt-3">
+                  <p className="text-[15px] font-medium">{g.name}</p>
+                  <p className="mt-0.5 text-[13px] text-mute">
+                    {g.methods?.length === 1
+                      ? `Nur für ${METHOD_LABEL[g.methods[0]!]} — im Brühen-Menü umschaltbar.`
+                      : 'Im Brühen-Menü umschaltbar.'}
+                    {s.settings.espressoGrinderId === g.id ? ' Aktuell für Espresso gewählt.' : ''}
+                  </p>
+                </div>
+              ))}
 
             {grinder.confidence !== 'measured' && (
               <div className="mt-4 rounded-xl border border-crema/30 bg-crema/5 p-3">
@@ -190,7 +213,8 @@ export default function SetupScreen({ route, back }: Props) {
             </Button>
           </div>
           <p className="mt-3 text-[12px] text-faint">
-            {s.brews.length} Durchgänge · {s.beans.length} Bohnen
+            {s.brews.length === 1 ? '1 Durchgang' : `${s.brews.length} Durchgänge`} ·{' '}
+            {s.beans.length === 1 ? '1 Bohne' : `${s.beans.length} Bohnen`}
             {storage && ` · ${storage.usedKb} KB belegt`}
             {persisted ? ' · Speicher als dauerhaft markiert' : ''}
           </p>

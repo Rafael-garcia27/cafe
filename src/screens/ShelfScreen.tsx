@@ -10,7 +10,7 @@ import { useStore } from '@/store'
 import type { Bean, RoastLevel, Process, BrewMethod } from '@domain'
 import { assessFreshness } from '@/engine/freshness'
 import { suitability, bestMethodFor, SUITABILITY_LABEL } from '@/engine/suitability'
-import { ORIGIN_NAMES } from '@/kb'
+import { ORIGIN_NAMES, getOrigin } from '@/kb'
 
 /** Sammelwert für Mischungen — dann greifen keine Herkunfts-Modifikatoren. */
 const BLEND = 'Blend'
@@ -24,6 +24,13 @@ interface Props {
   route: Route
   navigate: (r: Route) => void
   back: () => void
+}
+
+/** Typische Anbauhöhe eines Ursprungslands, Mitte der bekannten Spanne. */
+function typicalAltitude(country: string): number | null {
+  const o = getOrigin(country)
+  if (!o?.altitudeMasl) return null
+  return Math.round((o.altitudeMasl[0] + o.altitudeMasl[1]) / 2 / 50) * 50
 }
 
 export default function ShelfScreen({ route, navigate, back }: Props) {
@@ -280,7 +287,10 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
   const [country, setCountry] = useState('Kolumbien')
   const [roast, setRoast] = useState<RoastLevel>('medium')
   const [process, setProcess] = useState<Process>('washed')
-  const [altitude, setAltitude] = useState(1500)
+  // Kein fester Vorgabewert: 1500 m wäre eine erfundene Angabe, die jede
+  // Bohne bekäme — und die Herkunftsableitung der Engine käme nie zum Zug.
+  const [altitude, setAltitude] = useState<number | null>(null)
+  const [altitudeTouched, setAltitudeTouched] = useState(false)
   const [notes, setNotes] = useState('')
   const [decaf, setDecaf] = useState(false)
   const [roastDate, setRoastDate] = useState(new Date().toISOString().slice(0, 10))
@@ -294,7 +304,7 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
       origins: [{ country }],
       process,
       roastLevel: roast,
-      altitudeMasl: [altitude - 100, altitude + 100],
+      altitudeMasl: altitude !== null ? [altitude - 100, altitude + 100] : undefined,
       flavorNotes: notes ? notes.split(',').map((s) => s.trim()).filter(Boolean) : undefined,
       isDecaf: decaf || undefined,
     })
@@ -343,8 +353,35 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
             options={(Object.keys(PROCESS_LABEL) as Process[]).map((p) => ({ value: p, label: PROCESS_LABEL[p] }))}
           />
         </Field>
-        <Field label="Anbauhöhe" hint="Über 1800 m: dichter, braucht feineren Mahlgrad">
-          <Stepper value={altitude} onChange={setAltitude} step={100} min={400} max={2400} unit="m" />
+        <Field
+          label="Anbauhöhe"
+          hint={
+            altitude === null
+              ? `Steht meist auf der Tüte. Ohne Angabe rechne ich mit dem, was für ${country === BLEND ? 'die Herkunft' : country} üblich ist.`
+              : altitudeTouched
+                ? 'Höher gewachsen heißt dichter — mehr Extraktion nötig.'
+                : `Typisch für ${country}. Überschreib es, wenn die Tüte etwas anderes sagt.`
+          }
+        >
+          {altitude === null ? (
+            <Button
+              variant="ghost"
+              onClick={() => setAltitude(typicalAltitude(country) ?? 1500)}
+              className="w-full"
+            >
+              Höhe angeben
+            </Button>
+          ) : (
+            <Stepper
+              value={altitude}
+              onChange={(v) => { setAltitude(v); setAltitudeTouched(true) }}
+              step={100}
+              min={400}
+              max={2400}
+              unit="m"
+              label="Anbauhöhe"
+            />
+          )}
         </Field>
         <Field label="Geschmacksnotizen des Rösters" hint="Kommagetrennt">
           <TextInput value={notes} onChange={setNotes} placeholder="Schokolade, Nuss, Karamell" />

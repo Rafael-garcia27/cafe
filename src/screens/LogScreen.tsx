@@ -9,7 +9,7 @@ import type { Route } from '@/router'
 import { useStore } from '@/store'
 import type { BrewMethod } from '@domain'
 import { METHOD_LABEL, DEFECT_LABEL, CHARACTER_LABEL, FLOW_LABEL } from '@/labels'
-import { Screen, Header, Section, Card, Empty, Chip, Stat, Button, fmtTime } from '@/components/ui'
+import { Screen, Header, Section, Card, Empty, Chip, Stat, Button, fmtTime, num } from '@/components/ui'
 
 interface Props {
   route: Route
@@ -84,8 +84,8 @@ export default function LogScreen({ route, navigate, back }: Props) {
                         {b.isBest && <span className="shrink-0 text-[11px] text-crema">REFERENZ</span>}
                       </div>
                       <p className="mt-0.5 text-[13px] text-mute">
-                        {METHOD_LABEL[b.method]} · {b.actual.doseG} g →{' '}
-                        {b.actual.yieldG ? `${b.actual.yieldG} g` : `${b.actual.waterG} g`} ·{' '}
+                        {METHOD_LABEL[b.method]} · {num(b.actual.doseG)} g →{' '}
+                        {b.actual.yieldG ? `${num(b.actual.yieldG)} g` : `${b.actual.waterG} g`} ·{' '}
                         {fmtTime(b.actual.timeS)}
                       </p>
                       <p className="mt-1 text-[12px] text-faint">
@@ -130,18 +130,18 @@ function BrewDetail({ brewId, onBack }: { brewId: string; onBack: () => void }) 
       <Section title="Parameter">
         <Card>
           <div className="grid grid-cols-2 gap-4">
-            <Stat label="Dosis" value={a.doseG.toFixed(1)} unit="g" />
-            {a.yieldG !== undefined && <Stat label="Ausbringung" value={a.yieldG.toFixed(1)} unit="g" />}
+            <Stat label="Dosis" value={num(a.doseG)} unit="g" />
+            {a.yieldG !== undefined && <Stat label="Ausbringung" value={num(a.yieldG)} unit="g" />}
             {a.waterG !== undefined && <Stat label="Wasser" value={a.waterG} unit="g" />}
             <Stat label="Zeit" value={fmtTime(a.timeS)} />
             <Stat
               label="Verhältnis"
-              value={`1:${((a.yieldG ?? a.waterG ?? 0) / a.doseG).toFixed(1)}`}
+              value={`1:${num((a.yieldG ?? a.waterG ?? 0) / a.doseG)}`}
             />
             {a.waterTempC && <Stat label="Temperatur" value={a.waterTempC} unit="°C" />}
             {a.grindSetting && <Stat label="Mahlgrad" value={a.grindSetting.value} />}
             {a.yieldG && (
-              <Stat label="Flussrate" value={(a.yieldG / a.timeS).toFixed(2)} unit="g/s" />
+              <Stat label="Flussrate" value={num(a.yieldG / a.timeS, 2)} unit="g/s" />
             )}
           </div>
         </Card>

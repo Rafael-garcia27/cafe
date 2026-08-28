@@ -117,11 +117,13 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Auto-Zoom beim Fokussieren verhindern: iOS zoomt bei < 16px. */
+/* Auto-Zoom beim Fokussieren verhindern: iOS zoomt bei < 16px.
+   Das ist eine Untergrenze, keine Vorgabe — größere Schrift ist erlaubt
+   und löst keinen Zoom aus. */
 input,
 select,
 textarea {
-  font-size: 16px;
+  font-size: max(16px, 1em);
 }
 
 /* Zahlen in Tabellen und Timern dürfen nicht springen. */

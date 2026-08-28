@@ -9,11 +9,11 @@
  * Erklärtexte, Schwellen, Technikschritte, Konfidenz — kommt aus
  * `data/diagnostics.json`. Fachliche Textänderungen brauchen keinen Codeeingriff.
  */
-import type { BrewActual, Observation, Measurement, Tasting, Defect, Brew } from '@domain'
+import type { BrewActual, Observation, Measurement, Tasting, Defect, Brew, BrewMethod } from '@domain'
 import { extractionYield, beverageMass, flowRate } from '@domain'
 import type { EngineContext } from '@/domain'
 import { daysOffRoast } from '@/domain'
-import { getRule, lrrFor, TARGET_RANGES, HARD_LIMITS, tolerances, roastRuleFor } from '@/kb'
+import { getRule, lrrFor, TARGET_RANGES, HARD_LIMITS, tolerances, roastRuleFor, tempRange } from '@/kb'
 import { correctionFromTime, describeCorrection, cappedNote, timeIsTrustworthy } from './grinder'
 import { restWindow } from './freshness'
 
@@ -109,22 +109,32 @@ function fallbackAlternative(
 ): string {
   const tooMuch = hasAny(defects, 'bitter', 'astringent', 'harsh', 'ashy')
   const temp = actual.waterTempC ?? 93
+  // Ein Ratschlag, den die Maschine nicht ausführen kann, ist keiner:
+  // Am Brühkopf eines Siebträgers gibt es keine 98 °C.
+  const tr = tempRange(method as BrewMethod)
+  const machbar = (t: number) => Math.round(Math.min(tr.max, Math.max(tr.min, t)))
   const ratio = actual.yieldG ? actual.yieldG / actual.doseG : actual.waterG ? actual.waterG / actual.doseG : 2
 
   if (primary.variable === 'grindSetting') {
-    const t = tooMuch ? temp - 2 : temp + 2
+    const t = machbar(tooMuch ? temp - 2 : temp + 2)
+    // Steht die Temperatur schon am Anschlag, hilft nur das Verhältnis.
+    if (t === Math.round(temp)) {
+      return `Falls das nicht hilft: Verhältnis auf 1:${de((ratio + (tooMuch ? -0.2 : 0.2)), 1)}.`
+    }
     return `Falls das nicht hilft: Temperatur auf ${t} °C.`
   }
   if (primary.variable === 'waterTempC') {
     return method === 'aeropress'
       ? `Falls das nicht hilft: ${tooMuch ? 'gröber' : 'feiner'} mahlen.`
-      : `Falls das nicht hilft: Verhältnis auf 1:${(ratio + (tooMuch ? -0.2 : 0.2)).toFixed(1)}.`
+      : `Falls das nicht hilft: Verhältnis auf 1:${de((ratio + (tooMuch ? -0.2 : 0.2)), 1)}.`
   }
   if (primary.variable === 'ratio') {
     return `Falls das nicht hilft: ${tooMuch ? 'gröber' : 'feiner'} mahlen.`
   }
   if (primary.variable === 'stirCount') {
-    return `Falls das nicht hilft: Temperatur auf ${temp + 3} °C.`
+    const t = machbar(temp + 3)
+    if (t === Math.round(temp)) return 'Falls das nicht hilft: einmal mehr rühren.'
+    return `Falls das nicht hilft: Temperatur auf ${t} °C.`
   }
   return 'Falls das nicht hilft: eine Größe zurück und in halben Schritten weiter.'
 }
@@ -169,6 +179,22 @@ export function detectLoop(history: Brew[]): LoopInfo {
   return { stuck: false, oscillating: false }
 }
 
+/** Auf den Bereich klammern, den diese Methode wirklich fahren kann. */
+function clampTemp(method: BrewMethod, t: number): number {
+  const tr = tempRange(method)
+  return Math.round(Math.min(tr.max, Math.max(tr.min, t)))
+}
+
+/**
+ * Zahl in deutscher Schreibweise für Texte, die der Nutzer liest.
+ *
+ * Die Engine formuliert ganze Sätze — dort darf kein „1:2.8" stehen,
+ * während die Oberfläche daneben „1:2,8" zeigt.
+ */
+function de(v: number, decimals = 1): string {
+  return v.toFixed(decimals).replace('.', ',')
+}
+
 // ── Hauptfunktion ─────────────────────────────────────────────────────
 
 export function diagnose(input: DiagnoseInput): Diagnosis {
@@ -205,7 +231,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
     return blocked(
       'D-05',
       'Messwert unplausibel',
-      `${ey.toFixed(1)} % Extraktion liegt außerhalb des physikalisch Möglichen. ${ruleText('D-05', '')}`,
+      `${de(ey, 1)} % Extraktion liegt außerhalb des physikalisch Möglichen. ${ruleText('D-05', '')}`,
       { metrics },
     )
   }
@@ -314,7 +340,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
         stage: 1,
         blocked: false,
         headline: 'Im Zielkorridor',
-        summary: `Extraktion ${ey.toFixed(1)} % und Stärke ${meas.tdsPct.toFixed(2)} % liegen beide im Ziel. Als Referenz speichern?`,
+        summary: `Extraktion ${de(ey, 1)} % und Stärke ${de(meas.tdsPct, 2)} % liegen beide im Ziel. Als Referenz speichern?`,
         suggestions: [],
         saveAsReference: true,
         metrics,
@@ -329,15 +355,15 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
           ? correctionFromTime(actual.timeS, targetMid, method, ctx.grinder, actual.grindSetting?.value)
           : null
       const what = corr
-        ? describeCorrection(corr)
+        ? describeCorrection(corr, ctx.grinder)
         : `${eyLow ? '2 Schritte feiner' : '2 Schritte gröber'}`
       sugg.push({
         ruleId: eyLow ? 'D-11' : 'D-17',
         what,
-        why: `Deine Extraktion liegt bei ${ey.toFixed(1)} % — Ziel sind ${eyMin}–${eyMax} %.`,
+        why: `Deine Extraktion liegt bei ${de(ey, 1)} % — Ziel sind ${eyMin}–${eyMax} %.`,
         expectation: corr?.expectedTimeS
-          ? `Erwartete Zeit danach: ${corr.expectedTimeS} s. Extraktion sollte Richtung ${((eyMin + eyMax) / 2).toFixed(0)} % gehen.`
-          : `Die Extraktion sollte sich Richtung ${((eyMin + eyMax) / 2).toFixed(0)} % bewegen.`,
+          ? `Erwartete Zeit danach: ${corr.expectedTimeS} s. Extraktion sollte Richtung ${de(((eyMin + eyMax) / 2), 0)} % gehen.`
+          : `Die Extraktion sollte sich Richtung ${de(((eyMin + eyMax) / 2), 0)} % bewegen.`,
         confidence: 'sicher',
         variable: 'grindSetting',
         direction: dir,
@@ -353,8 +379,8 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
       const cur = actual.yieldG ? actual.yieldG / actual.doseG : actual.waterG! / actual.doseG
       sugg.push({
         ruleId: tdsLow ? 'D-13' : 'D-15',
-        what: `Verhältnis auf 1:${(cur + delta).toFixed(1)} ${tdsLow ? 'enger' : 'weiter'}`,
-        why: `Die Stärke liegt bei ${meas.tdsPct.toFixed(2)} % — Ziel sind ${tdsRange[0]}–${tdsRange[1]} %.`,
+        what: `Verhältnis auf 1:${de((cur + delta), 1)} ${tdsLow ? 'enger' : 'weiter'}`,
+        why: `Die Stärke liegt bei ${de(meas.tdsPct, 2)} % — Ziel sind ${tdsRange[0]}–${tdsRange[1]} %.`,
         expectation: `Das Getränk wird ${tdsLow ? 'dichter' : 'leichter'}, die Extraktion bleibt gleich.`,
         confidence: 'sicher',
         variable: 'ratio',
@@ -367,7 +393,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
       stage: 1,
       blocked: false,
       headline: eyLow ? 'Unterextrahiert' : eyHigh ? 'Überextrahiert' : 'Stärke anpassen',
-      summary: `Extraktion ${ey.toFixed(1)} %, Stärke ${meas.tdsPct.toFixed(2)} %.`,
+      summary: `Extraktion ${de(ey, 1)} %, Stärke ${de(meas.tdsPct, 2)} %.`,
       suggestions: sugg,
       metrics,
     }
@@ -396,7 +422,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
   ): Suggestion => {
     const steps = grindCorr ? grindCorr.steps : finer ? -fallbackSteps : fallbackSteps
     const what = grindCorr
-      ? describeCorrection(grindCorr)
+      ? describeCorrection(grindCorr, ctx.grinder)
       : `${fallbackSteps} Schritt${fallbackSteps === 1 ? '' : 'e'} ${finer ? 'feiner' : 'gröber'}`
     return {
       ruleId,
@@ -412,7 +438,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
             : finer
               ? 'Der Kaffee sollte süßer und runder werden.'
               : 'Der Kaffee sollte klarer und weniger bitter werden.',
-        grindCorr ? cappedNote(grindCorr) : undefined,
+        grindCorr ? cappedNote(grindCorr, ctx.grinder) : undefined,
       ]
         .filter(Boolean)
         .join(' '),
@@ -461,7 +487,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
     } else if ((actual.waterTempC ?? 93) < 96) {
       push({
         ruleId: 'D-23',
-        what: `Temperatur auf ${(actual.waterTempC ?? 93) + 2} °C`,
+        what: `Temperatur auf ${clampTemp(method, (actual.waterTempC ?? 93) + 2)} °C`,
         why: salty
           ? 'Salzig und sauer ohne Süße heißt Unterextraktion — die Zeit stimmt aber schon.'
           : 'Die Zeit liegt im Ziel, es fehlt trotzdem Extraktion.',
@@ -483,7 +509,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
     if (method === 'aeropress') {
       push({
         ruleId: 'D-35',
-        what: `Temperatur auf ${(actual.waterTempC ?? 92) - 5} °C`,
+        what: `Temperatur auf ${clampTemp(method, (actual.waterTempC ?? 92) - 5)} °C`,
         why: 'Bitterstoffe lösen sich stärker temperaturabhängig als Zucker und Säuren.',
         expectation: 'Weniger Bitterkeit bei gleicher Süße — die Extraktion wird selektiver, nicht nur geringer.',
         confidence: 'sicher',
@@ -503,7 +529,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
     } else if ((ctx.bean.roastLevel === 'dark' || ctx.bean.roastLevel === 'medium-dark') && (actual.waterTempC ?? 93) > 88) {
       push({
         ruleId: 'D-36',
-        what: `Temperatur auf ${(actual.waterTempC ?? 93) - 3} °C`,
+        what: `Temperatur auf ${clampTemp(method, (actual.waterTempC ?? 93) - 3)} °C`,
         why: 'Dunkle Röstungen sind porös, extrahieren leicht und kippen schnell in die Bitterkeit.',
         expectation: 'Weniger Bitterkeit und Trockenheit im Abgang.',
         confidence: 'sicher',
@@ -515,7 +541,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
     } else if ((actual.waterTempC ?? 93) > 90) {
       push({
         ruleId: 'D-32',
-        what: `Temperatur auf ${(actual.waterTempC ?? 93) - 2} °C`,
+        what: `Temperatur auf ${clampTemp(method, (actual.waterTempC ?? 93) - 2)} °C`,
         why: 'Die Zeit liegt im Ziel — dann ist die Temperatur der nächste Hebel.',
         expectation: 'Etwa 0,5 Prozentpunkte weniger Extraktion. Weniger Bitterkeit.',
         confidence: 'wahrscheinlich',
@@ -535,7 +561,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
     const step = isEspresso ? 0.2 : 0.5
     push({
       ruleId: 'D-40',
-      what: `Verhältnis auf 1:${(cur - step).toFixed(1)} enger`,
+      what: `Verhältnis auf 1:${de((cur - step), 1)} enger`,
       why: 'Kein Extraktionsfehler — es ist schlicht zu wenig Kaffee pro Wasser.',
       expectation: 'Mehr Substanz und Körper, gleicher Geschmackscharakter.',
       confidence: 'sicher',
@@ -554,7 +580,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
         grindSuggestion(
           'D-60',
           false,
-          `Der Drawdown dauerte ${obs.drawdownS} s — ${pct.toFixed(0)} % der Gesamtzeit. Das Bett setzt sich zu.`,
+          `Der Drawdown dauerte ${obs.drawdownS} s — ${de(pct, 0)} % der Gesamtzeit. Das Bett setzt sich zu.`,
         ),
       )
     }

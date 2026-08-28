@@ -8,6 +8,16 @@
 import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { getTerm } from '@/kb'
+
+/**
+ * Zahl in deutscher Schreibweise.
+ *
+ * Die App ist durchgehend deutsch; „1:2.8" neben „4,5" auf demselben
+ * Bildschirm liest sich wie ein Übersetzungsfehler.
+ */
+export function num(v: number, decimals = 1): string {
+  return v.toFixed(decimals).replace('.', ',')
+}
 import { useStore } from '@/store'
 import { levelForMode } from '@/domain'
 
@@ -293,6 +303,7 @@ export function Stepper({
   max = 9999,
   unit,
   decimals = 0,
+  label,
 }: {
   value: number
   onChange: (v: number) => void
@@ -301,11 +312,25 @@ export function Stepper({
   max?: number
   unit?: string
   decimals?: number
+  /** Für die Beschriftung des Eingabefelds, z. B. „Dosis" */
+  label?: string
 }) {
   const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v * 100) / 100))
   const hold = useRef<{ timer?: number; interval?: number }>({})
   const valueRef = useRef(value)
   valueRef.current = value
+
+  // Während des Tippens gilt der Entwurf, nicht der geklammerte Wert —
+  // sonst würde aus einer begonnenen „1" sofort das Minimum.
+  const [draft, setDraft] = useState<string | null>(null)
+  const shown = draft ?? value.toFixed(decimals)
+
+  const commit = (raw: string) => {
+    setDraft(null)
+    // Deutsche Tastatur liefert das Komma; beide Trennzeichen zulassen.
+    const n = Number.parseFloat(raw.replace(',', '.'))
+    if (Number.isFinite(n)) onChange(clamp(n))
+  }
 
   const startHold = (dir: 1 | -1) => {
     stopHold()
@@ -341,10 +366,45 @@ export function Stepper({
       >
         −
       </button>
-      <div className="flex flex-1 items-center justify-center rounded-2xl border border-line bg-raised">
-        <span className="tnum text-[22px] font-semibold">{value.toFixed(decimals)}</span>
-        {unit && <span className="ml-1 text-[14px] text-mute">{unit}</span>}
+
+      {/* Der Wert ist ein Eingabefeld, kein Text: Große Sprünge tippt man,
+          statt vierzigmal auf Plus zu drücken. */}
+      <div className="flex flex-1 items-center justify-center rounded-2xl border border-line bg-raised focus-within:border-crema">
+        <input
+          type="text"
+          inputMode="decimal"
+          enterKeyHint="done"
+          aria-label={label}
+          value={shown}
+          onChange={(e) => {
+            const raw = e.target.value.replace(/[^0-9.,-]/g, '')
+            setDraft(raw)
+            // Sofort übernehmen, nicht erst beim Verlassen: Auf dem iPhone
+            // schließt der erste Tipper auf „Brühen starten" nur die
+            // Tastatur — der Wert muss da längst gespeichert sein.
+            // Halbfertige Eingaben („1" bei Mindestwert 5) bleiben außen vor.
+            const n = Number.parseFloat(raw.replace(',', '.'))
+            if (Number.isFinite(n) && n >= min && n <= max) onChange(clamp(n))
+          }}
+          onFocus={(e) => {
+            setDraft(value.toFixed(decimals))
+            // Auswahl erst nach dem Fokusereignis, sonst hebt iOS sie auf.
+            requestAnimationFrame(() => e.target.select())
+          }}
+          onBlur={(e) => commit(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+            if (e.key === 'Escape') {
+              setDraft(null)
+              ;(e.target as HTMLInputElement).blur()
+            }
+          }}
+          className="tnum w-full min-w-0 border-0 bg-transparent py-4 text-center font-semibold outline-none"
+          style={{ fontSize: 22 }}
+        />
+        {unit && <span className="pr-3 text-[14px] text-mute">{unit}</span>}
       </div>
+
       <button
         type="button"
         aria-label="mehr"
@@ -594,4 +654,14 @@ export function fmtTime(s: number): string {
   const m = Math.floor(s / 60)
   const r = Math.round(s % 60)
   return m > 0 ? `${m}:${String(r).padStart(2, '0')}` : `${r}s`
+}
+
+/**
+ * Zeitspanne, in der Einheit die zur Länge passt.
+ *
+ * „162–192s" muss man erst im Kopf umrechnen, um zu wissen, dass man
+ * knapp drei Minuten am Filter steht. Ab einer Minute also mm:ss.
+ */
+export function fmtRange([von, bis]: [number, number]): string {
+  return bis >= 60 ? `${fmtTime(von)}–${fmtTime(bis)}` : `${von}–${bis}s`
 }

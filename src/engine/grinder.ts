@@ -24,7 +24,34 @@ export function micronFor(setting: number, grinder?: Grinder): number | null {
  * Bereich, in dem das Durchflussgesetz überhaupt gilt — und kann das Ergebnis
  * nicht mehr zuordnen. Lieber zwei kontrollierte Runden als ein Sprung.
  */
+/**
+ * Zahl in deutscher Schreibweise für Texte, die der Nutzer liest.
+ *
+ * Die Engine formuliert ganze Sätze — dort darf kein „1:2.8" stehen,
+ * während die Oberfläche daneben „1:2,8" zeigt.
+ */
+function de(v: number, decimals = 1): string {
+  return v.toFixed(decimals).replace('.', ',')
+}
+
 export const MAX_STEPS_PER_ROUND = 5
+
+/**
+ * Derselbe Deckel, aber in Mikrometern gedacht statt in Skalenschritten.
+ *
+ * 5 Klicks der Bezugsmühle sind 62,5 µm. Auf einer Mühle mit 40 µm je
+ * Nummer wären 5 Schritte 200 µm — mehr als das gesamte Espressoband.
+ * Begrenzt wird die Partikeländerung, nicht die Zahl auf dem Rädchen.
+ */
+export const MAX_MICRON_PER_ROUND = MAX_STEPS_PER_ROUND * 12.5
+
+/** Der Deckel, ausgedrückt in Schritten DIESER Mühle. */
+function stepCap(grinder: Grinder): number {
+  const roh = MAX_MICRON_PER_ROUND / Math.max(1, grinder.micronPerStep)
+  const st = grinder.scaleType === 'stepless' ? (grinder.step ?? 0.1) : 1
+  // Mindestens ein Schritt der Mühle — sonst gäbe es gar keine Empfehlung.
+  return Math.max(st, Math.round(roh / st) * st)
+}
 
 export interface GrindCorrection {
   /** Schritte auf der Mühlenskala. Negativ = feiner. */
@@ -75,12 +102,21 @@ export function correctionFromTime(
 
   const hasSteps = !!grinder
   const raw = hasSteps ? stepsFromFactor(currentMicron, factor, grinder.micronPerStep) : 0
+  const aufl = hasSteps ? (grinder.scaleType === 'stepless' ? (grinder.step ?? 0.1) : 1) : 1
   // Gerundet 0 Schritte wäre kein Vorschlag — wenigstens einen ganzen gehen.
-  const fullSteps = hasSteps && raw === 0 ? (factor > 1 ? 1 : -1) : raw
-  const finalSteps = hasSteps
-    ? Math.max(-MAX_STEPS_PER_ROUND, Math.min(MAX_STEPS_PER_ROUND, fullSteps))
-    : 0
-  const capped = hasSteps && Math.abs(fullSteps) > MAX_STEPS_PER_ROUND
+  const fullSteps = hasSteps && raw === 0 ? (factor > 1 ? aufl : -aufl) : raw
+  const cap = hasSteps ? stepCap(grinder) : 0
+  let finalSteps = hasSteps ? Math.max(-cap, Math.min(cap, fullSteps)) : 0
+
+  // Nicht über das Ende der Skala hinaus raten: Ein Vorschlag, der die
+  // Mühle auf 0 stellen würde, ist keine Einstellung, sondern ein Stillstand.
+  if (hasSteps && currentSetting !== undefined && grinder.usableRange) {
+    const [lo, hi] = grinder.usableRange
+    const ziel = Math.max(lo, Math.min(hi, currentSetting + finalSteps))
+    finalSteps = roundToStep(ziel - currentSetting, grinder)
+    if (finalSteps === 0) return null
+  }
+  const capped = hasSteps && Math.abs(fullSteps) > Math.abs(finalSteps) + 1e-9
 
   // Auch die Prozentangabe deckeln, wenn keine Mühle bekannt ist.
   const cappedPercent = hasSteps ? percent : Math.max(-35, Math.min(35, percent))
@@ -97,26 +133,38 @@ export function correctionFromTime(
     hasSteps,
     capped: capped || (!hasSteps && Math.abs(percent) > 35),
     fullSteps,
-    math: `√(${actualTimeS}/${targetTimeS}) = ${factor.toFixed(3)} → ${percent > 0 ? '+' : ''}${percent.toFixed(0)} %`,
+    math: `√(${actualTimeS}/${targetTimeS}) = ${de(factor, 3)} → ${percent > 0 ? '+' : ''}${de(percent, 0)} %`,
   }
 }
 
 /** Formulierung für die Empfehlung */
-export function describeCorrection(c: GrindCorrection): string {
+export function describeCorrection(c: GrindCorrection, grinder?: Grinder): string {
   const richtung = c.steps > 0 || c.percent > 0 ? 'gröber' : 'feiner'
   if (c.hasSteps) {
     const n = Math.abs(c.steps)
     const um = c.micronDelta ? ` (≈ ${c.micronDelta > 0 ? '+' : ''}${Math.round(c.micronDelta)} µm)` : ''
+    // Eine stufenlose Skala kennt keine Klicks. „2 Klicks" wäre dort nicht
+    // nur falsch benannt, sondern auch nicht ablesbar — der Nutzer sucht
+    // eine Zahl auf dem Regler, keine Rastungen.
+    if (grinder?.scaleType === 'stepless') {
+      const st = grinder.step ?? 0.1
+      const betrag = (Math.round(n / st) * st).toFixed(st >= 1 ? 0 : 1).replace('.', ',')
+      return `${betrag} ${richtung} auf der Skala${um}`
+    }
+    if ((grinder?.clicksPerNumber ?? 0) > 1) {
+      return `${n} Klick${n === 1 ? '' : 's'} ${richtung}${um}`
+    }
     return `${n} Klick${n === 1 ? '' : 's'} ${richtung}${um}`
   }
-  return `${Math.abs(c.percent).toFixed(0)} % ${richtung}`
+  return `${de(Math.abs(c.percent), 0)} % ${richtung}`
 }
 
 /** Zusatz, wenn die volle Korrektur zu groß für einen Durchgang war */
-export function cappedNote(c: GrindCorrection): string | undefined {
+export function cappedNote(c: GrindCorrection, grinder?: Grinder): string | undefined {
   if (!c.capped) return undefined
   if (c.hasSteps) {
-    return `Rechnerisch wären ${Math.abs(c.fullSteps)} Klicks nötig. So große Sprünge lassen sich nicht mehr zuordnen — geh erst diese ${Math.abs(c.steps)}, dann sehen wir weiter.`
+    const einheit = grinder?.scaleType === 'stepless' ? 'Skalenschritte' : 'Klicks'
+    return `Rechnerisch wären ${Math.abs(c.fullSteps)} ${einheit} nötig. So große Sprünge lassen sich nicht mehr zuordnen — geh erst diese ${Math.abs(c.steps)}, dann sehen wir weiter.`
   }
   return 'Die rechnerische Korrektur ist sehr groß — geh sie in zwei Runden an.'
 }
@@ -170,7 +218,7 @@ export function calibrate(input: CalibrationInput): CalibrationResult | { error:
 
   if (micronPerStep < 2 || micronPerStep > 120)
     return {
-      error: `Ergebnis unplausibel (${micronPerStep.toFixed(1)} µm/Schritt). Prüf, ob beide Shots mit identischer Dosis und ohne Kanalbildung liefen.`,
+      error: `Ergebnis unplausibel (${de(micronPerStep, 1)} µm/Schritt). Prüf, ob beide Shots mit identischer Dosis und ohne Kanalbildung liefen.`,
     }
 
   return {
@@ -180,8 +228,8 @@ export function calibrate(input: CalibrationInput): CalibrationResult | { error:
     confidence: 'measured',
     explanation:
       `${Math.abs(stepDelta)} Schritte haben die Zeit von ${input.time1S} s auf ${input.time2S} s verändert. ` +
-      `Das entspricht ${((factor - 1) * 100).toFixed(1)} % Partikelgröße, ` +
-      `also ${(micronPerStep).toFixed(1)} µm pro Schritt.`,
+      `Das entspricht ${de(((factor - 1) * 100), 1)} % Partikelgröße, ` +
+      `also ${de((micronPerStep), 1)} µm pro Schritt.`,
   }
 }
 

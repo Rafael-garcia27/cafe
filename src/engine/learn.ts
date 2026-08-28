@@ -14,6 +14,16 @@ import { beanKey, daysOffRoast, EMPTY_LEARNED } from '@/domain'
 import { getMethodDefaults, targetTimeRange } from '@/kb'
 import { GOOD_RATING, LEARN_THRESHOLDS } from '@/config'
 
+/**
+ * Zahl in deutscher Schreibweise für Texte, die der Nutzer liest.
+ *
+ * Die Engine formuliert ganze Sätze — dort darf kein „1:2.8" stehen,
+ * während die Oberfläche daneben „1:2,8" zeigt.
+ */
+function de(v: number, decimals = 1): string {
+  return v.toFixed(decimals).replace('.', ',')
+}
+
 function median(xs: number[]): number {
   if (xs.length === 0) return 0
   const s = [...xs].sort((a, b) => a - b)
@@ -147,7 +157,7 @@ function statementFor(ratioBias: number, tempBias: number, n: number): string | 
   const parts: string[] = []
   if (Math.abs(ratioBias) >= 0.15) {
     parts.push(
-      `du magst es ${Math.abs(ratioBias).toFixed(1)} ${ratioBias < 0 ? 'enger' : 'weiter'} als der Standard`,
+      `du magst es ${de(Math.abs(ratioBias), 1)} ${ratioBias < 0 ? 'enger' : 'weiter'} als der Standard`,
     )
   }
   if (Math.abs(tempBias) >= 2) {
@@ -181,7 +191,7 @@ export function consistencyWarning(learned: LearnedModels, method: BrewMethod): 
   const p = learned.process[method]
   if (!p || p.sampleSize < 5) return null
   if (method === 'espresso' && p.consistencyS > 4) {
-    return `Deine Shotzeiten streuen um ±${p.consistencyS.toFixed(1)} s. Bevor du das Rezept änderst, mach es erst wiederholbar: auf 0,1 g wiegen, RDT, gleichmäßig tampen.`
+    return `Deine Shotzeiten streuen um ±${de(p.consistencyS, 1)} s. Bevor du das Rezept änderst, mach es erst wiederholbar: auf 0,1 g wiegen, RDT, gleichmäßig tampen.`
   }
   return null
 }

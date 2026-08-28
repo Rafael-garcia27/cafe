@@ -13,16 +13,17 @@ import { startingPoint } from '@/engine/starting'
 import { diagnose, type Diagnosis } from '@/engine/diagnose'
 import { assessFreshness } from '@/engine/freshness'
 import GrinderDial from '@/components/GrinderDial'
+import BrewSteps from '@/components/BrewSteps'
 import SageGrindDial from '@/components/SageGrindDial'
 import BrewAnimation from '@/components/BrewAnimation'
 import { consistencyWarning, brewsUntilPersonal } from '@/engine/learn'
 import { suitability, SUITABILITY_LABEL, bestMethodFor } from '@/engine/suitability'
 import { grindPlausibility, formatSetting, vendorRange } from '@/engine/grinder'
-import { GRINDER_CATALOG, aeropressPhases, grindersForMethod, type AeropressPhases } from '@/kb'
+import { GRINDER_CATALOG, aeropressPhases, grindersForMethod, targetTimeRange, type AeropressPhases } from '@/kb'
 import { METHOD_LABEL, DEFECT_LABEL, COMMON_DEFECTS, CHARACTER_LABEL, COMMON_CHARACTERS, FLOW_LABEL, FLOW_CHOICES, PUCK_LABEL, PUCK_CHOICES, BLOOM_LABEL, BLOOM_CHOICES } from '@/labels'
 import {
   Screen, Header, Section, Card, Button, Chip, SegmentedControl, Stepper, Field,
-  Empty, Stat, FreshnessRing, InfoDot, fmtTime,
+  Empty, Stat, FreshnessRing, InfoDot, fmtTime, fmtRange, num
 } from '@/components/ui'
 import { BackupBanner, SetupNudge } from '@/components/system'
 
@@ -158,7 +159,31 @@ export default function BrewScreen({ navigate }: Props) {
   const catalogEntry = GRINDER_CATALOG.find(
     (g) => g.id === grinder?.catalogId || g.name === grinder?.name,
   )
-  const targetT = sp.proposal.targetTimeS
+  /**
+   * Dosis ändern heißt Menge ändern, nicht Verhältnis ändern.
+   *
+   * Wer von 18 g auf 14,5 g geht, will einen kleineren Espresso — nicht
+   * denselben Espresso mit anderem Verhältnis. Ausbringung und Wasser
+   * ziehen deshalb mit; wer das Verhältnis wirklich verschieben will,
+   * stellt danach die Ausbringung nach.
+   */
+  const changeDose = (neu: number) => {
+    const alt = doseG
+    setDoseG(neu)
+    if (alt > 0 && neu > 0) {
+      setYieldG(Math.round(yieldG * (neu / alt) * 10) / 10)
+      setWaterG(Math.round(waterG * (neu / alt)))
+    }
+  }
+
+  // Die angezeigten Kennzahlen folgen den EINGESTELLTEN Werten, nicht dem
+  // ursprünglichen Vorschlag — sonst steht dort 1:2,8, während längst
+  // 1:3,5 eingestellt ist, und die Zielzeit gilt für eine Menge, die
+  // gar nicht mehr gebrüht wird.
+  const ratioLive = isEspresso ? yieldG / Math.max(0.1, doseG) : waterG / Math.max(0.1, doseG)
+  const targetT =
+    targetTimeRange(method, doseG, bean.roastLevel, isEspresso ? yieldG : undefined, sp.proposal.steepS) ??
+    undefined
 
   const reset = () => {
     setPhase('select'); setElapsed(0); setRating(0); setShowTweak(false)
@@ -289,19 +314,19 @@ export default function BrewScreen({ navigate }: Props) {
           <Section title={sp.headline}>
             <Card tone="accent">
               <div className="grid grid-cols-2 gap-4">
-                <Stat label="Dosis" value={doseG.toFixed(1)} unit="g" term="dose" />
+                <Stat label="Dosis" value={num(doseG)} unit="g" term="dose" />
                 {isEspresso ? (
-                  <Stat label="Ausbringung" value={yieldG.toFixed(1)} unit="g" term="yield" />
+                  <Stat label="Ausbringung" value={num(yieldG)} unit="g" term="yield" />
                 ) : (
                   <Stat label="Wasser" value={waterG} unit="g" />
                 )}
-                <Stat label="Verhältnis" value={`1:${sp.proposal.ratio.toFixed(1)}`} term="ratio" />
+                <Stat label="Verhältnis" value={`1:${num(ratioLive)}`} term="ratio" />
                 <Stat label="Temperatur" value={tempC} unit="°C" />
                 {grinder && (
                   <Stat label={grinder.name} value={formatSetting(grindVal, grinder)} term="grind" />
                 )}
                 {targetT && (
-                  <Stat label="Zielzeit" value={`${targetT[0]}–${targetT[1]}`} unit="s" term="time-is-result" />
+                  <Stat label="Zielzeit" value={fmtRange(targetT)} term="time-is-result" />
                 )}
               </div>
 
@@ -363,6 +388,26 @@ export default function BrewScreen({ navigate }: Props) {
                 </Button>
               </Card>
             )}
+
+            {/* Was zu tun ist, nicht nur was einzustellen ist. */}
+            <Card className="mt-3">
+              <BrewSteps
+                method={method}
+                params={{
+                  doseG,
+                  waterG: isEspresso ? undefined : waterG,
+                  yieldG: isEspresso ? yieldG : undefined,
+                  waterTempC: tempC,
+                  bloomWaterG: sp.proposal.bloomWaterG,
+                  bloomTimeS: sp.proposal.bloomTimeS,
+                  pourCount: sp.proposal.pourCount,
+                  steepS: sp.proposal.steepS,
+                  stirCount: sp.proposal.stirCount,
+                  inverted: sp.proposal.inverted,
+                  targetTimeS: targetT,
+                }}
+              />
+            </Card>
 
             {consistency && (
               <Card className="mt-3" tone="warn">
@@ -438,19 +483,19 @@ export default function BrewScreen({ navigate }: Props) {
             <Section title="Anpassen">
             <div className="space-y-4">
               <Field label="Dosis" term="dose">
-                <Stepper value={doseG} onChange={setDoseG} step={0.1} min={5} max={30} unit="g" decimals={1} />
+                <Stepper value={doseG} onChange={changeDose} step={0.1} min={5} max={30} unit="g" decimals={1} label="Dosis" />
               </Field>
               {isEspresso ? (
                 <Field label="Ziel-Ausbringung" term="yield">
-                  <Stepper value={yieldG} onChange={setYieldG} step={0.1} min={10} max={90} unit="g" decimals={1} />
+                  <Stepper value={yieldG} onChange={setYieldG} step={0.1} min={10} max={90} unit="g" decimals={1} label="Ziel-Ausbringung" />
                 </Field>
               ) : (
-                <Field label="Wasser" hint={`Verhältnis 1:${(waterG / doseG).toFixed(1)}`}>
-                  <Stepper value={waterG} onChange={setWaterG} step={1} min={80} max={900} unit="g" />
+                <Field label="Wasser" hint={`Verhältnis 1:${num(waterG / doseG)}`}>
+                  <Stepper value={waterG} onChange={setWaterG} step={1} min={80} max={900} unit="g" label="Wasser" />
                 </Field>
               )}
               <Field label="Temperatur">
-                <Stepper value={tempC} onChange={setTempC} step={1} min={70} max={100} unit="°C" />
+                <Stepper value={tempC} onChange={setTempC} step={1} min={70} max={100} unit="°C" label="Temperatur" />
               </Field>
             </div>
             </Section>
@@ -481,9 +526,9 @@ export default function BrewScreen({ navigate }: Props) {
                   value={fmtTime(elapsed)}
                   tone={targetT ? (elapsed < targetT[0] ? 'warn' : elapsed > targetT[1] ? 'warn' : 'ok') : undefined}
                 />
-                {targetT && <Stat label="Ziel" value={`${targetT[0]}–${targetT[1]}s`} />}
+                {targetT && <Stat label="Ziel" value={fmtRange(targetT)} />}
                 {isEspresso && (
-                  <Stat label="Fluss" value={(yieldG / Math.max(1, elapsed)).toFixed(2)} unit="g/s" />
+                  <Stat label="Fluss" value={num(yieldG / Math.max(1, elapsed), 2)} unit="g/s" />
                 )}
               </div>
             </Card>
@@ -491,9 +536,9 @@ export default function BrewScreen({ navigate }: Props) {
 
           <Section title={isEspresso ? 'Tatsächlich im Glas' : 'Tatsächlich aufgegossen'}>
             {isEspresso ? (
-              <Stepper value={yieldG} onChange={setYieldG} step={0.1} min={5} max={120} unit="g" decimals={1} />
+              <Stepper value={yieldG} onChange={setYieldG} step={0.1} min={5} max={120} unit="g" decimals={1} label="Ziel-Ausbringung" />
             ) : (
-              <Stepper value={waterG} onChange={setWaterG} step={1} min={50} max={1000} unit="g" />
+              <Stepper value={waterG} onChange={setWaterG} step={1} min={50} max={1000} unit="g" label="Wasser" />
             )}
           </Section>
 
@@ -774,10 +819,10 @@ function BrewTimer({
             over ? 'text-bad' : inTarget ? 'text-ok' : 'text-ink'
           }`}
         >
-          {sec}
+          {sec >= 60 ? fmtTime(sec) : sec}
         </span>
         <span className="text-[15px] text-mute">
-          {target ? `Ziel ${target[0]}–${target[1]} s` : 'Sekunden'}
+          {target ? `Ziel ${fmtRange(target)}` : 'Sekunden'}
         </span>
         <span className="mt-6 rounded-full border border-line px-6 py-3 text-[15px] text-mute">
           Tippen zum Stoppen

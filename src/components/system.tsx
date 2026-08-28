@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react'
 import { Card, Button } from './ui'
 import { useStore, selectSnapshot } from '@/store'
 import { shareBackup } from '@/store/persist'
-import { BACKUP_REMINDER_DAYS } from '@/config'
+import { BACKUP_REMINDER_DAYS, APP_NAME } from '@/config'
 
 export function isStandalone(): boolean {
   return (
@@ -71,7 +71,7 @@ export function InstallGuide() {
         </p>
       )}
       <p className="mt-3 border-t border-line pt-3 text-[13px] leading-relaxed text-mute">
-        Danach startet Dialed im Vollbild, ohne Adressleiste, und funktioniert vollständig
+        Danach startet {APP_NAME} im Vollbild, ohne Adressleiste, und funktioniert vollständig
         ohne Internet. Das ist nicht nur Kosmetik: Nur als installierte App bleiben die
         Daten zuverlässig erhalten.
       </p>
