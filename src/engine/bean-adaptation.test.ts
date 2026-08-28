@@ -247,3 +247,36 @@ describe('Ein fehlerhafter Durchgang wird nicht zum Startpunkt', () => {
     expect(sp.proposal.grindSetting).toBe(22)
   })
 })
+
+describe('Ein abgebrochener Durchgang wird nicht ausgewertet', () => {
+  const lauf = (method: 'espresso' | 'v60', timeS: number) => {
+    const c = ctx({ method })
+    const p = startingPoint(c).proposal
+    return diagnose({
+      ctx: c,
+      actual: {
+        doseG: p.doseG, waterG: p.waterG, yieldG: p.yieldG, timeS, waterTempC: p.waterTempC,
+        grindSetting: { equipmentId: 'gr1', value: p.grindSetting ?? 24, unit: 'clicks' },
+      },
+      tasting: { rating: 2, defects: ['sour'], characters: [], wouldRepeat: false },
+    })
+  }
+
+  it('2 Sekunden am V60 sind kein Extraktionsfehler, sondern ein Abbruch', () => {
+    const d = lauf('v60', 2)
+    expect(d.headline).toBe('Das war kein vollständiger Durchgang')
+    // Keine Mahlgradempfehlung — schon gar keine mit hoher Konfidenz.
+    expect(d.suggestions).toHaveLength(0)
+  })
+
+  it('ein echter Gusher wird dagegen ausgewertet', () => {
+    const d = lauf('espresso', 14)
+    expect(d.headline).not.toBe('Das war kein vollständiger Durchgang')
+    expect(d.suggestions.length).toBeGreaterThan(0)
+  })
+
+  it('spricht am Handfilter nicht von einem Shot', () => {
+    const d = lauf('v60', 100)
+    expect(JSON.stringify(d)).not.toMatch(/Shot/)
+  })
+})

@@ -619,11 +619,15 @@ describe('Iteration 3 — Konsistenz der Ausgabe', () => {
   })
 
   it('Überschrift widerspricht nie der Empfehlung', () => {
-    // 1-Sekunden-Shot mit Tag „bitter": die Empfehlung muss feiner lauten,
-    // die Überschrift darf dann nicht „Zu viel extrahiert" sagen.
+    // Durchgerauschter Shot mit Tag „bitter": die Empfehlung muss feiner
+    // lauten, die Überschrift darf dann nicht „Zu viel extrahiert" sagen.
+    //
+    // 14 s statt der früheren 2 s: Eine Zeit weit unter dem Ziel gilt
+    // inzwischen als abgebrochener Durchgang und wird gar nicht mehr
+    // ausgewertet. 14 s sind ein echter Gusher, kein Bedienfehler.
     const d = diagnose({
       ctx: ctx(),
-      actual: { doseG: 18, yieldG: 36, timeS: 2, grindSetting: { equipmentId: 'gr1', value: 24, unit: 'clicks' } },
+      actual: { doseG: 18, yieldG: 36, timeS: 14, grindSetting: { equipmentId: 'gr1', value: 24, unit: 'clicks' } },
       tasting: { rating: 2, defects: ['bitter'], characters: [], wouldRepeat: false },
       targetTimeS: [26, 30],
     })

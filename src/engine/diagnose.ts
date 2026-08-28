@@ -13,7 +13,7 @@ import type { BrewActual, Observation, Measurement, Tasting, Defect, Brew, BrewM
 import { extractionYield, beverageMass, flowRate } from '@domain'
 import type { EngineContext } from '@/domain'
 import { daysOffRoast } from '@/domain'
-import { getRule, lrrFor, TARGET_RANGES, HARD_LIMITS, tolerances, roastRuleFor, tempRange } from '@/kb'
+import { getRule, lrrFor, TARGET_RANGES, HARD_LIMITS, tolerances, roastRuleFor, tempRange, targetTimeRange } from '@/kb'
 import { correctionFromTime, describeCorrection, cappedNote, timeIsTrustworthy } from './grinder'
 import { restWindow } from './freshness'
 
@@ -195,6 +195,13 @@ function de(v: number, decimals = 1): string {
   return v.toFixed(decimals).replace('.', ',')
 }
 
+/** Dauer lesbar: Sekunden beim Espresso, mm:ss beim Handfilter. */
+function fmtDauer(s: number): string {
+  const ganz = Math.round(s)
+  if (ganz < 60) return `${ganz} s`
+  return `${Math.floor(ganz / 60)}:${String(ganz % 60).padStart(2, '0')} min`
+}
+
 // ── Hauptfunktion ─────────────────────────────────────────────────────
 
 export function diagnose(input: DiagnoseInput): Diagnosis {
@@ -202,6 +209,8 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
   const defects = tasting?.defects
   const method = ctx.method
   const isEspresso = method === 'espresso'
+  // „Shot" ist Espressosprache. Am Handfilter heißt es Durchgang.
+  const lauf = isEspresso ? 'Der Shot lief' : 'Der Durchgang lief'
 
   // Kennzahlen
   const lrr = lrrFor(method, actual.inverted)
@@ -225,6 +234,29 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
     : true
 
   // ════ STUFE 0 — GATES ════════════════════════════════════════════════
+
+  // D-00 Abgebrochener Durchgang
+  //
+  // Eine Zeit weit unter dem Ziel ist kein Extraktionsfehler, sondern ein
+  // Abbruch — die große Stoppfläche lässt sich beim Hantieren leicht
+  // auslösen. Daraus eine Mahlgradkorrektur abzuleiten und sie „sicher"
+  // zu nennen, wäre schlicht falsch.
+  // Fehlt das Ziel im Aufruf, wird es hier hergeleitet: Eine Schutzregel
+  // darf nicht davon abhängen, was der Aufrufer mitgeschickt hat.
+  const zielFuerSperre =
+    targetT ??
+    targetTimeRange(method, actual.doseG, ctx.bean.roastLevel, actual.yieldG)
+  const zielMitte = zielFuerSperre ? (zielFuerSperre[0] + zielFuerSperre[1]) / 2 : null
+  if (zielMitte && actual.timeS > 0 && actual.timeS < zielMitte * 0.35) {
+    return blocked(
+      'D-00',
+      'Das war kein vollständiger Durchgang',
+      `Aufgezeichnet sind ${fmtDauer(actual.timeS)} bei einem Ziel von ${fmtDauer(zielMitte)}. ` +
+        `Aus einem abgebrochenen Durchgang lässt sich nichts ableiten — ` +
+        `${isEspresso ? 'zieh den Shot noch einmal' : 'brüh noch einmal'} und lass den Timer bis zum Ende laufen.`,
+      { metrics },
+    )
+  }
 
   // D-05 Unplausible Messung
   if (ey !== undefined && (ey > (HARD_LIMITS.implausibleEyAbove as number) || ey < 12)) {
@@ -453,9 +485,9 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
 
   // ── Espresso: Flusszustände zuerst ──
   if (isEspresso && (obs?.flowState === 'choked' || actual.timeS > 45)) {
-    push(grindSuggestion('D-50', false, `Der Shot lief ${actual.timeS} s — das Bett ist deutlich zu dicht.`, 4))
+    push(grindSuggestion('D-50', false, `${lauf} ${fmtDauer(actual.timeS)} — das Bett ist deutlich zu dicht.`, 4))
   } else if (isEspresso && (obs?.flowState === 'gusher' || actual.timeS < 15)) {
-    push(grindSuggestion('D-51', true, `Der Shot lief nur ${actual.timeS} s — viel zu wenig Widerstand.`, 4))
+    push(grindSuggestion('D-51', true, `${lauf} nur ${fmtDauer(actual.timeS)} — viel zu wenig Widerstand.`, 4))
   }
 
   // ── Unterextraktion ──
@@ -481,7 +513,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
         grindSuggestion(
           'D-22',
           true,
-          `Der Shot lief ${actual.timeS} s statt ${targetT![0]}–${targetT![1]} s — zu wenig Kontakt.`,
+          `${lauf} ${fmtDauer(actual.timeS)} statt ${fmtDauer(targetT![0])}–${fmtDauer(targetT![1])} — zu wenig Kontakt.`,
         ),
       )
     } else if ((actual.waterTempC ?? 93) < 96) {
@@ -523,7 +555,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
         grindSuggestion(
           'D-31',
           false,
-          `Der Shot lief ${actual.timeS} s statt ${targetT![0]}–${targetT![1]} s — zu lange Kontaktzeit.`,
+          `${lauf} ${fmtDauer(actual.timeS)} statt ${fmtDauer(targetT![0])}–${fmtDauer(targetT![1])} — zu lange Kontaktzeit.`,
         ),
       )
     } else if ((ctx.bean.roastLevel === 'dark' || ctx.bean.roastLevel === 'medium-dark') && (actual.waterTempC ?? 93) > 88) {
