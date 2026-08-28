@@ -197,6 +197,12 @@ function V60({ p, zone }: { p: number; zone: Zone }) {
 
 // ══ AeroPress ═══════════════════════════════════════════════════════
 
+/** m:ss — dasselbe Format wie die laufende Uhr der AeroPress. */
+function uhr(s: number): string {
+  const g = Math.max(0, Math.round(s))
+  return `${Math.floor(g / 60)}:${String(g % 60).padStart(2, '0')}`
+}
+
 function AeroPress({
   elapsedS,
   zone,
@@ -357,8 +363,10 @@ function AeroPress({
       {/* Phasenname + nächste Grenze, damit man weiß, worauf man wartet */}
       <text x={cx} y={118} textAnchor="middle" fontSize="7" fill="var(--c-faint)">
         {LABEL[phase]}
-        {phase === 'bloom' ? ` · bis ${ph.bloomEnd} s` : ''}
-        {phase === 'steep' ? ` · bis ${ph.steepEnd} s` : ''}
+        {/* Dieselbe Uhr wie im Timer darüber — sonst muss man zwischen
+            zwei Zahlenformaten hin- und herrechnen. */}
+        {phase === 'bloom' ? ` · bis ${uhr(ph.bloomEnd)}` : ''}
+        {phase === 'steep' ? ` · bis ${uhr(ph.steepEnd)}` : ''}
       </text>
       <ZoneArc zone={zone} p={fortschritt} y={107} />
     </>

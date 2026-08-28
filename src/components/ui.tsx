@@ -304,6 +304,7 @@ export function Stepper({
   unit,
   decimals = 0,
   label,
+  clock = false,
 }: {
   value: number
   onChange: (v: number) => void
@@ -314,6 +315,13 @@ export function Stepper({
   decimals?: number
   /** Für die Beschriftung des Eingabefelds, z. B. „Dosis" */
   label?: string
+  /**
+   * Zeiten als m:ss statt als Sekundenzahl.
+   *
+   * Wer am Handfilter eine Zeit nachträgt, liest 2:48 von der Uhr ab und
+   * soll nicht erst 168 ausrechnen müssen. Eingegeben werden darf beides.
+   */
+  clock?: boolean
 }) {
   const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v * 100) / 100))
   const hold = useRef<{ timer?: number; interval?: number }>({})
@@ -325,12 +333,26 @@ export function Stepper({
   const [draft, setDraft] = useState<string | null>(null)
   // Deutsche Schreibweise auch im Feld selbst. Beim Tippen gilt der
   // Entwurf unverändert — commit() nimmt Komma wie Punkt entgegen.
-  const shown = draft ?? num(value, decimals)
+  const anzeige = (v: number) => (clock ? fmtClock(v) : num(v, decimals))
+  const shown = draft ?? anzeige(value)
+
+  /** Eingabe zu einer Zahl: „2:48" → 168, „168" → 168, „16,2" → 16,2. */
+  const parse = (raw: string): number => {
+    const t = raw.trim()
+    if (clock && t.includes(':')) {
+      const [m, sek] = t.split(':')
+      const min = Number.parseInt(m || '0', 10)
+      const s2 = Number.parseInt(sek || '0', 10)
+      if (Number.isFinite(min) && Number.isFinite(s2)) return min * 60 + s2
+      return NaN
+    }
+    // Deutsche Tastatur liefert das Komma; beide Trennzeichen zulassen.
+    return Number.parseFloat(t.replace(',', '.'))
+  }
 
   const commit = (raw: string) => {
     setDraft(null)
-    // Deutsche Tastatur liefert das Komma; beide Trennzeichen zulassen.
-    const n = Number.parseFloat(raw.replace(',', '.'))
+    const n = parse(raw)
     if (Number.isFinite(n)) onChange(clamp(n))
   }
 
@@ -374,22 +396,22 @@ export function Stepper({
       <div className="flex flex-1 items-center justify-center rounded-2xl border border-line bg-raised focus-within:border-crema">
         <input
           type="text"
-          inputMode="decimal"
+          inputMode={clock ? 'numeric' : 'decimal'}
           enterKeyHint="done"
           aria-label={label}
           value={shown}
           onChange={(e) => {
-            const raw = e.target.value.replace(/[^0-9.,-]/g, '')
+            const raw = e.target.value.replace(clock ? /[^0-9:]/g : /[^0-9.,-]/g, '')
             setDraft(raw)
             // Sofort übernehmen, nicht erst beim Verlassen: Auf dem iPhone
             // schließt der erste Tipper auf „Brühen starten" nur die
             // Tastatur — der Wert muss da längst gespeichert sein.
             // Halbfertige Eingaben („1" bei Mindestwert 5) bleiben außen vor.
-            const n = Number.parseFloat(raw.replace(',', '.'))
+            const n = parse(raw)
             if (Number.isFinite(n) && n >= min && n <= max) onChange(clamp(n))
           }}
           onFocus={(e) => {
-            setDraft(num(value, decimals))
+            setDraft(anzeige(value))
             // Auswahl erst nach dem Fokusereignis, sonst hebt iOS sie auf.
             requestAnimationFrame(() => e.target.select())
           }}
@@ -664,11 +686,25 @@ export function fmtTime(s: number): string {
 }
 
 /**
+ * Laufende Zeit als Uhr: immer m:ss, auch unter einer Minute.
+ *
+ * Am Handfilter steht man zwei bis drei Minuten und liest die Zeit
+ * mehrfach ab — „0:45" ordnet sich sofort ein, „45" muss man erst
+ * gegen die Zielzeit umrechnen. Beim Espresso bleibt es bei nackten
+ * Sekunden: Ein Shot dauert nie eine Minute.
+ */
+export function fmtClock(s: number): string {
+  const ganz = Math.max(0, Math.round(s))
+  return `${Math.floor(ganz / 60)}:${String(ganz % 60).padStart(2, '0')}`
+}
+
+/**
  * Zeitspanne, in der Einheit die zur Länge passt.
  *
  * „162–192s" muss man erst im Kopf umrechnen, um zu wissen, dass man
  * knapp drei Minuten am Filter steht. Ab einer Minute also mm:ss.
  */
-export function fmtRange([von, bis]: [number, number]): string {
+export function fmtRange([von, bis]: [number, number], alsUhr = false): string {
+  if (alsUhr) return `${fmtClock(von)}–${fmtClock(bis)}`
   return bis >= 60 ? `${fmtTime(von)}–${fmtTime(bis)}` : `${von}–${bis}s`
 }
