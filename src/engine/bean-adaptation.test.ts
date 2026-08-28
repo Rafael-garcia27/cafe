@@ -6,12 +6,14 @@
  * Genau das prüfen die Tests hier.
  */
 import { describe, it, expect } from 'vitest'
-import type { Bean, Bag, Grinder } from '@domain'
+import type { Bean, Bag, Brew, Grinder, Defect } from '@domain'
 import type { EngineContext } from '@/domain'
 import { DEFAULT_SETTINGS, EMPTY_LEARNED } from '@/domain'
 import { startingPoint } from './starting'
 import { diagnose } from './diagnose'
 import { targetTimeRange, aeropressPhases } from '@/kb'
+import { bestMethodFor } from './suitability'
+import { assessFreshness } from './freshness'
 
 const TODAY = new Date('2026-08-18T08:00:00Z')
 const daysAgo = (n: number) => new Date(TODAY.getTime() - n * 86_400_000).toISOString()
@@ -164,5 +166,84 @@ describe('Bohnenmerkmale wirken methodenspezifisch', () => {
         }
       }
     }
+  })
+})
+
+// ══ Prüfung: Methodenempfehlung und Frische ═════════════════════════
+
+describe('Methodenempfehlung folgt der Bohne, nicht der Fehlertoleranz', () => {
+  const mit = (over: Partial<Bean>) => bestMethodFor(bean(over)).method
+
+  it('brasilianische Natural ist eine Espressobohne', () => {
+    // Vorher gewann hier die AeroPress, weil sie am fehlerverzeihendsten
+    // ist — nicht, weil die Bohne dort besser schmeckt.
+    expect(mit({ origins: [{ country: 'Brasilien' }], process: 'natural' })).toBe('espresso')
+    expect(mit({ origins: [{ country: 'Brasilien' }], process: 'natural', roastLevel: 'dark' })).toBe('espresso')
+  })
+
+  it('helle ostafrikanische Washed gehört in den Handfilter', () => {
+    for (const land of ['Äthiopien', 'Kenia']) {
+      expect(mit({ origins: [{ country: land }], process: 'washed', roastLevel: 'light' })).toBe('v60')
+    }
+  })
+
+  it('empfiehlt nie eine Methode, in der die Bohne als schwierig gilt', () => {
+    for (const land of ['Brasilien', 'Äthiopien', 'Kenia', 'Indien', 'Kolumbien']) {
+      for (const roast of ['light', 'medium', 'dark'] as const) {
+        const b = bean({ origins: [{ country: land }], roastLevel: roast })
+        expect(bestMethodFor(b).suitability.score).toBeGreaterThanOrEqual(2.5)
+      }
+    }
+  })
+})
+
+describe('Eingefrorene Tüte hält die Frische-Uhr an', () => {
+  const bag2 = (over: Partial<Bag>): Bag => ({
+    id: 'g2', beanId: 'b1', depleted: false, createdAt: daysAgo(100), ...over,
+  })
+
+  it('zählt bis zum Einfrieren, nicht bis heute', () => {
+    const eingefroren = bag2({ roastDate: daysAgo(120), storage: 'frozen', frozenAt: daysAgo(100) })
+    const offen = bag2({ roastDate: daysAgo(120) })
+    const f1 = assessFreshness(eingefroren, 'espresso', 'medium', false, TODAY)
+    const f2 = assessFreshness(offen, 'espresso', 'medium', false, TODAY)
+    expect(f1.days).toBe(20)
+    expect(f2.days).toBe(120)
+    expect(f1.state).not.toBe('stale')
+  })
+
+  it('ohne Einfrierdatum gilt der Tag, an dem die Tüte angelegt wurde', () => {
+    // Sonst liefe die Uhr weiter — genau der Fehler, der eine im Mai
+    // eingefrorene Bohne im August als überaltert auswies.
+    const b = bag2({ roastDate: daysAgo(120), storage: 'frozen', createdAt: daysAgo(90) })
+    expect(assessFreshness(b, 'espresso', 'medium', false, TODAY).days).toBe(30)
+  })
+})
+
+describe('Ein fehlerhafter Durchgang wird nicht zum Startpunkt', () => {
+  const mitHistorie = (hist: Brew[]) => startingPoint(ctx({ beanHistory: hist }))
+  const b = (rating: 1 | 2 | 3 | 4 | 5, defects: Defect[], grind: number, id: string): Brew => ({
+    id, bagId: 'g1', beanId: 'b1', method: 'espresso',
+    actual: { doseG: 18, yieldG: 36, timeS: 26, grindSetting: { equipmentId: 'gr1', value: grind, unit: 'clicks' } },
+    tasting: { rating, defects, characters: [], wouldRepeat: rating >= 4 },
+    isBest: false, createdAt: daysAgo(2),
+  })
+
+  it('zwei saure 2★-Versuche führen zurück zum Standard, nicht zur Wiederholung', () => {
+    // Ein Durchgang, den die App selbst als unterextrahiert erkannt hat,
+    // ist keine bessere Ausgangslage als die Wissensbasis.
+    const sp = mitHistorie([b(2, ['sour'], 30, 'x'), b(2, ['sour'], 31, 'y')])
+    expect(sp.source).toBe('default')
+  })
+
+  it('ein fehlerfreier 2★-Versuch darf dagegen weiterhin dienen', () => {
+    const sp = mitHistorie([b(2, [], 24, 'x'), b(2, [], 25, 'y')])
+    expect(sp.source).toBe('own-attempt')
+  })
+
+  it('ab 3★ zählt der Versuch auch mit Notiz zum Geschmack', () => {
+    const sp = mitHistorie([b(3, ['sour'], 22, 'x'), b(2, ['sour'], 26, 'y')])
+    expect(sp.source).toBe('own-attempt')
+    expect(sp.proposal.grindSetting).toBe(22)
   })
 })

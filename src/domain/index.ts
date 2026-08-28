@@ -174,8 +174,15 @@ export function beanKey(beanId: string, method: BrewMethod): string {
 /** Tage seit Röstung. `null`, wenn kein Röstdatum erfasst ist. */
 export function daysOffRoast(bag: Bag | undefined, today: Date): number | null {
   if (!bag?.roastDate) return null
-  // Bei eingefrorener Ware hält die Frische-Uhr an (kb/05 §5.3).
-  const end = bag.storage === 'frozen' && bag.openedDate ? new Date(bag.openedDate) : today
+  // Bei eingefrorener Ware hält die Frische-Uhr an (kb/05 §5.3): gezählt
+  // werden die Tage bis zum Einfrieren, nicht bis heute.
+  //
+  // Der Rückfall auf createdAt ist wichtig — vorher hing die Regel allein
+  // an openedDate, das die App nirgends setzt. Die Uhr lief dadurch bei
+  // jeder gefrorenen Tüte weiter, und eine im Mai eingefrorene Bohne galt
+  // im August als überaltert.
+  const stop = bag.frozenAt ?? bag.openedDate ?? bag.createdAt
+  const end = bag.storage === 'frozen' && stop ? new Date(stop) : today
   const start = new Date(bag.roastDate)
   const ms = end.getTime() - start.getTime()
   return Math.max(0, Math.floor(ms / 86_400_000))

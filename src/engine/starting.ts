@@ -408,15 +408,29 @@ export function startingPoint(ctx: EngineContext): StartingPoint {
   // 2 — Eigener bester Versuch, auch wenn er noch nicht überzeugt hat.
   //     Übernahme aus der alten PWA (docs/03 §2.3): Wer fünfmal gebrüht hat,
   //     will beim sechsten Mal nicht wieder beim Standard anfangen.
+  //
+  //     Aber nur, wenn der Versuch nicht selbst ein Fehler war: Ein mit
+  //     „sauer" oder „bitter" bewerteter Durchgang ist nach der eigenen
+  //     Logik der App falsch eingestellt gewesen. Ihn als Startpunkt
+  //     anzubieten heißt, denselben Fehler noch einmal zu machen — der
+  //     Standard aus der Wissensbasis ist dann die bessere Ausgangslage.
+  const brauchbar = (b: Brew) => {
+    const r = b.tasting?.rating ?? 0
+    if (r >= 3) return true
+    return r >= 2 && !(b.tasting?.defects?.length)
+  }
   const attempts = ctx.beanHistory
-    .filter((b) => (b.tasting?.rating ?? 0) >= 2)
+    .filter(brauchbar)
     .sort(
       (a, b) =>
         (b.tasting!.rating - a.tasting!.rating) ||
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
 
-  if (attempts.length >= 2) {
+  // Zwei Durchgänge zeigen, dass jemand an dieser Bohne arbeitet — gemessen
+  // an der Historie, nicht am gefilterten Feld. Sonst hinge die Schwelle
+  // daran, wie viele der Versuche brauchbar waren.
+  if (ctx.beanHistory.length >= 2 && attempts.length >= 1) {
     const ref = attempts[0]!
     const p = proposalFromBrew(ref, ctx)
     lines.push({

@@ -113,6 +113,8 @@ export interface Bag {
   purchasedGrams?: number
   remainingGrams?: number
   storage?: 'ambient' | 'frozen'  // frozen hält die Frische-Uhr an
+  /** Wann eingefroren wurde. Ab hier steht die Frische-Uhr (kb/05 §5.3). */
+  frozenAt?: string
   depleted: boolean
   createdAt: string
 }

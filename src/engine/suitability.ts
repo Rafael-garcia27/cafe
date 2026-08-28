@@ -102,11 +102,44 @@ function reasonFor(
 }
 
 /** Beste Methode für eine Bohne */
+/**
+ * Welche Methode diese Bohne am besten zeigt.
+ *
+ * Bewusst NICHT `suitability`: Die misst, wie leicht etwas schiefgeht, und
+ * die AeroPress ist nun einmal die fehlerverzeihendste Methode. Sie gewann
+ * dadurch fast immer — auch bei einer brasilianischen Natural, die jeder
+ * Röster als Espressobohne verkauft.
+ *
+ * Empfohlen wird deshalb nach dem Herkunftsprofil (origins.json), das die
+ * Frage „wo spielt diese Bohne ihre Stärken aus?" beantwortet. Die
+ * Schwierigkeit kommt nur noch als Sperre dazu: Was für die Bohne
+ * ausgesprochen schwierig ist, wird nicht empfohlen, egal wie gut es
+ * theoretisch passt. Ohne Herkunftsangabe (Blend) bleibt die Eignung.
+ */
 export function bestMethodFor(bean: Bean): { method: BrewMethod; suitability: Suitability } {
   const methods: BrewMethod[] = ['espresso', 'v60', 'aeropress']
-  const scored = methods.map((m) => ({ method: m, suitability: suitability(bean, m) }))
-  scored.sort((a, b) => b.suitability.score - a.suitability.score)
-  return scored[0]!
+  const origin = bean.origins[0] ? getOrigin(bean.origins[0].country) : undefined
+
+  const scored = methods.map((m) => {
+    const suit = suitability(bean, m)
+    const fit = origin?.methodSuitability?.[m]
+    // Ohne Herkunftsprofil trägt die Eignung die Entscheidung allein.
+    const basis = fit ?? suit.score
+    // Anspruchsvoll heißt nicht ausgeschlossen, aber es kostet.
+    return { method: m, suitability: suit, rang: basis - (suit.score < 3.5 ? 0.75 : 0) }
+  })
+
+  // Was die App selbst „schwierig" nennt, empfiehlt sie nicht — auch wenn
+  // die Herkunft dafür spricht. Eine hell geröstete Brasilianerin ist im
+  // Espresso schwierig, egal wie sehr Brasilien für Espresso steht.
+  // Nur wenn keine einzige Methode über der Schwelle liegt, gewinnt die
+  // am wenigsten schwierige.
+  const brauchbar = scored.filter((x) => x.suitability.score >= 2.5)
+  const feld = brauchbar.length ? brauchbar : scored
+  if (!brauchbar.length) feld.sort((a, b) => b.suitability.score - a.suitability.score)
+  else feld.sort((a, b) => b.rang - a.rang)
+
+  return { method: feld[0]!.method, suitability: feld[0]!.suitability }
 }
 
 export const SUITABILITY_LABEL: Record<SuitabilityLevel, string> = {

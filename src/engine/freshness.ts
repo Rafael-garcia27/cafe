@@ -180,6 +180,16 @@ export function assessFreshness(
     hint = 'Etwas feiner mahlen, das Bett bietet weniger Widerstand.'
   }
 
+  // Gefroren: Die Zahl ist das Alter beim Einfrieren, nicht das heutige.
+  // Ohne diesen Hinweis liest sich „119 Tage" so, als altere die Bohne
+  // im Gefrierfach weiter.
+  if (bag?.storage === 'frozen') {
+    label = `${label} · eingefroren`
+    hint = hint
+      ? `${hint} Solange sie gefroren bleibt, ändert sich daran nichts.`
+      : 'Im Gefrierfach steht die Uhr — der Wert gilt ab dem Tag des Einfrierens.'
+  }
+
   return { state, days, score, window: win, label, hint }
 }
 

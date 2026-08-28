@@ -409,7 +409,7 @@ function BagSheet({
   onSave,
 }: {
   onClose: () => void
-  onSave: (b: { roastDate?: string; purchasedGrams?: number; remainingGrams?: number; storage?: 'ambient' | 'frozen' }) => void
+  onSave: (b: { roastDate?: string; purchasedGrams?: number; remainingGrams?: number; storage?: 'ambient' | 'frozen'; frozenAt?: string }) => void
 }) {
   const [roastDate, setRoastDate] = useState(new Date().toISOString().slice(0, 10))
   const [grams, setGrams] = useState(250)
@@ -424,7 +424,7 @@ function BagSheet({
           className="w-full"
           size="lg"
           onClick={() =>
-            onSave({ roastDate, purchasedGrams: grams, remainingGrams: grams, storage: frozen ? 'frozen' : 'ambient' })
+            onSave({ roastDate, purchasedGrams: grams, remainingGrams: grams, storage: frozen ? 'frozen' : 'ambient', frozenAt: frozen ? new Date().toISOString() : undefined })
           }
         >
           Hinzufügen
