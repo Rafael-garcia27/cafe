@@ -11,7 +11,10 @@
  */
 import { openDB, type IDBPDatabase } from 'idb'
 import type { AppState } from '@/domain'
-import { emptyState, DEFAULT_SETTINGS } from '@/domain'
+import { emptyState } from '@/domain'
+import { migrate, buildBackup, backupFilename, parseBackup } from './migrate'
+export { migrate, buildBackup, backupFilename, parseBackup }
+export type { BackupFile } from './migrate'
 import { SCHEMA_VERSION } from '@/config'
 
 // ACHTUNG: Der Datenbankname bleibt 'dialed', obwohl die App inzwischen
@@ -108,75 +111,12 @@ export async function storageEstimate(): Promise<{ usedKb: number; quotaMb: numb
 
 // ── Migration ─────────────────────────────────────────────────────────
 
-function migrate(state: AppState): AppState {
-  let s = state
-  if (s.schemaVersion === undefined) s = { ...s, schemaVersion: 1 }
-
-  // Schema 1 → 2: Der alte Standard war 'dark'. Wer die App nie umgestellt
-  // hat, trägt diesen Wert nur, weil er einmal voreingestellt war — nicht
-  // weil er gewählt wurde. Beim Wechsel auf die Kaffee-Palette wird er
-  // deshalb einmalig auf den neuen Standard gesetzt. Eine bewusste
-  // Entscheidung lässt sich mit einem Tipp wiederherstellen.
-  if ((s.schemaVersion ?? 1) < 2) {
-    s = { ...s, settings: { ...s.settings, theme: DEFAULT_SETTINGS.theme } }
-  }
-
-  // Vorversion kannte drei Detailstufen. Alles außer „basis" wird Pro.
-  const legacy = (s.settings as unknown as { expertLevel?: string })?.expertLevel
-  if (legacy && !(s.settings as { mode?: string }).mode) {
-    s = {
-      ...s,
-      settings: { ...s.settings, mode: legacy === 'basis' ? 'basic' : 'pro' },
-    }
-  }
-  // Künftige Migrationen hier, jeweils mit Versionssprung.
-  const base = emptyState(SCHEMA_VERSION)
-  return {
-    ...base,
-    ...s,
-    settings: { ...base.settings, ...s.settings },
-    learned: { ...base.learned, ...s.learned },
-    schemaVersion: SCHEMA_VERSION,
-  }
-}
 
 // ── Export / Import ───────────────────────────────────────────────────
 
-export interface BackupFile {
-  /** Seit der Umbenennung 'cafe'. Alte Sicherungen tragen 'dialed'. */
-  app: 'cafe' | 'dialed'
-  schemaVersion: number
-  exportedAt: string
-  state: AppState
-}
 
-export function buildBackup(state: AppState): BackupFile {
-  return {
-    app: 'cafe',
-    schemaVersion: SCHEMA_VERSION,
-    exportedAt: new Date().toISOString(),
-    state,
-  }
-}
 
-export function backupFilename(): string {
-  const d = new Date()
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `cafe-backup-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`
-}
 
-export function parseBackup(text: string): { state: AppState } | { error: string } {
-  try {
-    const parsed = JSON.parse(text) as BackupFile
-    // Beide Kennungen akzeptieren: Sicherungen von vor der Umbenennung
-    // müssen sich weiterhin einspielen lassen.
-    if ((parsed.app !== 'cafe' && parsed.app !== 'dialed') || !parsed.state)
-      return { error: 'Das ist keine Café-Sicherung.' }
-    return { state: migrate(parsed.state) }
-  } catch {
-    return { error: 'Die Datei ließ sich nicht lesen.' }
-  }
-}
 
 /**
  * Sicherung teilen. In der iOS-Standalone-PWA sind `<a download>`-Links
@@ -184,8 +124,8 @@ export function parseBackup(text: string): { state: AppState } | { error: string
  * Zwischenablage als Rückfallebene.
  */
 export async function shareBackup(state: AppState): Promise<'shared' | 'copied' | 'downloaded'> {
-  const json = JSON.stringify(buildBackup(state), null, 2)
-  const name = backupFilename()
+  const json = JSON.stringify(buildBackup(state, new Date()), null, 2)
+  const name = backupFilename(new Date())
 
   const file = new File([json], name, { type: 'application/json' })
   if (navigator.canShare?.({ files: [file] })) {
