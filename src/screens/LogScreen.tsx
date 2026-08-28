@@ -10,6 +10,7 @@ import { useStore } from '@/store'
 import type { BrewMethod } from '@domain'
 import { METHOD_LABEL, DEFECT_LABEL, CHARACTER_LABEL, FLOW_LABEL } from '@/labels'
 import { Screen, Header, Section, Card, Empty, Chip, Stat, Button, fmtTime, num } from '@/components/ui'
+import { formatSetting } from '@/engine/grinder'
 
 interface Props {
   route: Route
@@ -116,6 +117,7 @@ function BrewDetail({ brewId, onBack }: { brewId: string; onBack: () => void }) 
   const bean = useStore((s) => s.beans.find((b) => b.id === brew?.beanId))
   const setBest = useStore((s) => s.setBestBrew)
   const del = useStore((s) => s.deleteBrew)
+  const grinders = useStore((s) => s.grinders)
   if (!brew) return null
 
   const a = brew.actual
@@ -139,7 +141,17 @@ function BrewDetail({ brewId, onBack }: { brewId: string; onBack: () => void }) 
               value={`1:${num((a.yieldG ?? a.waterG ?? 0) / a.doseG)}`}
             />
             {a.waterTempC && <Stat label="Temperatur" value={a.waterTempC} unit="°C" />}
-            {a.grindSetting && <Stat label="Mahlgrad" value={a.grindSetting.value} />}
+            {a.grindSetting && (
+              <Stat
+                label="Mahlgrad"
+                // In der Schreibweise der Mühle, mit der damals gemahlen
+                // wurde — „2,4" auf der Mylo, „4,5" auf der Sage.
+                value={formatSetting(
+                  a.grindSetting.value,
+                  grinders.find((g) => g.id === a.grindSetting!.equipmentId),
+                )}
+              />
+            )}
             {a.yieldG && (
               <Stat label="Flussrate" value={num(a.yieldG / a.timeS, 2)} unit="g/s" />
             )}
