@@ -271,11 +271,11 @@ export default function BrewScreen({ navigate }: Props) {
                 .map((b) => {
                   const bBag = s.bags.filter((x) => x.beanId === b.id && !x.depleted)[0]
                   const f = assessFreshness(bBag, method, b.roastLevel, !!b.isDecaf, new Date(), b.process)
-                  return { b, f, fit: suitability(b, method) }
+                  return { b, f, bag: bBag, fit: suitability(b, method) }
                 })
                 // Nach Eignung für die gewählte Methode, dann nach Frische
                 .sort((x, y) => y.fit.score - x.fit.score || y.f.score - x.f.score)
-                .map(({ b, f, fit }) => {
+                .map(({ b, f, bag: bBag, fit }) => {
                   const active = b.id === bean.id
                   return (
                     <Card key={b.id} onClick={() => setBeanId(b.id)} tone={active ? 'accent' : 'default'}>
@@ -286,11 +286,22 @@ export default function BrewScreen({ navigate }: Props) {
                           <p className="truncate text-[13px] text-mute">
                             {b.origins.map((o) => o.country).join(', ') || 'Herkunft offen'} · {f.label}
                           </p>
-                          <p
-                            className={`mt-0.5 text-[12px] ${fit.isWarning ? 'text-warn' : 'text-faint'}`}
-                          >
-                            Für {METHOD_LABEL[method]}: {SUITABILITY_LABEL[fit.level]}
-                          </p>
+                          {/* Eine Aussage je Bohne, und zwar die dringendere.
+                              „600 Tage — überaltert" neben „Für Espresso:
+                              ideal" widerspricht sich für den Leser. */}
+                          {f.state === 'stale' ? (
+                            <p className="mt-0.5 text-[12px] text-bad">Zu alt — die Tüte gibt nichts mehr her</p>
+                          ) : bBag?.remainingGrams !== undefined && bBag.remainingGrams < 20 ? (
+                            <p className="mt-0.5 text-[12px] text-warn">
+                              Nur noch {num(bBag.remainingGrams, 0)} g in der Tüte
+                            </p>
+                          ) : (
+                            <p
+                              className={`mt-0.5 text-[12px] ${fit.isWarning ? 'text-warn' : 'text-faint'}`}
+                            >
+                              Für {METHOD_LABEL[method]}: {SUITABILITY_LABEL[fit.level]}
+                            </p>
+                          )}
                         </div>
                         {active && <span className="text-crema">✓</span>}
                       </div>
@@ -386,6 +397,30 @@ export default function BrewScreen({ navigate }: Props) {
                 <Button size="sm" variant="ghost" className="mt-2 -ml-3" onClick={() => navigate({ tab: 'setup', detail: 'grinder' })}>
                   Mühle einrichten →
                 </Button>
+              </Card>
+            )}
+
+            {/* Wer 18 g abwiegen soll, aber nur 5 g im Regal hat, merkt das
+                sonst erst mit der Tüte in der Hand. */}
+            {bag?.remainingGrams !== undefined && bag.remainingGrams < doseG && (
+              <Card className="mt-3" tone="warn">
+                <p className="text-[14px] leading-snug">
+                  In der Tüte sind noch {num(bag.remainingGrams, 0)} g — der Vorschlag
+                  braucht {num(doseG)} g.{' '}
+                  {bag.remainingGrams >= 5
+                    ? 'Entweder aufstocken oder die Dosis anpassen; das Verhältnis zieht mit.'
+                    : 'Für einen ganzen Durchgang reicht das nicht mehr.'}
+                </p>
+                {bag.remainingGrams >= 5 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="mt-2 -ml-3"
+                    onClick={() => changeDose(Math.floor(bag.remainingGrams! * 10) / 10)}
+                  >
+                    Auf {num(Math.floor(bag.remainingGrams * 10) / 10)} g herunterrechnen
+                  </Button>
+                )}
               </Card>
             )}
 
