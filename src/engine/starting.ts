@@ -10,14 +10,80 @@ import type { BrewMethod, Brew, Bean, RoastLevel } from '@domain'
 import { targetYield } from '@domain'
 import type { EngineContext } from '@/domain'
 import { beanKey, daysOffRoast } from '@/domain'
-import { getMethodDefaults, targetTimeRange, doseGrindOffset, getProcess, getOrigin } from '@/kb'
+import { getMethodDefaults, targetTimeRange, doseGrindOffset, getProcess, getOrigin, tempRange, maxWaterG } from '@/kb'
 import { assessFreshness, driftCorrection } from './freshness'
-import { suggestedSetting } from './grinder'
+import { suggestedSetting, roundToStep } from './grinder'
 import { LEARN_THRESHOLDS } from '@/config'
 
 type Mods = { grindSteps?: number; waterTempC?: number; ratio?: number }
 const ROAST_MODS = formulas.roastModifiers as unknown as Record<RoastLevel, Mods>
 const BEAN_MODS = formulas.beanModifiers as unknown as Record<string, Mods>
+
+interface Sensitivity {
+  grindWeight: number
+  tempWeight: number
+  ratioWeight: number
+  steepPerGrindStep: number
+}
+const SENSITIVITY = formulas.methodSensitivity as unknown as Record<string, Sensitivity>
+
+/** Wie stark ein Bohnenmerkmal in dieser Methode durchschlägt (Aufgabe 2). */
+/**
+ * Umrechnungsfaktor von der Bezugsskala auf die Skala dieser Mühle.
+ *
+ * Ein „Schritt" in der Wissensbasis meint 12,5 µm. Eine Mühle, deren
+ * Skalenschritt 40 µm groß ist, braucht für dieselbe Partikeländerung nur
+ * knapp ein Drittel davon.
+ */
+function grindStepScale(grinder: { micronPerStep?: number } | undefined): number {
+  const ref =
+    (formulas as unknown as { grindStepReference?: { micronPerStep: number } })
+      .grindStepReference?.micronPerStep ?? 12.5
+  const own = grinder?.micronPerStep
+  if (!own || own <= 0) return 1
+  return ref / own
+}
+
+function sensitivity(method: BrewMethod): Sensitivity {
+  return (
+    SENSITIVITY[method] ?? {
+      grindWeight: 1,
+      tempWeight: 1,
+      ratioWeight: 1,
+      steepPerGrindStep: 0,
+    }
+  )
+}
+
+/**
+ * Anbauhöhe der Bohne — eingetragen oder aus der Herkunft abgeleitet.
+ *
+ * Ohne den Rückfall bliebe eine äthiopische Bohne ohne Höhenangabe
+ * behandelt wie eine brasilianische Tieflandbohne, obwohl die Herkunft
+ * die Antwort längst kennt.
+ */
+function beanAltitude(bean: Bean): { masl: number; derived: boolean } | null {
+  if (bean.altitudeMasl) {
+    return { masl: (bean.altitudeMasl[0] + bean.altitudeMasl[1]) / 2, derived: false }
+  }
+  const ranges = bean.origins
+    .map((o) => getOrigin(o.country)?.altitudeMasl)
+    .filter((r): r is [number, number] => Array.isArray(r))
+  if (!ranges.length) return null
+  const mid = ranges.reduce((sum, r) => sum + (r[0] + r[1]) / 2, 0) / ranges.length
+  return { masl: mid, derived: true }
+}
+
+/** Stetige Höhenwirkung statt Sprung bei genau 1800 m. */
+function altitudeMods(masl: number): Mods {
+  const ramp = BEAN_MODS['altitudeRamp'] as unknown as {
+    startMasl: number
+    fullMasl: number
+    atFull: { grindSteps: number; waterTempC: number }
+  }
+  const t = Math.max(0, Math.min(1, (masl - ramp.startMasl) / (ramp.fullMasl - ramp.startMasl)))
+  return { grindSteps: ramp.atFull.grindSteps * t, waterTempC: ramp.atFull.waterTempC * t }
+}
 
 export type StartingSource = 'personal' | 'own-attempt' | 'transfer' | 'roaster' | 'default'
 
@@ -98,48 +164,78 @@ function applyBeanModifiers(
   const p = { ...base }
   let grindSteps = 0
 
-  const rm = ROAST_MODS[bean.roastLevel] ?? {}
-  if (rm.grindSteps) grindSteps += rm.grindSteps
-  if (rm.waterTempC) p.waterTempC += rm.waterTempC
-  if (rm.ratio) p.ratio += rm.ratio
+  // Aufgabe 2: Jeder Modifikator wird mit der Empfindlichkeit der Methode
+  // gewichtet. sGrind sammelt den Anteil, der bei Immersion NICHT in den
+  // Mahlgrad, sondern in die Ziehzeit wandert.
+  const sens = sensitivity(ctx.method)
+  let steepFactor = 1
+  // Die Modifikatoren stehen in Schritten einer 12,5-µm-Bezugsskala. Auf
+  // einer gröber aufgelösten Mühle sind dafür weniger Schritte nötig —
+  // sonst würde derselbe Zahlenwert dort ein Vielfaches bewirken.
+  const scaleFactor = grindStepScale(ctx.grinder)
+  /** Verteilt einen Mahlgrad-Impuls je nach Methode auf Mahlgrad und Zeit. */
+  const applyGrind = (steps: number) => {
+    grindSteps += steps * sens.grindWeight * scaleFactor
+    if (sens.steepPerGrindStep) {
+      steepFactor *= 1 + steps * (1 - sens.grindWeight) * sens.steepPerGrindStep
+    }
+  }
 
-  const alt = bean.altitudeMasl ? (bean.altitudeMasl[0] + bean.altitudeMasl[1]) / 2 : null
-  if (alt !== null && alt > 1800) {
-    const m = BEAN_MODS['altitudeAbove1800']!
-    grindSteps += m.grindSteps ?? 0
-    p.waterTempC += m.waterTempC ?? 0
+  const rm = ROAST_MODS[bean.roastLevel] ?? {}
+  if (rm.grindSteps) applyGrind(rm.grindSteps)
+  if (rm.waterTempC) p.waterTempC += rm.waterTempC * sens.tempWeight
+  if (rm.ratio) p.ratio += rm.ratio * sens.ratioWeight
+
+  const altInfo = beanAltitude(bean)
+  if (altInfo && altInfo.masl > 1400) {
+    const m = altitudeMods(altInfo.masl)
+    applyGrind(m.grindSteps ?? 0)
+    p.waterTempC += (m.waterTempC ?? 0) * sens.tempWeight
+    const wie = ctx.method === 'aeropress' ? 'länger ziehen und heißer' : 'feiner und heißer'
     lines.push({
-      text: `Über 1800 m gewachsen — dichtere Bohne, etwas feiner und heißer.`,
+      text: altInfo.derived
+        ? `Herkunftstypisch um ${Math.round(altInfo.masl / 50) * 50} m angebaut — dichtere Bohne, deshalb ${wie}.`
+        : `Auf ${Math.round(altInfo.masl)} m gewachsen — dichtere Bohne, deshalb ${wie}.`,
       kind: 'modifier',
     })
   }
   if (bean.densityGL && bean.densityGL > 400) {
-    grindSteps += BEAN_MODS['densityAbove400']!.grindSteps ?? 0
-    lines.push({ text: `Hohe Dichte (${bean.densityGL} g/L) — einen Schritt feiner.`, kind: 'modifier' })
+    applyGrind(BEAN_MODS['densityAbove400']!.grindSteps ?? 0)
+    lines.push({ text: `Hohe Dichte (${bean.densityGL} g/L) — schwerer löslich.`, kind: 'modifier' })
   }
 
   const proc = getProcess(bean.process)
   if (proc?.modifiers?.grindSteps) {
-    grindSteps += proc.modifiers.grindSteps
+    applyGrind(proc.modifiers.grindSteps)
     lines.push({
       text: `${proc.label} löst sich leichter — etwas gröber.`,
       kind: 'modifier',
     })
   }
-  if (proc?.modifiers?.waterTempC) p.waterTempC += proc.modifiers.waterTempC
-  if (proc?.modifiers?.ratio) p.ratio += proc.modifiers.ratio
+  if (proc?.modifiers?.waterTempC) p.waterTempC += proc.modifiers.waterTempC * sens.tempWeight
+  if (proc?.modifiers?.ratio) p.ratio += proc.modifiers.ratio * sens.ratioWeight
+  // Ziehzeit relativ (−0,1 = −10 %): Anaerob und Carbonic Maceration lösen
+  // sich atypisch schnell — kürzerer Kontakt, sonst kippen sie (kb/04 §4.4).
+  const steepMod = (proc?.modifiers as { steepS?: number } | undefined)?.steepS
+  if (p.steepS && steepMod) {
+    p.steepS = Math.round(p.steepS * (1 + steepMod))
+    lines.push({
+      text: `${proc!.label} löst sich schnell — Ziehzeit ${Math.round(Math.abs(steepMod) * 100)} % kürzer.`,
+      kind: 'modifier',
+    })
+  }
 
   if (bean.isDecaf) {
     const m = BEAN_MODS['decaf']!
-    grindSteps += m.grindSteps ?? 0
-    p.waterTempC += m.waterTempC ?? 0
+    applyGrind(m.grindSteps ?? 0)
+    p.waterTempC += (m.waterTempC ?? 0) * sens.tempWeight
     lines.push({
       text: `Entkoffeiniert — die Struktur ist poröser, deshalb gröber und kühler.`,
       kind: 'modifier',
     })
   }
   if (ctx.bag?.storage === 'frozen') {
-    grindSteps += BEAN_MODS['frozen']!.grindSteps ?? 0
+    applyGrind(BEAN_MODS['frozen']!.grindSteps ?? 0)
     lines.push({
       text: `Gefroren gemahlen — engere Partikelverteilung, deshalb gröber starten.`,
       kind: 'modifier',
@@ -148,21 +244,53 @@ function applyBeanModifiers(
 
   const origin = bean.origins[0] ? getOrigin(bean.origins[0].country) : undefined
   if (origin?.modifiers) {
-    grindSteps += origin.modifiers.grindSteps ?? 0
-    p.waterTempC += origin.modifiers.waterTempC ?? 0
-    p.ratio += origin.modifiers.ratio ?? 0
+    applyGrind(origin.modifiers.grindSteps ?? 0)
+    p.waterTempC += (origin.modifiers.waterTempC ?? 0) * sens.tempWeight
+    p.ratio += (origin.modifiers.ratio ?? 0) * sens.ratioWeight
   }
 
-  grindSteps += doseGrindOffset(ctx.method, p.doseG)
+  grindSteps += doseGrindOffset(ctx.method, p.doseG) * scaleFactor
+
+  // Bei Immersion ist die Zeit der zweite Hebel: Was der Mahlgrad hier
+  // nicht leistet, leistet die Ziehzeit. Auf 5 s gerundet, damit die
+  // Vorgabe am Timer ablesbar bleibt, und bei ±5 % ohne Begründung.
+  if (p.steepS && Math.abs(steepFactor - 1) > 0.05) {
+    const vorher = p.steepS
+    p.steepS = Math.round((p.steepS * steepFactor) / 5) * 5
+    lines.push({
+      text:
+        p.steepS > vorher
+          ? `Schwerer löslich — Ziehzeit auf ${p.steepS} s verlängert.`
+          : `Leichter löslich — Ziehzeit auf ${p.steepS} s verkürzt.`,
+      kind: 'modifier',
+    })
+  }
 
   if (p.grindSetting !== undefined) {
-    p.grindSetting = Math.max(0, Math.round(p.grindSetting + grindSteps))
+    p.grindSetting = Math.max(0, roundToStep(p.grindSetting + grindSteps, ctx.grinder))
   }
-  p.waterTempC = Math.round(Math.min(100, Math.max(70, p.waterTempC)))
+  // Grenzen der jeweiligen Methode, nicht eine globale Klammer: Ein
+  // Siebträger liefert am Brühkopf keine 100 °C, ein Wasserkocher schon.
+  const tr = tempRange(ctx.method)
+  p.waterTempC = Math.round(Math.min(tr.max, Math.max(tr.min, p.waterTempC)))
   p.ratio = Math.round(p.ratio * 10) / 10
   p.yieldG = Math.round(targetYield(p.doseG, p.ratio) * 10) / 10
   if (ctx.method !== 'espresso') p.waterG = Math.round(p.doseG * p.ratio)
-  p.targetTimeS = targetTimeRange(ctx.method, p.doseG, ctx.bean.roastLevel, p.yieldG) ?? undefined
+
+  // Ein Rezept, das nicht in die Kammer passt, ist kein Rezept.
+  // Statt die Dosis heimlich zu senken wird das Verhältnis zurückgenommen —
+  // der Nutzer hat seine Bohnen schon abgewogen.
+  const maxW = maxWaterG(ctx.method)
+  if (maxW && p.waterG && p.waterG > maxW) {
+    p.waterG = maxW
+    p.ratio = Math.round((maxW / p.doseG) * 10) / 10
+    p.yieldG = Math.round(targetYield(p.doseG, p.ratio) * 10) / 10
+    lines.push({
+      text: `Auf ${maxW} g Wasser begrenzt — mehr fasst die Kammer nicht.`,
+      kind: 'modifier',
+    })
+  }
+  p.targetTimeS = targetTimeRange(ctx.method, p.doseG, ctx.bean.roastLevel, p.yieldG, p.steepS) ?? undefined
   return p
 }
 
@@ -173,10 +301,10 @@ function applyPreferenceBias(p: Proposal, ctx: EngineContext, lines: RationaleLi
   if (pref.ratioBias) out.ratio = Math.round((out.ratio + pref.ratioBias) * 10) / 10
   if (pref.tempBiasC) out.waterTempC = Math.round(out.waterTempC + pref.tempBiasC)
   if (pref.grindBiasSteps && out.grindSetting !== undefined)
-    out.grindSetting = Math.max(0, Math.round(out.grindSetting + pref.grindBiasSteps))
+    out.grindSetting = Math.max(0, roundToStep(out.grindSetting + pref.grindBiasSteps, ctx.grinder))
   out.yieldG = Math.round(targetYield(out.doseG, out.ratio) * 10) / 10
   if (ctx.method !== 'espresso') out.waterG = Math.round(out.doseG * out.ratio)
-  out.targetTimeS = targetTimeRange(ctx.method, out.doseG, ctx.bean.roastLevel, out.yieldG) ?? undefined
+  out.targetTimeS = targetTimeRange(ctx.method, out.doseG, ctx.bean.roastLevel, out.yieldG, out.steepS) ?? undefined
   lines.push({
     text: pref.statement ?? 'An deine bisherigen Bewertungen angepasst.',
     kind: 'learning',

@@ -15,6 +15,7 @@
  * Bewusst ohne Bibliothek: reines SVG, keine Animationsframework-Abhängigkeit.
  */
 import type { BrewMethod } from '@domain'
+import type { AeropressPhases } from '@/kb'
 
 interface Props {
   method: BrewMethod
@@ -22,6 +23,10 @@ interface Props {
   target?: [number, number]
   /** Zielausbringung — beim Espresso wird der Füllstand daran gemessen */
   targetYieldG?: number
+  /** Phasengrenzen der AeroPress (Bloom · Ziehen · Wenden · Pressen) */
+  apPhases?: AeropressPhases
+  /** AeroPress steht auf dem Kolben — Standard in den Rezepten der App */
+  inverted?: boolean
 }
 
 type Zone = 'early' | 'window' | 'late'
@@ -42,7 +47,7 @@ const ZONE_COLOR: Record<Zone, string> = {
   late: 'var(--c-bad)',
 }
 
-export default function BrewAnimation({ method, elapsedS, target, targetYieldG }: Props) {
+export default function BrewAnimation({ method, elapsedS, target, targetYieldG, apPhases, inverted }: Props) {
   const mid = target ? (target[0] + target[1]) / 2 : 30
   const progress = Math.min(1.15, elapsedS / mid)
   const zone = zoneOf(elapsedS, target)
@@ -52,7 +57,7 @@ export default function BrewAnimation({ method, elapsedS, target, targetYieldG }
       <svg viewBox="0 0 100 122" className="h-full w-full" aria-hidden>
         {method === 'espresso' && <Espresso p={progress} zone={zone} yieldG={targetYieldG} />}
         {method === 'v60' && <V60 p={progress} zone={zone} />}
-        {method === 'aeropress' && <AeroPress p={progress} zone={zone} />}
+        {method === 'aeropress' && <AeroPress elapsedS={elapsedS} zone={zone} phases={apPhases} inverted={inverted !== false} />}
       </svg>
     </div>
   )
@@ -192,12 +197,57 @@ function V60({ p, zone }: { p: number; zone: Zone }) {
 
 // ══ AeroPress ═══════════════════════════════════════════════════════
 
-function AeroPress({ p, zone }: { p: number; zone: Zone }) {
+function AeroPress({
+  elapsedS,
+  zone,
+  phases,
+  inverted,
+}: {
+  elapsedS: number
+  zone: Zone
+  phases?: AeropressPhases
+  inverted: boolean
+}) {
   const cx = 50
-  // Ziehen bis 80 %, danach der Pressvorgang
-  const steeping = p < 0.8
-  const press = Math.max(0, Math.min(1, (p - 0.8) / 0.2))
+  // Ohne Phasen (sollte nicht vorkommen) ein plausibler Standard: 90 s ziehen.
+  const ph = phases ?? { bloomEnd: 35, steepEnd: 90, transferEnd: 98, total: 123 }
+
+  type Phase = 'bloom' | 'steep' | 'transfer' | 'press' | 'done'
+  const phase: Phase =
+    elapsedS < ph.bloomEnd ? 'bloom'
+    : elapsedS < ph.steepEnd ? 'steep'
+    : elapsedS < ph.transferEnd ? 'transfer'
+    : elapsedS < ph.total ? 'press'
+    : 'done'
+
+  const LABEL: Record<Phase, string> = {
+    bloom: 'Bloom & Rühren',
+    steep: 'Ziehen',
+    transfer: 'Kappe & Wenden',
+    press: 'Pressen',
+    done: 'Fertig',
+  }
+
+  // Kolben senkt sich erst in der Pressphase
+  const press = Math.max(0, Math.min(1, (elapsedS - ph.transferEnd) / (ph.total - ph.transferEnd)))
   const plungerY = 16 + press * 32
+
+  // Invertiert steht die Presse bis zum Wenden auf dem Kolben: Kammer oben
+  // offen, keine Tasse darunter. Erst nach dem Wenden wird gepresst. Wer
+  // die Tasse vorher unterstellt, findet sie leer und den Tisch nass.
+  const aufKolben = inverted && (phase === 'bloom' || phase === 'steep' || phase === 'transfer')
+
+  // Bloom: viele lebhafte Bläschen, die mit der Zeit abklingen.
+  // Steep: nur noch vereinzelte, langsame Bläschen.
+  const bloomIntensity = phase === 'bloom' ? 1 - (elapsedS / Math.max(1, ph.bloomEnd)) * 0.6 : 0
+  const bubbles =
+    phase === 'bloom'
+      ? [0, 1, 2, 3, 4, 5]
+      : phase === 'steep'
+        ? [0, 1]
+        : []
+
+  const fortschritt = Math.min(1.1, elapsedS / ph.total)
 
   return (
     <>
@@ -207,10 +257,22 @@ function AeroPress({ p, zone }: { p: number; zone: Zone }) {
         </clipPath>
       </defs>
 
-      {/* Kolbenstange */}
-      <rect x={cx - 4} y={plungerY - 14} width={8} height={16} rx="2" fill="var(--c-raised)" />
-      <rect x={cx - 18} y={plungerY} width={36} height={7} rx="2"
-        fill="var(--c-raised)" stroke="var(--c-line)" strokeWidth="1.2" />
+      {/* Kolben — oben beim Pressen, unten als Standfuß beim Invertieren */}
+      {aufKolben ? (
+        <>
+          <rect x={cx - 18} y={72} width={36} height={7} rx="2"
+            fill="var(--c-raised)" stroke="var(--c-line)" strokeWidth="1.2" />
+          <rect x={cx - 4} y={79} width={8} height={14} rx="2" fill="var(--c-raised)" />
+          <rect x={cx - 13} y={93} width={26} height={5} rx="2" fill="var(--c-raised)"
+            stroke="var(--c-line)" strokeWidth="1" />
+        </>
+      ) : (
+        <>
+          <rect x={cx - 4} y={plungerY - 14} width={8} height={16} rx="2" fill="var(--c-raised)" />
+          <rect x={cx - 18} y={plungerY} width={36} height={7} rx="2"
+            fill="var(--c-raised)" stroke="var(--c-line)" strokeWidth="1.2" />
+        </>
+      )}
 
       {/* Kammer */}
       <rect x={cx - 17} y={20} width={34} height={52} rx="2"
@@ -221,28 +283,84 @@ function AeroPress({ p, zone }: { p: number; zone: Zone }) {
 
       {/* Aufguss */}
       <g clipPath="url(#chamber)">
-        <rect x={cx - 17} y={plungerY + 7} width={34} height={72 - plungerY} fill={COFFEE} opacity="0.85" />
-        {steeping &&
-          [0, 1, 2].map((i) => (
-            <circle key={i} cx={cx - 8 + i * 8} cy={40 + ((p * 60 + i * 13) % 26)} r="1.3"
-              fill="var(--c-crema)" opacity="0.4" />
-          ))}
+        {(() => {
+          // Oberkante der Flüssigkeit: invertiert steht sie in der nach oben
+          // offenen Kammer, aufrecht hängt sie unter dem Kolben.
+          const top = aufKolben ? 30 : plungerY + 7
+          const bottom = 72
+          return (
+            <>
+              <rect x={cx - 17} y={top} width={34} height={bottom - top} fill={COFFEE} opacity="0.85" />
+              {phase === 'bloom' && (
+                <rect x={cx - 17} y={top} width={34} height={3 + bloomIntensity * 3}
+                  fill="var(--c-crema)" opacity={0.35 + bloomIntensity * 0.3} />
+              )}
+            </>
+          )
+        })()}
+
+        {bubbles.map((i) => (
+          <circle
+            key={i}
+            cx={cx - 12 + ((i * 5.3) % 24)}
+            cy={40 + ((elapsedS * (phase === 'bloom' ? 14 : 5) + i * 11) % 26)}
+            r={phase === 'bloom' ? 1.6 : 1.1}
+            fill="var(--c-crema)"
+            opacity={phase === 'bloom' ? 0.3 + bloomIntensity * 0.35 : 0.3}
+          />
+        ))}
       </g>
 
-      {/* Filterkappe */}
-      <rect x={cx - 18} y={72} width={36} height={5} rx="1.5" fill="var(--c-raised)" stroke="var(--c-line)" strokeWidth="1" />
-
-      {/* Tasse */}
-      <path d={`M ${cx - 16},80 L ${cx + 16},80 L ${cx + 12},99 L ${cx - 12},99 Z`}
-        fill="var(--c-card)" stroke="var(--c-line)" strokeWidth="1.5" />
-      {press > 0 && (
-        <rect x={cx - 15} y={99 - press * 17} width={30} height={press * 17} fill={COFFEE} opacity="0.85" />
+      {/* Rühr-Stab, nur während des Blooms */}
+      {phase === 'bloom' && (
+        <line
+          x1={cx + Math.sin(elapsedS * 2.2) * 8} y1={12}
+          x2={cx + Math.sin(elapsedS * 2.2) * 4} y2={40}
+          stroke="var(--c-mute)" strokeWidth="1.6" strokeLinecap="round" opacity="0.8"
+        />
       )}
 
+      {/* Wende-Pfeil während des Transfers */}
+      {phase === 'transfer' && (
+        <path d={`M ${cx + 24},40 a 9 9 0 1 1 -3,-8`} fill="none"
+          stroke="var(--c-mute)" strokeWidth="1.6" strokeLinecap="round"
+          markerEnd="url(#flip-arrow)" />
+      )}
+      <defs>
+        <marker id="flip-arrow" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
+          <path d="M0,0 L5,2.5 L0,5 Z" fill="var(--c-mute)" />
+        </marker>
+      </defs>
+
+      {/* Filterkappe: invertiert kommt sie erst beim Wenden auf die Kammer */}
+      {aufKolben ? (
+        phase === 'transfer' && (
+          <rect x={cx - 18} y={16} width={36} height={5} rx="1.5" fill="var(--c-raised)"
+            stroke="var(--c-line)" strokeWidth="1" />
+        )
+      ) : (
+        <rect x={cx - 18} y={72} width={36} height={5} rx="1.5" fill="var(--c-raised)"
+          stroke="var(--c-line)" strokeWidth="1" />
+      )}
+
+      {/* Tasse — steht erst unter der Presse, wenn wirklich gepresst wird */}
+      {!aufKolben && (
+        <>
+          <path d={`M ${cx - 16},80 L ${cx + 16},80 L ${cx + 12},99 L ${cx - 12},99 Z`}
+            fill="var(--c-card)" stroke="var(--c-line)" strokeWidth="1.5" />
+          {press > 0 && (
+            <rect x={cx - 15} y={99 - press * 17} width={30} height={press * 17} fill={COFFEE} opacity="0.85" />
+          )}
+        </>
+      )}
+
+      {/* Phasenname + nächste Grenze, damit man weiß, worauf man wartet */}
       <text x={cx} y={118} textAnchor="middle" fontSize="7" fill="var(--c-faint)">
-        {steeping ? 'Ziehen' : 'Pressen'}
+        {LABEL[phase]}
+        {phase === 'bloom' ? ` · bis ${ph.bloomEnd} s` : ''}
+        {phase === 'steep' ? ` · bis ${ph.steepEnd} s` : ''}
       </text>
-      <ZoneArc zone={zone} p={p} y={107} />
+      <ZoneArc zone={zone} p={fortschritt} y={107} />
     </>
   )
 }

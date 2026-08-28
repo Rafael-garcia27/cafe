@@ -9,7 +9,7 @@ import { create } from 'zustand'
 import type { AppState, Settings, AppMode } from '@/domain'
 import type { Bean, Bag, Brew, Grinder, Water, BrewMethod } from '@domain'
 import { emptyState } from '@/domain'
-import { SCHEMA_VERSION } from '@/config'
+import { SCHEMA_VERSION, INTEGRATED_GRINDER_ID } from '@/config'
 import { loadState, saveState, flush } from './persist'
 import { recompute } from '@/engine/learn'
 import { grinderFromCatalog } from '@/engine/grinder'
@@ -93,12 +93,16 @@ export const useStore = create<Store>((set) => ({
     // Erststart: die Mühle des Nutzers ist voreingestellt, damit Empfehlungen
     // sofort in echten Klicks kommen statt in Prozent.
     if (s.grinders.length === 0) {
-      const g = grinderFromCatalog(defaultGrinderEntry().id, uid())
-      if (g) {
+      const hand = grinderFromCatalog(defaultGrinderEntry().id, uid())
+      // Die verbaute Mühle des Siebträgers steht von Anfang an bereit,
+      // aber sie wird NICHT vorausgewählt — welche von beiden für Espresso
+      // benutzt wird, entscheidet der Nutzer im Brühen-Menü.
+      const integriert = grinderFromCatalog(INTEGRATED_GRINDER_ID, `gr-${INTEGRATED_GRINDER_ID}`)
+      if (hand) {
         s = {
           ...s,
-          grinders: [g],
-          settings: { ...s.settings, activeGrinderId: g.id },
+          grinders: [hand, ...(integriert ? [integriert] : [])],
+          settings: { ...s.settings, activeGrinderId: hand.id },
         }
         saveState(s)
       }
@@ -292,6 +296,29 @@ export const selectMethodHistory = (method: BrewMethod) => (s: Store) =>
 
 export const selectActiveGrinder = (s: Store) =>
   s.grinders.find((g) => g.id === s.settings.activeGrinderId)
+
+/**
+ * Die Mühle, die für diese Methode tatsächlich am Tisch steht.
+ *
+ * Kein Hook-Selektor mit Argument — in Komponenten als
+ * `grinderFor(useStore(...), method)` verwenden, damit keine neue
+ * Objektidentität je Render entsteht.
+ */
+export function grinderFor(
+  s: { grinders: Grinder[]; settings: Settings },
+  method: BrewMethod,
+) {
+  if (method === 'espresso' && s.settings.espressoGrinderId) {
+    const g = s.grinders.find((x) => x.id === s.settings.espressoGrinderId)
+    if (g) return g
+  }
+  const active = s.grinders.find((g) => g.id === s.settings.activeGrinderId)
+  // Eine methodenbeschränkte Mühle darf nie für eine fremde Methode gelten.
+  if (active?.methods && !active.methods.includes(method)) {
+    return s.grinders.find((g) => !g.methods || g.methods.includes(method)) ?? active
+  }
+  return active
+}
 
 export const selectActiveWater = (s: Store) =>
   s.waters.find((w) => w.id === s.settings.activeWaterId)

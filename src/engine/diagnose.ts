@@ -376,8 +376,12 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
   // ════ STUFE 2 — SENSORISCH ═══════════════════════════════════════════
 
   const sugg: Suggestion[] = []
+  // F-22 (√(t_ist/t_ziel)) ist Durchflussphysik und gilt nur für
+  // Perkolation. Bei der AeroPress ist die Zeit GEWÄHLT, kein Ergebnis —
+  // eine lange Gesamtzeit heißt dort nur, dass der Nutzer länger gewartet
+  // hat, und darf nie in eine Mahlgradkorrektur übersetzt werden.
   const grindCorr =
-    targetMid && timeIsTrustworthy(obs?.flowState)
+    method !== 'aeropress' && targetMid && timeIsTrustworthy(obs?.flowState)
       ? correctionFromTime(actual.timeS, targetMid, method, ctx.grinder, actual.grindSetting?.value)
       : null
 

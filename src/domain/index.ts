@@ -40,6 +40,13 @@ export const PRO_FEATURES = [
 export interface Settings {
   activeSetupId?: string
   activeGrinderId?: string
+  /**
+   * Eigene Mühle für Espresso.
+   *
+   * Wer einen Siebträger mit verbauter Mühle hat, mahlt Espresso damit und
+   * Filter mit der Handmühle. Ohne diesen Eintrag gilt activeGrinderId.
+   */
+  espressoGrinderId?: string
   activeWaterId?: string
   activeBasketMm: 51 | 53 | 54 | 58
   mode: AppMode

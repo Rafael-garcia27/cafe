@@ -54,6 +54,8 @@ export interface MethodProfile {
   correctionOrder?: Record<string, string[]>
   recipeVariants?: RecipeVariant[]
   maxChamberWaterG?: number
+  usableChamberWaterG?: number
+  tempRangeC?: { min: number; max: number }
 }
 
 export interface RecipeVariant {
@@ -118,11 +120,58 @@ export function targetFlowRate(roast: RoastLevel, ratio = 2): number {
  * V60: skaliert mit der Dosis (Anti-Regel D-66). Eine feste Zielzeit für alle
  * Mengen ist der häufigste Fehler in V60-Apps.
  */
+export interface AeropressPhases {
+  /** Ende Benetzen/Bloom/Rühren (s ab Timerstart) */
+  bloomEnd: number
+  /** Ende der Ziehzeit */
+  steepEnd: number
+  /** Ende Kappe aufsetzen und Wenden */
+  transferEnd: number
+  /** Gesamtzeit inkl. Pressen */
+  total: number
+}
+
+/**
+ * Phasengrenzen eines AeroPress-Durchgangs (kb/10 §4.1, Standard invertiert).
+ *
+ * Der Bloom ist hier kein eigener Vorlauf, sondern der Anfang der Ziehzeit:
+ * Benetzen, CO₂-Entwicklung und Rühren in den ersten ~35 Sekunden. Danach
+ * ruhiges Ziehen, dann Kappe aufsetzen und Wenden, zuletzt Pressen.
+ */
+export function aeropressPhases(steepS: number): AeropressPhases {
+  const pm = (getMethod('aeropress') as unknown as {
+    phaseModel?: { bloomMaxS: number; bloomFractionOfSteep: number; transferS: number; pressS: number }
+  }).phaseModel ?? { bloomMaxS: 35, bloomFractionOfSteep: 0.4, transferS: 8, pressS: 25 }
+  const bloomEnd = Math.min(pm.bloomMaxS, Math.round(steepS * pm.bloomFractionOfSteep))
+  return {
+    bloomEnd,
+    steepEnd: steepS,
+    transferEnd: steepS + pm.transferS,
+    total: steepS + pm.transferS + pm.pressS,
+  }
+}
+
+/** Was diese Methode am Brühkopf bzw. im Kessel überhaupt liefern kann. */
+export function tempRange(method: BrewMethod): { min: number; max: number } {
+  return getMethod(method).tempRangeC ?? { min: 70, max: 100 }
+}
+
+/**
+ * Nutzbares Wasservolumen. Nur die AeroPress ist volumenbegrenzt —
+ * ihre Kammer fasst nominal 250 ml, praktisch passen mit Kaffeemehl und
+ * Kolbeneinschub rund 230 g hinein.
+ */
+export function maxWaterG(method: BrewMethod): number | null {
+  const m = getMethod(method)
+  return m.usableChamberWaterG ?? m.maxChamberWaterG ?? null
+}
+
 export function targetTimeRange(
   method: BrewMethod,
   doseG: number,
   roast: RoastLevel = 'medium',
   yieldG?: number,
+  steepSOverride?: number,
 ): [number, number] | null {
   const m = getMethod(method)
 
@@ -132,7 +181,11 @@ export function targetTimeRange(
     for (const row of table) {
       if (Math.abs(row.doseG - doseG) < Math.abs(best.doseG - doseG)) best = row
     }
-    return best.timeS
+    // Röstgradabhängig: Helle Röstungen sind dicht und vertragen längeren
+    // Kontakt, dunkle sind porös und kippen früher in die Bitterkeit.
+    const off = ((m as unknown as { roastTimeOffsetS?: Record<string, number> })
+      .roastTimeOffsetS?.[roast]) ?? 0
+    return [best.timeS[0] + off, best.timeS[1] + off]
   }
 
   if (method === 'espresso') {
@@ -141,6 +194,17 @@ export function targetTimeRange(
     const mid = out / targetFlowRate(roast, ratio)
     // ASC nennt ±3 s Toleranz auf die Kurszeiten.
     return [Math.round(mid - 3), Math.round(mid + 3)]
+  }
+
+  if (method === 'aeropress') {
+    // Gesamtzeit aus dem Phasenmodell — vorher lieferte dieser Zweig null,
+    // die Brüh-Animation fiel auf 30 s zurück und zeigte „Pressen" ab
+    // Sekunde 24. Die Ziehzeit kann bohnenspezifisch angepasst sein
+    // (z. B. anaerob −10 %), deshalb der Override.
+    const steep = steepSOverride ?? m.defaults[roast]?.steepS ?? m.defaults['medium']?.steepS ?? 90
+    const total = aeropressPhases(steep).total
+    const tol = tolerances('aeropress').timeS
+    return [total - tol, total + tol]
   }
 
   const t = m.defaults[roast]?.timeS ?? m.defaults['medium']?.timeS
@@ -346,6 +410,11 @@ export const VARIETIES = originsRaw.varieties as unknown as {
   isLandrace?: boolean
 }[]
 
+/** Mühlen, die für diese Methode überhaupt in Frage kommen. */
+export function grindersForMethod(method: BrewMethod): GrinderCatalogEntry[] {
+  return GRINDER_CATALOG.filter((g) => !g.methods || g.methods.includes(method))
+}
+
 export function getOrigin(id: string): OriginProfile | undefined {
   return ORIGINS.find((o) => o.id === id || o.name === id)
 }
@@ -369,6 +438,11 @@ export interface GrinderCatalogEntry {
   zeroPointOffsetMicron: number
   usableRange?: [number, number]
   dialRange?: [number, number]
+  step?: number
+  kind?: 'standalone' | 'integrated'
+  shortName?: string
+  /** Auf diese Methoden beschränkt. Fehlt das Feld, gilt sie für alle. */
+  methods?: BrewMethod[]
   /** Herstellerempfehlungen in Klicks */
   presets?: Record<string, [number, number]>
   /** Dieselben Empfehlungen als Skalennummer, wie auf der Mühle notiert */

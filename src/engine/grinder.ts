@@ -199,6 +199,10 @@ export function grinderFromCatalog(catalogId: string, id: string): Grinder | nul
     micronPerStep: e.micronPerStep,
     zeroPointOffsetMicron: e.zeroPointOffsetMicron,
     usableRange: e.usableRange ?? e.dialRange,
+    step: e.step,
+    kind: e.kind,
+    methods: e.methods,
+    catalogId: e.id,
     confidence: e.confidence,
   }
 }
@@ -209,16 +213,21 @@ export function grinderFromCatalog(catalogId: string, id: string): Grinder | nul
  * Herstellerempfehlungen schlagen die Rückrechnung aus Mikrometern: Der
  * Hersteller kennt den Nullpunkt seiner Skala, wir schätzen ihn nur.
  */
+/** Katalogeintrag einer Mühle — über die id, ersatzweise über den Namen. */
+function catalogFor(grinder: Grinder) {
+  return GRINDER_CATALOG.find((g) => g.id === grinder.catalogId || g.name === grinder.name)
+}
+
 export function suggestedSetting(grinder: Grinder | undefined, method: BrewMethod): number | null {
   if (!grinder) return null
 
-  const entry = GRINDER_CATALOG.find((g) => g.name === grinder.name)
+  const entry = catalogFor(grinder)
   const preset = entry?.presets?.[method]
-  if (preset) return Math.round((preset[0] + preset[1]) / 2)
+  if (preset) return roundToStep((preset[0] + preset[1]) / 2, grinder)
 
   const target = referenceMicron(method)
   const raw = (target - grinder.zeroPointOffsetMicron) / grinder.micronPerStep
-  return Math.max(0, Math.round(raw))
+  return Math.max(0, roundToStep(raw, grinder))
 }
 
 /** Vom Hersteller empfohlener Bereich, falls hinterlegt (in Klicks) */
@@ -227,7 +236,7 @@ export function vendorRange(
   method: BrewMethod,
 ): { clicks: [number, number]; isDerived: boolean } | null {
   if (!grinder) return null
-  const entry = GRINDER_CATALOG.find((g) => g.name === grinder.name)
+  const entry = catalogFor(grinder)
   const preset = entry?.presets?.[method]
   if (!preset) return null
   return { clicks: preset, isDerived: !!entry?.presetsDerived?.includes(method) }
@@ -235,6 +244,7 @@ export function vendorRange(
 
 /** Einheitenbezeichnung für die Oberfläche */
 export function settingUnitLabel(grinder: Grinder | undefined): string {
+  if (grinder?.scaleType === 'stepless') return 'Skala'
   return grinder?.clicksPerNumber && grinder.clicksPerNumber > 1 ? 'Skala' : 'Klicks'
 }
 
@@ -244,7 +254,8 @@ export function describeSettingChange(
   from: number,
   to: number,
 ): string {
-  if (!grinder?.clicksPerNumber || grinder.clicksPerNumber <= 1) return ''
+  const numbered = (grinder?.clicksPerNumber ?? 0) > 1 || grinder?.scaleType === 'stepless'
+  if (!numbered) return ''
   return `Skala ${formatSetting(from, grinder)} → ${formatSetting(to, grinder)}`
 }
 
@@ -285,13 +296,34 @@ export function grindPlausibility(
  * Anzeige der Mühlenskala (Übernahme docs/03 §2.5): viele Mühlen tragen die
  * Zahl als Dezimalwert auf dem Rädchen — 24 Klicks lesen sich dort als „2.4".
  */
+/**
+ * Rundet auf die kleinste Einstellung, die diese Mühle wirklich hergibt.
+ *
+ * Eine gerastete Mühle kennt nur ganze Klicks. Eine stufenlose Skala wie
+ * die der Sage Barista Express kennt beliebige Zwischenwerte — dort auf
+ * ganze Zahlen zu runden würde die Hälfte des Verstellwegs wegwerfen.
+ */
+export function roundToStep(value: number, grinder?: Grinder): number {
+  const st = grinder?.scaleType === 'stepless' ? (grinder.step ?? 0.1) : 1
+  const r = Math.round(value / st) * st
+  // Gleitkommareste vermeiden: 6,5 soll 6,5 bleiben, nicht 6,500000000000001.
+  return Math.round(r * 100) / 100
+}
+
 export function formatSetting(setting: number, grinder?: Grinder): string {
   if (!grinder) return String(setting)
   // Nummerierte Skala (z. B. Mylo SG2: 10 Klicks je Nummer): so anzeigen,
   // wie der Nutzer sie auf der Mühle abliest — 24 Klicks sind „2,4".
   const per = grinder.clicksPerNumber
   if (per && per > 1) return (setting / per).toFixed(1).replace('.', ',')
-  if (grinder.scaleType === 'stepless') return setting.toFixed(1)
+  if (grinder.scaleType === 'stepless') {
+    // Stufenlos: Es gibt keine Rastung, deshalb wird auf den Anzeigeschritt
+    // gerundet — halbe Nummern liest man am Regler noch sicher ab.
+    const st = grinder.step ?? 0.1
+    return (Math.round(setting / st) * st)
+      .toFixed(st >= 1 ? 0 : 1)
+      .replace('.', ',')
+  }
   const rev = grinder.clicksPerRotation
   if (rev && rev >= 10) {
     const turns = Math.floor(setting / rev)

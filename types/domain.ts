@@ -145,6 +145,14 @@ export interface Grinder {
   micronPerStep: number
   zeroPointOffsetMicron: number
   usableRange?: [number, number]
+  /** Anzeigeschritt einer stufenlosen Skala. 0,5 = halbe Nummern. */
+  step?: number
+  /** Katalogeintrag, aus dem diese Mühle stammt */
+  catalogId?: string
+  /** Im Siebträger verbaut statt eigenständig */
+  kind?: 'standalone' | 'integrated'
+  /** Auf diese Methoden beschränkt. Fehlt das Feld, gilt sie für alle. */
+  methods?: BrewMethod[]
   retentionG?: number
   confidence: 'measured' | 'vendor' | 'estimated'
 }

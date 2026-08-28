@@ -183,6 +183,77 @@
       "_v60Note": "Das Werksband POUR OVER 5,0-8,0 (625-1000 µm) deckt auch Chemex und Batch mit ab. Für einen klassischen V60 mit 18 g liegt das Ziel bei 550-800 µm — deshalb nur die untere Hälfte des Bands: 50-64 Klicks (Skala 5,0-6,4), Mitte 713 µm. Die Werksuntergrenze 5,0 bleibt dabei respektiert."
     },
     {
+      "id": "sage-barista-express",
+      "name": "Sage Barista Express",
+      "shortName": "Barista Express",
+      "kind": "integrated",
+      "_kindNote": "Im Siebträger verbaute Mühle — mahlt direkt in den Siebträger.",
+      "burrType": "conical",
+      "scaleType": "stepless",
+      "_scaleNote": "Der Mahlgradregler läuft stufenlos. Zwischen 6 und 7 liegt jeder Wert, es gibt keine Rastung.",
+      "micronPerStep": 40,
+      "zeroPointOffsetMicron": 40,
+      "usableRange": [
+        0,
+        18
+      ],
+      "step": 0.5,
+      "_stepNote": "Nur die Anzeige rastet auf halbe Nummern — die Mühle selbst nicht.",
+      "methods": [
+        "espresso"
+      ],
+      "_methodsNote": "Nur unter Espresso wählbar: Die Mühle mahlt in den Siebträger und erreicht am groben Ende gerade eben Filterkaliber, ohne dort gleichmäßig zu sein.",
+      "isDefault": false,
+      "presets": {
+        "espresso": [
+          4,
+          9
+        ]
+      },
+      "confidence": "derived",
+      "note": "Skala 0–18, stufenlos. Espresso liegt um 5–8.",
+      "ringLabels": [
+        {
+          "text": "FEIN",
+          "range": [
+            0,
+            4
+          ]
+        },
+        {
+          "text": "ESPRESSO",
+          "range": [
+            4,
+            9
+          ]
+        },
+        {
+          "text": "GROB",
+          "range": [
+            9,
+            18
+          ]
+        }
+      ],
+      "wordmark": "SAGE",
+      "_derivation": "Die Skala hat keine Werksangabe in Mikrometern. Verankert an der tatsächlichen Nutzung: Espresso liegt bei 5–8, Mitte 6,5, und Espresso-Standard ist 200–400 µm mit Mitte 300 µm. Zusammen mit der Erfahrung, dass die Mühle bei 0–1 die Maschine abwürgt (Gap nahe null), ergibt sich 40 µm je Nummer bei Nullpunkt 40 µm. Gegenprobe: Das Espressoband 200–400 µm fällt damit auf die Nummern 4,0–9,0 — die genannten 5–8 liegen genau darin. Am oberen Ende steht Nummer 18 für 760 µm, also Filterkaliber; dass die Mühle dort nicht mehr gleichmäßig mahlt, ist bekannt und der Grund für die Beschränkung auf Espresso.",
+      "_specs": {
+        "_comment": "Nur Referenz — wird in der App NICHT angezeigt.",
+        "burrDiameterMm": 40,
+        "burrMaterial": "Edelstahl, konisch",
+        "innerBurrPositions": 10,
+        "hopperG": 250,
+        "model": "BES870 / SES875"
+      },
+      "_userReference": {
+        "espresso": [
+          5,
+          8
+        ],
+        "_note": "Vom Nutzer genannte Praxiswerte. Liegen innerhalb des aus 200–400 µm abgeleiteten Bands 4–9, was die Skalenherleitung stützt."
+      }
+    },
+    {
       "id": "1zpresso-j-max",
       "name": "1Zpresso J-Max",
       "burrType": "conical",

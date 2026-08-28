@@ -1,6 +1,9 @@
 export const APP_NAME = 'Café'
 export const APP_TAGLINE = 'Dein Dial-in, nicht irgendeins'
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
+
+/** Im Siebträger verbaute Mühle — nur unter Espresso wählbar. */
+export const INTEGRATED_GRINDER_ID = 'sage-barista-express'
 
 /** Ab wie vielen guten Brews die Personalisierung greift (Solution Design §6.3) */
 export const LEARN_THRESHOLDS = {

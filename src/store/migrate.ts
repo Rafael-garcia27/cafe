@@ -11,7 +11,8 @@
  */
 import type { AppState } from '@/domain'
 import { emptyState, DEFAULT_SETTINGS } from '@/domain'
-import { SCHEMA_VERSION } from '@/config'
+import { SCHEMA_VERSION, INTEGRATED_GRINDER_ID } from '@/config'
+import { grinderFromCatalog } from '@/engine/grinder'
 
 export function migrate(state: AppState): AppState {
   let s = state
@@ -29,6 +30,17 @@ export function migrate(state: AppState): AppState {
   const legacy = (s.settings as unknown as { expertLevel?: string })?.expertLevel
   if (legacy && !(s.settings as { mode?: string }).mode) {
     s = { ...s, settings: { ...s.settings, mode: legacy === 'basis' ? 'basic' : 'pro' } }
+  }
+
+  // Schema 2 → 3: Die im Siebträger verbaute Mühle wird nachgetragen.
+  // Sie kommt HINZU — die Handmühle und alle Kalibrierungen bleiben
+  // unangetastet, und die Espressoauswahl wird nicht vorbelegt.
+  // `grinders` kann in einer beschädigten oder alten Sicherung fehlen —
+  // die Migration muss auch damit durchlaufen, statt hier abzubrechen.
+  const vorhandene = s.grinders ?? []
+  if ((s.schemaVersion ?? 1) < 3 && !vorhandene.some((g) => g.catalogId === INTEGRATED_GRINDER_ID)) {
+    const g = grinderFromCatalog(INTEGRATED_GRINDER_ID, `gr-${INTEGRATED_GRINDER_ID}`)
+    if (g) s = { ...s, grinders: [...vorhandene, g] }
   }
 
   // Künftige Migrationen hier, jeweils mit Versionssprung.

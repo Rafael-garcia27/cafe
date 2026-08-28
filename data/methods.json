@@ -292,6 +292,11 @@
         "doseG": 1,
         "timeS": 3,
         "yieldG": 3
+      },
+      "tempRangeC": {
+        "min": 86,
+        "max": 96,
+        "_note": "Am Brühkopf liefern Haushaltsmaschinen höchstens ~96 °C; die Sage Barista Express arbeitet um 93 °C ±2."
       }
     },
     {
@@ -704,6 +709,20 @@
         "doseG": 1,
         "timeS": 15,
         "waterG": 10
+      },
+      "roastTimeOffsetS": {
+        "_source": "kb/09 + ASC 'Why dark = shorter', auf Perkolation übertragen",
+        "_confidence": "low",
+        "light": 12,
+        "medium-light": 6,
+        "medium": 0,
+        "medium-dark": -6,
+        "dark": -12
+      },
+      "tempRangeC": {
+        "min": 80,
+        "max": 100,
+        "_note": "Für helle Röstungen ist frisch gekochtes Wasser üblich und fachlich vertretbar (kb/09 §3)."
       }
     },
     {
@@ -1132,7 +1151,22 @@
         "doseG": 1,
         "timeS": 10,
         "waterG": 10
-      }
+      },
+      "phaseModel": {
+        "_source": "kb/10-methode-aeropress.md §4.1 — Standard invertiert",
+        "_note": "Gesamtzeit = steepS + transferS + pressS. Der Bloom ist Teil der Ziehzeit (Benetzen, CO2, Ruehren in den ersten ~35 s), kein eigener Vorlauf.",
+        "bloomMaxS": 35,
+        "bloomFractionOfSteep": 0.4,
+        "transferS": 8,
+        "pressS": 25
+      },
+      "tempRangeC": {
+        "min": 78,
+        "max": 96,
+        "_note": "Die AeroPress wird bewusst kühler gefahren als der Handfilter; über 96 °C wird sie bei Immersion schnell bitter."
+      },
+      "usableChamberWaterG": 230,
+      "_chamberNote": "Die Kammer fasst nominal 250 ml. Praktisch bleiben mit Kaffeemehl und Kolbeneinschub etwa 230 g Wasser — invertiert braucht die Kappe zusätzlich Rand."
     }
   ],
   "_suitabilityLegend": {

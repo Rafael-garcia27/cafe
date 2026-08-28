@@ -6,18 +6,19 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Route } from '@/router'
-import { useStore, selectActiveGrinder, selectActiveWater } from '@/store'
+import { useStore, selectActiveWater, grinderFor } from '@/store'
 import type { BrewMethod, Defect, Character, FlowState, PuckState, BloomBehavior } from '@domain'
 import type { EngineContext } from '@/domain'
 import { startingPoint } from '@/engine/starting'
 import { diagnose, type Diagnosis } from '@/engine/diagnose'
 import { assessFreshness } from '@/engine/freshness'
 import GrinderDial from '@/components/GrinderDial'
+import SageGrindDial from '@/components/SageGrindDial'
 import BrewAnimation from '@/components/BrewAnimation'
 import { consistencyWarning, brewsUntilPersonal } from '@/engine/learn'
 import { suitability, SUITABILITY_LABEL, bestMethodFor } from '@/engine/suitability'
 import { grindPlausibility, formatSetting, vendorRange } from '@/engine/grinder'
-import { GRINDER_CATALOG } from '@/kb'
+import { GRINDER_CATALOG, aeropressPhases, grindersForMethod, type AeropressPhases } from '@/kb'
 import { METHOD_LABEL, DEFECT_LABEL, COMMON_DEFECTS, CHARACTER_LABEL, COMMON_CHARACTERS, FLOW_LABEL, FLOW_CHOICES, PUCK_LABEL, PUCK_CHOICES, BLOOM_LABEL, BLOOM_CHOICES } from '@/labels'
 import {
   Screen, Header, Section, Card, Button, Chip, SegmentedControl, Stepper, Field,
@@ -40,7 +41,18 @@ export default function BrewScreen({ navigate }: Props) {
   const [method, setMethod] = useState<BrewMethod>(s.settings.lastMethod ?? 'espresso')
 
   const bean = s.beans.find((b) => b.id === beanId) ?? s.beans[0]
-  const grinder = useStore(selectActiveGrinder)
+  // Espresso darf eine eigene Mühle haben — bei einem Siebträger mit
+  // verbautem Mahlwerk ist genau das der Normalfall.
+  const grinders = useStore((st) => st.grinders)
+  const settings = useStore((st) => st.settings)
+  const setSettings = useStore((st) => st.setSettings)
+  /** Espresso merkt sich seine eigene Mühle, alle anderen die gemeinsame. */
+  const setGrinderId = (m: BrewMethod, id: string) =>
+    setSettings(m === 'espresso' ? { espressoGrinderId: id } : { activeGrinderId: id })
+  const grinder = useMemo(
+    () => grinderFor({ grinders, settings }, method),
+    [grinders, settings, method],
+  )
   const water = useStore(selectActiveWater)
 
   // Abgeleitete Listen NIE im Selektor bilden — sonst neue Referenz pro
@@ -78,6 +90,21 @@ export default function BrewScreen({ navigate }: Props) {
   }, [bean, bag, method, grinder, water, s.settings, s.learned, beanHistory, methodHistory, s.beans])
 
   const sp = useMemo(() => (ctx ? startingPoint(ctx) : null), [ctx])
+
+  // Beide Ableitungen MÜSSEN vor den frühen Returns stehen: React zählt
+  // Hooks nach Position, ein bedingt aufgerufener Hook bricht den Wechsel
+  // zwischen den Phasen.
+  const grinderChoices = useMemo(() => {
+    const erlaubt = grindersForMethod(method)
+    return grinders.filter((g) => erlaubt.some((e) => e.id === g.catalogId || e.name === g.name))
+  }, [grinders, method])
+
+  // Die Ziehzeit kann bohnenspezifisch angepasst sein (z. B. anaerob kürzer) —
+  // die Phasengrenzen der Animation müssen derselben Zahl folgen.
+  const apPhases = useMemo(
+    () => (method === 'aeropress' ? aeropressPhases(sp?.proposal.steepS ?? 90) : undefined),
+    [method, sp?.proposal.steepS],
+  )
 
   // Ist-Werte
   const [doseG, setDoseG] = useState(18)
@@ -128,7 +155,9 @@ export default function BrewScreen({ navigate }: Props) {
   const untilPersonal = brewsUntilPersonal(s.learned, bean.id, method)
   const isEspresso = method === 'espresso'
   const isPro = s.settings.mode === 'pro'
-  const catalogEntry = GRINDER_CATALOG.find((g) => g.name === grinder?.name)
+  const catalogEntry = GRINDER_CATALOG.find(
+    (g) => g.id === grinder?.catalogId || g.name === grinder?.name,
+  )
   const targetT = sp.proposal.targetTimeS
 
   const reset = () => {
@@ -178,6 +207,8 @@ export default function BrewScreen({ navigate }: Props) {
         subtitle={`${METHOD_LABEL[method]} · ${fresh.label}`}
         target={targetT}
         targetYieldG={isEspresso ? yieldG : undefined}
+        apPhases={apPhases}
+        inverted={sp.proposal.inverted}
         onStop={(sec) => { setElapsed(sec); setPhase('record') }}
         onCancel={reset}
       />
@@ -353,22 +384,53 @@ export default function BrewScreen({ navigate }: Props) {
 
           {grinder && (
             <Section title="Mahlgrad">
-              <GrinderDial
-                clicks={grindVal}
-                onChange={setGrindVal}
-                clicksPerNumber={grinder.clicksPerNumber ?? 10}
-                maxNumber={Math.round(
-                  (grinder.usableRange?.[1] ?? 100) / (grinder.clicksPerNumber ?? 10),
-                )}
-                ringLabels={catalogEntry?.ringLabels}
-                wordmark={catalogEntry?.wordmark}
-                highlight={(() => {
-                  const v = vendorRange(grinder, method)
-                  return v
-                    ? { range: v.clicks, label: METHOD_LABEL[method], derived: v.isDerived }
-                    : undefined
-                })()}
-              />
+              {/* Der Umschalter erscheint nur, wo es wirklich zwei Mühlen
+                  gibt — beim Siebträger mit verbautem Mahlwerk. */}
+              {grinderChoices.length > 1 && (
+                <div className="mb-3">
+                  <SegmentedControl
+                    value={grinder.id}
+                    onChange={(id) => setGrinderId(method, id)}
+                    options={grinderChoices.map((g) => ({
+                      value: g.id,
+                      label:
+                        GRINDER_CATALOG.find((c) => c.id === g.catalogId)?.shortName ?? g.name,
+                    }))}
+                  />
+                </div>
+              )}
+
+              {grinder.scaleType === 'stepless' ? (
+                <SageGrindDial
+                  value={grindVal}
+                  onChange={setGrindVal}
+                  max={grinder.usableRange?.[1] ?? 18}
+                  step={grinder.step ?? 0.5}
+                  highlight={(() => {
+                    const v = vendorRange(grinder, method)
+                    return v
+                      ? { range: v.clicks as [number, number], label: METHOD_LABEL[method] }
+                      : undefined
+                  })()}
+                />
+              ) : (
+                <GrinderDial
+                  clicks={grindVal}
+                  onChange={setGrindVal}
+                  clicksPerNumber={grinder.clicksPerNumber ?? 10}
+                  maxNumber={Math.round(
+                    (grinder.usableRange?.[1] ?? 100) / (grinder.clicksPerNumber ?? 10),
+                  )}
+                  ringLabels={catalogEntry?.ringLabels}
+                  wordmark={catalogEntry?.wordmark}
+                  highlight={(() => {
+                    const v = vendorRange(grinder, method)
+                    return v
+                      ? { range: v.clicks, label: METHOD_LABEL[method], derived: v.isDerived }
+                      : undefined
+                  })()}
+                />
+              )}
             </Section>
           )}
 
@@ -658,6 +720,8 @@ function BrewTimer({
   subtitle,
   target,
   targetYieldG,
+  apPhases,
+  inverted,
   onStop,
   onCancel,
 }: {
@@ -666,6 +730,8 @@ function BrewTimer({
   subtitle: string
   target?: [number, number]
   targetYieldG?: number
+  apPhases?: AeropressPhases
+  inverted?: boolean
   onStop: (sec: number) => void
   onCancel: () => void
 }) {
@@ -702,7 +768,7 @@ function BrewTimer({
         className="flex w-full flex-col items-center justify-center gap-1"
         style={{ minHeight: 'calc(100dvh - 58px - 54px - env(safe-area-inset-top) - env(safe-area-inset-bottom))' }}
       >
-        <BrewAnimation method={method} elapsedS={sec} target={target} targetYieldG={targetYieldG} />
+        <BrewAnimation method={method} elapsedS={sec} target={target} targetYieldG={targetYieldG} apPhases={apPhases} inverted={inverted} />
         <span
           className={`tnum text-[96px] leading-none font-light tabular-nums ${
             over ? 'text-bad' : inTarget ? 'text-ok' : 'text-ink'
