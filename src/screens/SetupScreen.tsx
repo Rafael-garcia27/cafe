@@ -342,7 +342,12 @@ function GrinderSheet({ onClose }: { onClose: () => void }) {
         <Select
           value={pick}
           onChange={setPick}
-          options={GRINDER_CATALOG.map((g) => ({ value: g.id, label: g.name }))}
+          // Eine auf Espresso beschränkte Mühle als Hauptmühle zu wählen
+          // ist ein naheliegender Fehlgriff — deshalb steht es dran.
+          options={GRINDER_CATALOG.map((g) => ({
+            value: g.id,
+            label: g.methods?.length === 1 ? `${g.name} (nur Espresso)` : g.name,
+          }))}
         />
       </Field>
       <p className="mt-4 text-[14px] leading-relaxed text-mute">

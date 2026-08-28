@@ -144,7 +144,7 @@ export default function BrewSteps({ method, params }: { method: BrewMethod; para
       <button
         type="button"
         onClick={() => setOffen((o) => !o)}
-        className="flex w-full items-center justify-between gap-3 py-2 text-left"
+        className="flex min-h-11 w-full items-center justify-between gap-3 py-2 text-left"
         aria-expanded={offen}
       >
         <span className="min-w-0 flex-1">

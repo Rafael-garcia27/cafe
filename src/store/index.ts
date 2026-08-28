@@ -234,6 +234,11 @@ export const useStore = create<Store>((set) => ({
 
   // ── Einstellungen ──
   setSettings: (patch) => {
+    // Das Thema hängt an einer Klasse am <html>-Element, nicht nur am
+    // Zustand. Ohne diese Zeile ließe sich das Thema über setSettings
+    // setzen, ohne dass sich etwas ändert — eine Falle für jeden späteren
+    // Aufrufer, auch wenn heute nur setTheme diesen Weg geht.
+    if (patch.theme) applyTheme(patch.theme)
     set((s) => ({ settings: { ...s.settings, ...patch } }))
     commit(set, false)
   },

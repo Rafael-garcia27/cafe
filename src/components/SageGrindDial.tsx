@@ -147,7 +147,36 @@ export default function SageGrindDial({ value, onChange, max, step, highlight, d
 
         <div
           ref={box}
-          className="relative mx-auto touch-none"
+          // Drehen ist die naheliegende Geste, darf aber nicht die einzige
+          // Bedienung sein — mit Tastatur oder Sprachsteuerung dreht
+          // niemand einen Knopf.
+          role="slider"
+          tabIndex={disabled ? -1 : 0}
+          aria-label="Mahlgrad"
+          aria-valuemin={0}
+          aria-valuemax={max}
+          aria-valuenow={snap(value)}
+          aria-valuetext={`Skala ${snap(value).toFixed(step >= 1 ? 0 : 1).replace('.', ',')}`}
+          aria-disabled={disabled || undefined}
+          onKeyDown={(e) => {
+            if (disabled) return
+            const gross = e.key === 'PageUp' || e.key === 'PageDown'
+            const weite = gross ? step * 4 : step
+            if (e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+              e.preventDefault()
+              onChange(snap(value + weite))
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'PageDown') {
+              e.preventDefault()
+              onChange(snap(value - weite))
+            } else if (e.key === 'Home') {
+              e.preventDefault()
+              onChange(0)
+            } else if (e.key === 'End') {
+              e.preventDefault()
+              onChange(max)
+            }
+          }}
+          className="relative mx-auto touch-none rounded-full"
           style={{ width: 220, height: 220, cursor: disabled ? 'default' : active ? 'grabbing' : 'grab' }}
           onPointerDown={onDown}
           onPointerMove={onMove}

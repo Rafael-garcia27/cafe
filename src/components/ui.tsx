@@ -146,7 +146,7 @@ export function Button({
     danger: 'bg-bad/15 text-bad border border-bad/30 active:bg-bad/25',
   }
   const sizes = {
-    sm: 'h-9 px-3 text-[14px] rounded-xl',
+    sm: 'h-11 px-3 text-[14px] rounded-xl',
     md: 'h-12 px-5 text-[16px] rounded-2xl',
     lg: 'h-14 px-6 text-[17px] rounded-2xl',
   }
@@ -323,7 +323,9 @@ export function Stepper({
   // Während des Tippens gilt der Entwurf, nicht der geklammerte Wert —
   // sonst würde aus einer begonnenen „1" sofort das Minimum.
   const [draft, setDraft] = useState<string | null>(null)
-  const shown = draft ?? value.toFixed(decimals)
+  // Deutsche Schreibweise auch im Feld selbst. Beim Tippen gilt der
+  // Entwurf unverändert — commit() nimmt Komma wie Punkt entgegen.
+  const shown = draft ?? num(value, decimals)
 
   const commit = (raw: string) => {
     setDraft(null)
@@ -387,7 +389,7 @@ export function Stepper({
             if (Number.isFinite(n) && n >= min && n <= max) onChange(clamp(n))
           }}
           onFocus={(e) => {
-            setDraft(value.toFixed(decimals))
+            setDraft(num(value, decimals))
             // Auswahl erst nach dem Fokusereignis, sonst hebt iOS sie auf.
             requestAnimationFrame(() => e.target.select())
           }}
@@ -472,9 +474,14 @@ export function InfoDot({ termId }: { termId: string }) {
           setOpen(true)
         }}
         aria-label={`Was ist ${term.term}?`}
-        className="flex h-5 w-5 items-center justify-center rounded-full border border-line text-[11px] font-semibold text-mute"
+        // Der Punkt bleibt klein, die Trefferfläche wird groß: 20 px trifft
+        // man mit nassen Fingern nicht zuverlässig. Das negative Margin
+        // hält das Layout unverändert.
+        className="-m-3 flex h-11 w-11 shrink-0 items-center justify-center p-3"
       >
-        ?
+        <span className="flex h-5 w-5 items-center justify-center rounded-full border border-line text-[11px] font-semibold text-mute">
+          ?
+        </span>
       </button>
       {open && (
         <Sheet onClose={() => setOpen(false)} title={term.term}>
