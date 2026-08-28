@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover ist Pflicht, damit env(safe-area-inset-*) auf dem
+         iPhone 12 überhaupt Werte liefert. maximum-scale verhindert den
+         Auto-Zoom beim Fokussieren von Eingabefeldern. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+    />
+    <!-- Zwei Themefarben: iOS färbt die Statusleiste danach. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf4ea" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1c1512" />
+    <meta name="description" content="Persönliches Dial-in-Werkzeug für Espresso, V60 und AeroPress" />
+
+    <!-- iOS-Standalone -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Café" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <title>Café</title>
+    <script type="module" crossorigin src="/assets/index-BZ6Ck2Zk.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-lLOOLkmZ.css">
+  <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
