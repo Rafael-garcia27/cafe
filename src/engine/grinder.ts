@@ -209,7 +209,7 @@ export function calibrate(input: CalibrationInput): CalibrationResult | { error:
   if (!coarserIsFaster)
     return {
       error:
-        'Der gröber eingestellte Shot lief nicht schneller. Sehr wahrscheinlich lag Kanalbildung vor — bitte beide Shots wiederholen.',
+        'Der gröber eingestellte Shot lief nicht schneller. Sehr wahrscheinlich lag Channeling vor — bitte beide Shots wiederholen.',
     }
 
   const factor = grindScaleFactor(input.time1S, input.time2S)
@@ -218,7 +218,7 @@ export function calibrate(input: CalibrationInput): CalibrationResult | { error:
 
   if (micronPerStep < 2 || micronPerStep > 120)
     return {
-      error: `Ergebnis unplausibel (${de(micronPerStep, 1)} µm/Schritt). Prüf, ob beide Shots mit identischer Dosis und ohne Kanalbildung liefen.`,
+      error: `Ergebnis unplausibel (${de(micronPerStep, 1)} µm/Schritt). Prüf, ob beide Shots mit identischer Dose und ohne Channeling liefen.`,
     }
 
   return {

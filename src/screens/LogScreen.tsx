@@ -1,5 +1,5 @@
 /**
- * Logbuch.
+ * Brew Log.
  *
  * Zeigt nicht nur, was war, sondern auch die damals gegebene Empfehlung —
  * und ob sie eingetroffen ist. Das macht die App überprüfbar.
@@ -37,12 +37,12 @@ export default function LogScreen({ route, navigate, back }: Props) {
 
   return (
     <Screen>
-      <Header title="Logbuch" />
+      <Header title="Log" />
 
       {brews.length === 0 ? (
         <Empty
-          title="Noch nichts protokolliert"
-          body="Jeder Durchgang macht die Empfehlungen präziser. Nach drei gut bewerteten Tassen pro Bohne kennt die App deinen Geschmack."
+          title="Noch keine Brews"
+          body="Jeder Brew macht die Empfehlungen präziser. Nach drei gut bewerteten Tassen pro Bohne kennt die App deinen Geschmack."
           action={<Button onClick={() => navigate({ tab: 'brew' })}>Ersten Kaffee brühen</Button>}
         />
       ) : (
@@ -74,7 +74,7 @@ export default function LogScreen({ route, navigate, back }: Props) {
             )}
           </Section>
 
-          <Section title="Durchgänge">
+          <Section title="Brews">
             <div className="space-y-2">
               {filtered.map((b) => (
                 <Card key={b.id} onClick={() => navigate({ tab: 'log', detail: 'brew', id: b.id })}>
@@ -124,7 +124,7 @@ function BrewDetail({ brewId, onBack }: { brewId: string; onBack: () => void }) 
   return (
     <Screen>
       <Header
-        title={bean?.name ?? 'Durchgang'}
+        title={bean?.name ?? 'Brew'}
         subtitle={`${METHOD_LABEL[brew.method]} · ${new Date(brew.createdAt).toLocaleString('de-DE')}`}
         onBack={onBack}
       />
@@ -132,18 +132,18 @@ function BrewDetail({ brewId, onBack }: { brewId: string; onBack: () => void }) 
       <Section title="Parameter">
         <Card>
           <div className="grid grid-cols-2 gap-4">
-            <Stat label="Dosis" value={num(a.doseG)} unit="g" />
-            {a.yieldG !== undefined && <Stat label="Ausbringung" value={num(a.yieldG)} unit="g" />}
+            <Stat label="Dose" value={num(a.doseG)} unit="g" />
+            {a.yieldG !== undefined && <Stat label="Yield" value={num(a.yieldG)} unit="g" />}
             {a.waterG !== undefined && <Stat label="Wasser" value={a.waterG} unit="g" />}
             <Stat label="Zeit" value={fmtTime(a.timeS)} />
             <Stat
-              label="Verhältnis"
+              label="Ratio"
               value={`1:${num((a.yieldG ?? a.waterG ?? 0) / a.doseG)}`}
             />
-            {a.waterTempC && <Stat label="Temperatur" value={a.waterTempC} unit="°C" />}
+            {a.waterTempC && <Stat label="Temp" value={a.waterTempC} unit="°C" />}
             {a.grindSetting && (
               <Stat
-                label="Mahlgrad"
+                label="Grind"
                 // In der Schreibweise der Mühle, mit der damals gemahlen
                 // wurde — „2,4" auf der Mylo, „4,5" auf der Sage.
                 value={formatSetting(
@@ -153,7 +153,7 @@ function BrewDetail({ brewId, onBack }: { brewId: string; onBack: () => void }) 
               />
             )}
             {a.yieldG && (
-              <Stat label="Flussrate" value={num(a.yieldG / a.timeS, 2)} unit="g/s" />
+              <Stat label="Flow Rate" value={num(a.yieldG / a.timeS, 2)} unit="g/s" />
             )}
           </div>
         </Card>
@@ -173,7 +173,7 @@ function BrewDetail({ brewId, onBack }: { brewId: string; onBack: () => void }) 
       )}
 
       {brew.tasting && (
-        <Section title="Verkostung">
+        <Section title="Tasting">
           <Card>
             <p className="text-[20px] text-crema">{'★'.repeat(brew.tasting.rating)}</p>
             {brew.tasting.defects.length > 0 && (
@@ -211,7 +211,7 @@ function BrewDetail({ brewId, onBack }: { brewId: string; onBack: () => void }) 
             variant="danger"
             className="w-full"
             onClick={() => {
-              if (confirm('Diesen Durchgang löschen?')) { del(brew.id); onBack() }
+              if (confirm('Diesen Brew löschen?')) { del(brew.id); onBack() }
             }}
           >
             Löschen

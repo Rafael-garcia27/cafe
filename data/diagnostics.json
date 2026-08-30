@@ -55,7 +55,7 @@
         "WDT (8-12 Bewegungen)",
         "kalibrierter Tamper / eben tampen",
         "nach dem Tampen nicht klopfen",
-        "Dosis prüfen (Headspace)",
+        "Dose prüfen (Headspace)",
         "Korb auf Verstopfung prüfen"
       ],
       "explanation": "Ein Teil des Wassers hat den Kaffee umgangen. Die gemessene Zeit sagt deshalb nichts über deinen Mahlgrad aus — sie würde dich in die falsche Richtung schicken.",
@@ -889,12 +889,12 @@
         "v60"
       ],
       "when": "timeS > targetTimeS && doseG > 25",
-      "cause": "KEIN Fehler — Zielzeit skaliert mit der Dosis",
+      "cause": "KEIN Fehler — Zielzeit skaliert mit der Dose",
       "action": {
         "variable": "none",
         "direction": "none"
       },
-      "explanation": "Bei 30 g Dosis ist eine Gesamtzeit von 3:15-4:00 richtig, nicht 2:30. Die Zielzeit wurde angepasst.",
+      "explanation": "Bei 30 g Dose ist eine Gesamtzeit von 3:15-4:00 richtig, nicht 2:30. Die Zielzeit wurde angepasst.",
       "isAntiRule": true,
       "blocks": [
         "D-30",
@@ -1163,7 +1163,7 @@
     "Mahlgradempfehlung bei aktivem Channeling (D-01)",
     "Bypass gegen Bitterkeit vorschlagen (F-14)",
     "Zeit als Stellgröße anbieten — Zeit ist Ergebnis",
-    "Feste V60-Zielzeit unabhängig von der Dosis (D-66)",
+    "Feste V60-Zielzeit unabhängig von der Dose (D-66)",
     "Charakter-Tags als Fehler behandeln",
     "Endlos in dieselbe Richtung korrigieren (loopDetection)",
     "Normale Defaults bei isDecaf verwenden",

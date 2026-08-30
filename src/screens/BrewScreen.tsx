@@ -276,10 +276,10 @@ export default function BrewScreen({ navigate }: Props) {
                               „600 Tage — überaltert" neben „Für Espresso:
                               ideal" widerspricht sich für den Leser. */}
                           {f.state === 'stale' ? (
-                            <p className="mt-0.5 text-[12px] text-bad">Zu alt — die Tüte gibt nichts mehr her</p>
+                            <p className="mt-0.5 text-[12px] text-bad">Zu alt — die Bag gibt nichts mehr her</p>
                           ) : bBag?.remainingGrams !== undefined && bBag.remainingGrams < 20 ? (
                             <p className="mt-0.5 text-[12px] text-warn">
-                              Nur noch {num(bBag.remainingGrams, 0)} g in der Tüte
+                              Nur noch {num(bBag.remainingGrams, 0)} g in der Bag
                             </p>
                           ) : (
                             <p
@@ -311,19 +311,19 @@ export default function BrewScreen({ navigate }: Props) {
           <Section title={sp.headline}>
             <Card tone="accent">
               <div className="grid grid-cols-2 gap-4">
-                <Stat label="Dosis" value={num(doseG)} unit="g" term="dose" />
+                <Stat label="Dose" value={num(doseG)} unit="g" term="dose" />
                 {isEspresso ? (
-                  <Stat label="Ausbringung" value={num(yieldG)} unit="g" term="yield" />
+                  <Stat label="Yield" value={num(yieldG)} unit="g" term="yield" />
                 ) : (
                   <Stat label="Wasser" value={waterG} unit="g" />
                 )}
-                <Stat label="Verhältnis" value={`1:${num(ratioLive)}`} term="ratio" />
-                <Stat label="Temperatur" value={tempC} unit="°C" />
+                <Stat label="Ratio" value={`1:${num(ratioLive)}`} term="ratio" />
+                <Stat label="Temp" value={tempC} unit="°C" />
                 {grinder && (
                   <Stat label={grinder.name} value={formatSetting(grindVal, grinder)} term="grind" />
                 )}
                 {targetT && (
-                  <Stat label="Zielzeit" value={fmtRange(targetT, alsUhr)} term="time-is-result" />
+                  <Stat label="Ziel" value={fmtRange(targetT, alsUhr)} term="time-is-result" />
                 )}
               </div>
 
@@ -387,15 +387,15 @@ export default function BrewScreen({ navigate }: Props) {
             )}
 
             {/* Wer 18 g abwiegen soll, aber nur 5 g im Regal hat, merkt das
-                sonst erst mit der Tüte in der Hand. */}
+                sonst erst mit der Bag in der Hand. */}
             {bag?.remainingGrams !== undefined && bag.remainingGrams < doseG && (
               <Card className="mt-3" tone="warn">
                 <p className="text-[14px] leading-snug">
-                  In der Tüte sind noch {num(bag.remainingGrams, 0)} g — der Vorschlag
+                  In der Bag sind noch {num(bag.remainingGrams, 0)} g — der Vorschlag
                   braucht {num(doseG)} g.{' '}
                   {bag.remainingGrams >= 5
                     ? 'Entweder aufstocken oder die Dosis anpassen; das Verhältnis zieht mit.'
-                    : 'Für einen ganzen Durchgang reicht das nicht mehr.'}
+                    : 'Für einen ganzen Brew reicht das nicht mehr.'}
                 </p>
                 {bag.remainingGrams >= 5 && (
                   <Button
@@ -441,15 +441,15 @@ export default function BrewScreen({ navigate }: Props) {
                 {brewCount > 0 && `${brewCount}× gebrüht. `}
                 Noch{' '}
                 {untilPersonal === 1
-                  ? 'ein gut bewerteter Durchgang'
-                  : `${untilPersonal} gut bewertete Durchgänge`}
+                  ? 'ein gut bewerteter Brew'
+                  : `${untilPersonal} gut bewertete Brews`}
                 , dann kenne ich deinen Geschmack für diese Bohne.
               </p>
             )}
           </Section>
 
           {grinder && (
-            <Section title="Mahlgrad">
+            <Section title="Grind">
               {/* Der Umschalter erscheint nur, wo es wirklich zwei Mühlen
                   gibt — beim Siebträger mit verbautem Mahlwerk. */}
               {grinderChoices.length > 1 && (
@@ -503,20 +503,20 @@ export default function BrewScreen({ navigate }: Props) {
           {isPro || showTweak ? (
             <Section title="Anpassen">
             <div className="space-y-4">
-              <Field label="Dosis" term="dose">
-                <Stepper value={doseG} onChange={changeDose} step={0.1} min={5} max={30} unit="g" decimals={1} label="Dosis" />
+              <Field label="Dose" term="dose">
+                <Stepper value={doseG} onChange={changeDose} step={0.1} min={5} max={30} unit="g" decimals={1} label="Dose" />
               </Field>
               {isEspresso ? (
-                <Field label="Ziel-Ausbringung" term="yield">
-                  <Stepper value={yieldG} onChange={setYieldG} step={0.1} min={10} max={90} unit="g" decimals={1} label="Ziel-Ausbringung" />
+                <Field label="Ziel-Yield" term="yield">
+                  <Stepper value={yieldG} onChange={setYieldG} step={0.1} min={10} max={90} unit="g" decimals={1} label="Ziel-Yield" />
                 </Field>
               ) : (
                 <Field label="Wasser" hint={`Verhältnis 1:${num(waterG / doseG)}`}>
                   <Stepper value={waterG} onChange={setWaterG} step={1} min={80} max={900} unit="g" label="Wasser" />
                 </Field>
               )}
-              <Field label="Temperatur">
-                <Stepper value={tempC} onChange={setTempC} step={1} min={70} max={100} unit="°C" label="Temperatur" />
+              <Field label="Temp">
+                <Stepper value={tempC} onChange={setTempC} step={1} min={70} max={100} unit="°C" label="Temp" />
               </Field>
             </div>
             </Section>
@@ -541,7 +541,7 @@ export default function BrewScreen({ navigate }: Props) {
                 setPhase('record')
               }}
             >
-              Durchgang eintragen
+              Brew eintragen
             </Button>
           </Section>
         </>
@@ -553,10 +553,10 @@ export default function BrewScreen({ navigate }: Props) {
           {/* Die vier Zahlen, die wirklich zählen — in der Reihenfolge,
               in der sie an der Maschine anfallen. Alles andere steht
               darunter und ist optional. */}
-          <Section title="Durchgang">
+          <Section title="Brew">
             <Card>
               <div className="space-y-4">
-                <Field label="In" hint="Eingewogene Bohnen">
+                <Field label="In" term="dose" hint="Eingewogene Bohnen">
                   <Stepper
                     value={doseG} onChange={changeDose} step={0.1} min={5} max={60}
                     unit="g" decimals={1} label="In"
@@ -565,6 +565,7 @@ export default function BrewScreen({ navigate }: Props) {
 
                 <Field
                   label="Time"
+                  term="time-is-result"
                   hint={targetT ? `Ziel ${fmtRange(targetT, alsUhr)}` : undefined}
                 >
                   <Stepper
@@ -575,7 +576,7 @@ export default function BrewScreen({ navigate }: Props) {
                   />
                 </Field>
 
-                <Field label="Out" hint={isEspresso ? 'Im Glas' : 'Aufgegossenes Wasser'}>
+                <Field label="Out" term="yield" hint={isEspresso ? 'Im Glas' : 'Aufgegossenes Wasser'}>
                   {isEspresso ? (
                     <Stepper
                       value={yieldG} onChange={setYieldG} step={0.1} min={5} max={120}
@@ -590,7 +591,7 @@ export default function BrewScreen({ navigate }: Props) {
                 </Field>
 
                 {isEspresso && grinder && (
-                  <Field label="Grind Size" hint={grinder.name}>
+                  <Field label="Grind Size" term="grind" hint={grinder.name}>
                     <Stepper
                       value={grindVal} onChange={setGrindVal}
                       step={grinder.scaleType === 'stepless' ? (grinder.step ?? 0.5) : 1}
@@ -608,7 +609,9 @@ export default function BrewScreen({ navigate }: Props) {
                   Espresso ist. */}
               {isEspresso && (
                 <div className="mt-4 flex items-baseline gap-3 border-t border-line pt-3">
-                  <span className="text-[13px] text-mute">Ratio</span>
+                  <span className="flex items-center gap-1.5 text-[13px] text-mute">
+                    Ratio <InfoDot termId="ratio" />
+                  </span>
                   <span
                     className={`tnum text-[26px] leading-none font-semibold ${
                       ratioTon === 'ok' ? 'text-ok' : ratioTon === 'warn' ? 'text-warn' : 'text-bad'
@@ -640,7 +643,7 @@ export default function BrewScreen({ navigate }: Props) {
 
           {isEspresso && (
             <>
-              <Section title="Wie lief er?">
+              <Section title="Flow" action={<InfoDot termId="flow-state" />}>
                 <div className="flex flex-wrap gap-2">
                   {FLOW_CHOICES.map((f) => (
                     <Chip
@@ -654,7 +657,7 @@ export default function BrewScreen({ navigate }: Props) {
                 </div>
               </Section>
               {isPro && (
-              <Section title="Puck danach">
+              <Section title="Puck" action={<InfoDot termId="puck" />}>
                 <div className="flex flex-wrap gap-2">
                   {PUCK_CHOICES.map((p) => (
                     <Chip
@@ -673,7 +676,7 @@ export default function BrewScreen({ navigate }: Props) {
 
           {method === 'v60' && (
             <>
-              <Section title="Bloom">
+              <Section title="Bloom" action={<InfoDot termId="bloom" />}>
                 <div className="flex flex-wrap gap-2">
                   {BLOOM_CHOICES.map((b) => (
                     <Chip
@@ -696,7 +699,7 @@ export default function BrewScreen({ navigate }: Props) {
 
           <Section>
             <Button size="lg" className="w-full" onClick={() => setPhase('taste')}>
-              Weiter zum Verkosten
+              Weiter zum Tasting
             </Button>
           </Section>
         </>
@@ -705,7 +708,7 @@ export default function BrewScreen({ navigate }: Props) {
       {/* ══ VERKOSTEN ══ */}
       {phase === 'taste' && (
         <>
-          <Section title="Wie war er?">
+          <Section title="Rating">
             <div className="flex justify-center gap-2 py-2">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
@@ -722,7 +725,7 @@ export default function BrewScreen({ navigate }: Props) {
             </div>
           </Section>
 
-          <Section title="Was stört?" action={<span className="text-[12px] text-faint">löst Korrekturen aus</span>}>
+          <Section title="Defects" action={<span className="text-[12px] text-faint">löst Korrekturen aus</span>}>
             <div className="flex flex-wrap gap-2">
               {COMMON_DEFECTS.map((d) => (
                 <Chip
@@ -741,7 +744,7 @@ export default function BrewScreen({ navigate }: Props) {
             </p>
           </Section>
 
-          <Section title="Was schmeckst du?" action={<span className="text-[12px] text-faint">nur beschreibend</span>}>
+          <Section title="Notes" action={<span className="text-[12px] text-faint">nur beschreibend</span>}>
             <div className="flex flex-wrap gap-2">
               {COMMON_CHARACTERS.map((c) => (
                 <Chip

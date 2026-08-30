@@ -119,14 +119,14 @@ function fallbackAlternative(
     const t = machbar(tooMuch ? temp - 2 : temp + 2)
     // Steht die Temperatur schon am Anschlag, hilft nur das Verhältnis.
     if (t === Math.round(temp)) {
-      return `Falls das nicht hilft: Verhältnis auf 1:${de((ratio + (tooMuch ? -0.2 : 0.2)), 1)}.`
+      return `Falls das nicht hilft: Ratio auf 1:${de((ratio + (tooMuch ? -0.2 : 0.2)), 1)}.`
     }
     return `Falls das nicht hilft: Temperatur auf ${t} °C.`
   }
   if (primary.variable === 'waterTempC') {
     return method === 'aeropress'
       ? `Falls das nicht hilft: ${tooMuch ? 'gröber' : 'feiner'} mahlen.`
-      : `Falls das nicht hilft: Verhältnis auf 1:${de((ratio + (tooMuch ? -0.2 : 0.2)), 1)}.`
+      : `Falls das nicht hilft: Ratio auf 1:${de((ratio + (tooMuch ? -0.2 : 0.2)), 1)}.`
   }
   if (primary.variable === 'ratio') {
     return `Falls das nicht hilft: ${tooMuch ? 'gröber' : 'feiner'} mahlen.`
@@ -210,7 +210,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
   const method = ctx.method
   const isEspresso = method === 'espresso'
   // „Shot" ist Espressosprache. Am Handfilter heißt es Durchgang.
-  const lauf = isEspresso ? 'Der Shot lief' : 'Der Durchgang lief'
+  const lauf = isEspresso ? 'Der Shot lief' : 'Der Brew lief'
 
   // Kennzahlen
   const lrr = lrrFor(method, actual.inverted)
@@ -250,9 +250,9 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
   if (zielMitte && actual.timeS > 0 && actual.timeS < zielMitte * 0.35) {
     return blocked(
       'D-00',
-      'Das war kein vollständiger Durchgang',
+      'Das war kein vollständiger Brew',
       `Aufgezeichnet sind ${fmtDauer(actual.timeS)} bei einem Ziel von ${fmtDauer(zielMitte)}. ` +
-        `Aus einem abgebrochenen Durchgang lässt sich nichts ableiten — ` +
+        `Aus einem abgebrochenen Brew lässt sich nichts ableiten — ` +
         `${isEspresso ? 'zieh den Shot noch einmal' : 'brüh noch einmal'} und trag die volle Zeit ein.`,
       { metrics },
     )
@@ -278,7 +278,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
   ) {
     return blocked(
       'D-01',
-      'Kanalbildung — zuerst die Verteilung',
+      'Channeling — zuerst die Verteilung',
       ruleText(
         'D-01',
         'Ein Teil des Wassers hat den Kaffee umgangen. Die Zeit sagt deshalb nichts über deinen Mahlgrad aus.',
@@ -411,7 +411,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
       const cur = actual.yieldG ? actual.yieldG / actual.doseG : actual.waterG! / actual.doseG
       sugg.push({
         ruleId: tdsLow ? 'D-13' : 'D-15',
-        what: `Verhältnis auf 1:${de((cur + delta), 1)} ${tdsLow ? 'enger' : 'weiter'}`,
+        what: `Ratio auf 1:${de((cur + delta), 1)} ${tdsLow ? 'enger' : 'weiter'}`,
         why: `Die Stärke liegt bei ${de(meas.tdsPct, 2)} % — Ziel sind ${tdsRange[0]}–${tdsRange[1]} %.`,
         expectation: `Das Getränk wird ${tdsLow ? 'dichter' : 'leichter'}, die Extraktion bleibt gleich.`,
         confidence: 'sicher',
@@ -593,7 +593,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
     const step = isEspresso ? 0.2 : 0.5
     push({
       ruleId: 'D-40',
-      what: `Verhältnis auf 1:${de((cur - step), 1)} enger`,
+      what: `Ratio auf 1:${de((cur - step), 1)} enger`,
       why: 'Kein Extraktionsfehler — es ist schlicht zu wenig Kaffee pro Wasser.',
       expectation: 'Mehr Substanz und Körper, gleicher Geschmackscharakter.',
       confidence: 'sicher',

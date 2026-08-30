@@ -220,7 +220,7 @@ describe('Eingefrorene Tüte hält die Frische-Uhr an', () => {
   })
 })
 
-describe('Ein fehlerhafter Durchgang wird nicht zum Startpunkt', () => {
+describe('Ein fehlerhafter Brew wird nicht zum Startpunkt', () => {
   const mitHistorie = (hist: Brew[]) => startingPoint(ctx({ beanHistory: hist }))
   const b = (rating: 1 | 2 | 3 | 4 | 5, defects: Defect[], grind: number, id: string): Brew => ({
     id, bagId: 'g1', beanId: 'b1', method: 'espresso',
@@ -248,7 +248,7 @@ describe('Ein fehlerhafter Durchgang wird nicht zum Startpunkt', () => {
   })
 })
 
-describe('Ein abgebrochener Durchgang wird nicht ausgewertet', () => {
+describe('Ein abgebrochener Brew wird nicht ausgewertet', () => {
   const lauf = (method: 'espresso' | 'v60', timeS: number) => {
     const c = ctx({ method })
     const p = startingPoint(c).proposal
@@ -264,14 +264,14 @@ describe('Ein abgebrochener Durchgang wird nicht ausgewertet', () => {
 
   it('2 Sekunden am V60 sind kein Extraktionsfehler, sondern ein Abbruch', () => {
     const d = lauf('v60', 2)
-    expect(d.headline).toBe('Das war kein vollständiger Durchgang')
+    expect(d.headline).toBe('Das war kein vollständiger Brew')
     // Keine Mahlgradempfehlung — schon gar keine mit hoher Konfidenz.
     expect(d.suggestions).toHaveLength(0)
   })
 
   it('ein echter Gusher wird dagegen ausgewertet', () => {
     const d = lauf('espresso', 14)
-    expect(d.headline).not.toBe('Das war kein vollständiger Durchgang')
+    expect(d.headline).not.toBe('Das war kein vollständiger Brew')
     expect(d.suggestions.length).toBeGreaterThan(0)
   })
 

@@ -101,7 +101,7 @@ export function BackupBanner() {
     <div className="px-4 pt-4">
       <Card tone="warn">
         <p className="text-[15px] leading-snug">
-          {brews.length} Durchgänge ungesichert. iOS löscht die Daten einer PWA nach
+          {brews.length} Brews ungesichert. iOS löscht die Daten einer PWA nach
           längerer Nichtnutzung — dann ist alles Gelernte weg.
         </p>
         <div className="mt-3 flex gap-2">

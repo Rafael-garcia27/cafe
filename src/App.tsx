@@ -33,7 +33,7 @@ const TABS: { id: Tab; label: string; icon: ReactElement }[] = [
   },
   {
     id: 'log',
-    label: 'Logbuch',
+    label: 'Log',
     icon: (
       <path
         d="M5 4h11l3 3v13H5V4zm3 5h8M8 13h8M8 17h5"

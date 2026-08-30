@@ -514,6 +514,8 @@ export function referenceMicron(method: BrewMethod): number {
 export interface GlossaryTerm {
   id: string
   term: string
+  /** Die deutsche Entsprechung, wenn die Oberfläche den Fachbegriff zeigt */
+  aka?: string
   level: 'basis' | 'advanced' | 'expert'
   unit?: string
   short: string

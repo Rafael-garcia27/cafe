@@ -135,7 +135,7 @@ function textFor(s: RawStep, method: BrewMethod, p: StepParams, vorher: RawStep[
     case 'record':
       return 'Werte eintragen'
     case 'taste':
-      return 'Verkosten'
+      return 'Tasting'
     default:
       return s.note ?? s.type
   }

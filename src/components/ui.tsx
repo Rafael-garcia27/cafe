@@ -507,6 +507,9 @@ export function InfoDot({ termId }: { termId: string }) {
       </button>
       {open && (
         <Sheet onClose={() => setOpen(false)} title={term.term}>
+          {/* Die Oberfläche zeigt den Fachbegriff, die Sätze der App
+              benutzen oft das deutsche Wort. Beides gehört zusammen. */}
+          {term.aka && <p className="mb-2 text-[14px] text-faint">auch: {term.aka}</p>}
           <p className="text-[17px] leading-snug">{term.short}</p>
           <p className="mt-3 text-[15px] leading-relaxed text-mute">{term.long}</p>
           {term.warning && (

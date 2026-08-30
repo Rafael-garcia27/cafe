@@ -163,7 +163,7 @@ export function assessFreshness(
   if (days >= STALE_AFTER) {
     state = 'stale'
     label = `${days} Tage — überaltert`
-    hint = 'Aromaverlust lässt sich durch keine Einstellung reparieren. Neue Tüte.'
+    hint = 'Aromaverlust lässt sich durch keine Einstellung reparieren. Neue Bag.'
   } else if (days < win.min) {
     state = 'too-fresh'
     label = `${days} Tage — noch zu frisch`

@@ -1,4 +1,11 @@
-/** Deutsche Beschriftungen für alle Enums. Ein Ort, keine Streuung. */
+/**
+ * Beschriftungen für alle Enums. Ein Ort, keine Streuung.
+ *
+ * Wo die Kaffeewelt einen eigenen Begriff hat, steht der da — auch wenn
+ * er englisch ist. „Gusher", „Choked", „Channeling" und „Puck" sagt jeder
+ * Barista so, auch auf Deutsch; eine Übersetzung wäre eine Erfindung.
+ * Wo es keinen Fachbegriff gibt, bleibt es bei klarem Deutsch.
+ */
 import type {
   BrewMethod,
   RoastLevel,
@@ -17,23 +24,23 @@ export const METHOD_LABEL: Record<BrewMethod, string> = {
 }
 
 export const ROAST_LABEL: Record<RoastLevel, string> = {
-  light: 'Hell',
-  'medium-light': 'Mittel-hell',
-  medium: 'Mittel',
-  'medium-dark': 'Mittel-dunkel',
-  dark: 'Dunkel',
+  light: 'Light',
+  'medium-light': 'Medium-Light',
+  medium: 'Medium',
+  'medium-dark': 'Medium-Dark',
+  dark: 'Dark',
 }
 
 export const PROCESS_LABEL: Record<Process, string> = {
-  washed: 'Gewaschen',
+  washed: 'Washed',
   natural: 'Natural',
   'honey-yellow': 'Yellow Honey',
   'honey-red': 'Red Honey',
   'honey-black': 'Black Honey',
-  anaerobic: 'Anaerob',
+  anaerobic: 'Anaerobic',
   'carbonic-maceration': 'Carbonic Maceration',
   'wet-hulled': 'Wet Hulled',
-  experimental: 'Experimentell',
+  experimental: 'Experimental',
 }
 
 /** Fehlerachse — löst Korrekturen aus (kb/16 §2.1) */
@@ -117,30 +124,30 @@ export const COMMON_CHARACTERS: Character[] = [
 ]
 
 export const FLOW_LABEL: Record<FlowState, string> = {
-  choked: 'Verstopft',
+  choked: 'Choked',
   slow: 'Zu langsam',
   normal: 'Normal',
   fast: 'Zu schnell',
-  gusher: 'Durchgerauscht',
-  uneven: 'Ungleichmäßig',
-  spritzing: 'Spritzt seitlich',
+  gusher: 'Gusher',
+  uneven: 'Uneven',
+  spritzing: 'Spritzing',
 }
 
 /** Die Zustände, die im Brüh-Screen angeboten werden */
 export const FLOW_CHOICES: FlowState[] = ['normal', 'uneven', 'spritzing', 'choked', 'gusher']
 
 export const PUCK_LABEL: Record<PuckState, string> = {
-  even: 'Gleichmäßig',
-  'wet-soupy': 'Matschig',
-  'dry-cracked': 'Trocken/rissig',
-  crater: 'Krater',
-  sideChannel: 'Rinne am Rand',
+  even: 'Sauber',
+  'wet-soupy': 'Soupy',
+  'dry-cracked': 'Rissig',
+  crater: 'Crater',
+  sideChannel: 'Side Channel',
 }
 
 export const PUCK_CHOICES: PuckState[] = ['even', 'crater', 'sideChannel', 'wet-soupy']
 
 export const BLOOM_LABEL: Record<BloomBehavior, string> = {
-  vigorous: 'Stark aufgebläht',
+  vigorous: 'Kräftig aufgebläht',
   moderate: 'Gleichmäßig',
   flat: 'Kaum Reaktion',
   uneven: 'Trockene Stellen',

@@ -170,7 +170,7 @@ describe('G3 — sauer UND bitter blockiert jede Parameterempfehlung', () => {
     expect(d.blocked).toBe(true)
   })
 
-  it('bei Kanalbildung ist die Zeit gesperrt', () => {
+  it('bei Channeling ist die Zeit gesperrt', () => {
     expect(timeIsTrustworthy('uneven')).toBe(false)
     expect(timeIsTrustworthy('spritzing')).toBe(false)
     expect(timeIsTrustworthy('normal')).toBe(true)
@@ -183,7 +183,7 @@ describe('G3 — sauer UND bitter blockiert jede Parameterempfehlung', () => {
       targetTimeS: [26, 30],
     })
     expect(d.blocked).toBe(true)
-    expect(d.headline).toContain('Kanalbildung')
+    expect(d.headline).toContain('Channeling')
   })
 
   it('AeroPress verweist bei diesem Muster NICHT auf Kanalbildung', () => {

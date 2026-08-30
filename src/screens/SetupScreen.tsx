@@ -203,7 +203,7 @@ export default function SetupScreen({ route, back }: Props) {
             {backupOverdue
               ? 'Deine Historie ist ungesichert. iOS löscht die Daten einer PWA nach längerer Nichtnutzung — dann ist alles Gelernte weg.'
               : !hasData
-                ? 'Noch nichts zu sichern. Sobald du Durchgänge protokollierst, erinnere ich dich hier.'
+                ? 'Noch nichts zu sichern. Sobald du Brews protokollierst, erinnere ich dich hier.'
                 : `Zuletzt gesichert vor ${daysSinceBackup} Tag${daysSinceBackup === 1 ? '' : 'en'}.`}
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -213,7 +213,7 @@ export default function SetupScreen({ route, back }: Props) {
             </Button>
           </div>
           <p className="mt-3 text-[12px] text-faint">
-            {s.brews.length === 1 ? '1 Durchgang' : `${s.brews.length} Durchgänge`} ·{' '}
+            {s.brews.length === 1 ? '1 Brew' : `${s.brews.length} Brews`} ·{' '}
             {s.beans.length === 1 ? '1 Bohne' : `${s.beans.length} Bohnen`}
             {storage && ` · ${storage.usedKb} KB belegt`}
             {persisted ? ' · Speicher als dauerhaft markiert' : ''}
@@ -247,7 +247,7 @@ export default function SetupScreen({ route, back }: Props) {
                 label="Refraktometer-Werte erfassen"
               />
               <p className="mt-1 text-[12px] text-faint">
-                Blendet TDS- und Extraktionsfelder beim Verkosten ein.
+                Blendet TDS- und Extraktionsfelder beim Tasting ein.
               </p>
             </div>
           )}
@@ -397,18 +397,18 @@ function CalibrateSheet({ onClose }: { onClose: () => void }) {
         gröber. Aus dem Zeitunterschied ergibt sich die tatsächliche Schrittweite deiner Mühle.
       </p>
       <p className="mt-2 text-[13px] text-faint">
-        Wichtig: beide Shots ohne Kanalbildung, Altersunterschied der Bohne unter drei Tagen.
+        Wichtig: beide Shots ohne Channeling, Altersunterschied der Bohne unter drei Tagen.
       </p>
 
       <div className="mt-5 space-y-4">
         <div className="rounded-2xl border border-line p-3">
           <p className="mb-3 text-[13px] font-semibold text-mute">Shot 1 — feiner</p>
-          <Field label="Mahlgrad-Einstellung"><Stepper value={s1} onChange={setS1} min={0} max={200} /></Field>
+          <Field label="Grind-Einstellung"><Stepper value={s1} onChange={setS1} min={0} max={200} /></Field>
           <div className="mt-3"><Field label="Laufzeit"><Stepper value={t1} onChange={setT1} min={5} max={90} unit="s" /></Field></div>
         </div>
         <div className="rounded-2xl border border-line p-3">
           <p className="mb-3 text-[13px] font-semibold text-mute">Shot 2 — gröber</p>
-          <Field label="Mahlgrad-Einstellung"><Stepper value={s2} onChange={setS2} min={0} max={200} /></Field>
+          <Field label="Grind-Einstellung"><Stepper value={s2} onChange={setS2} min={0} max={200} /></Field>
           <div className="mt-3"><Field label="Laufzeit"><Stepper value={t2} onChange={setT2} min={5} max={90} unit="s" /></Field></div>
         </div>
       </div>

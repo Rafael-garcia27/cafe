@@ -137,14 +137,14 @@ function BeanDetail({ bean, onBack }: { bean: Bean; onBack: () => void }) {
       <Section title="Profil">
         <Card>
           <div className="grid grid-cols-2 gap-4">
-            <Stat label="Röstgrad" value={ROAST_LABEL[bean.roastLevel]} />
-            <Stat label="Aufbereitung" value={PROCESS_LABEL[bean.process]} />
-            <Stat label="Herkunft" value={bean.origins.map((o) => o.country).join(', ') || '—'} />
+            <Stat label="Roast" value={ROAST_LABEL[bean.roastLevel]} />
+            <Stat label="Process" value={PROCESS_LABEL[bean.process]} />
+            <Stat label="Origin" value={bean.origins.map((o) => o.country).join(', ') || '—'} />
             {bean.origins[0]?.farm && <Stat label="Farm" value={bean.origins[0].farm} />}
             {bean.altitudeMasl && (
-              <Stat label="Höhe" value={`${bean.altitudeMasl[0]}–${bean.altitudeMasl[1]}`} unit="m" />
+              <Stat label="Altitude" value={`${bean.altitudeMasl[0]}–${bean.altitudeMasl[1]}`} unit="m" />
             )}
-            {bean.varieties?.length ? <Stat label="Varietät" value={bean.varieties.join(', ')} /> : null}
+            {bean.varieties?.length ? <Stat label="Varietal" value={bean.varieties.join(', ')} /> : null}
             {bean.isDecaf && <Stat label="Koffein" value="Entkoffeiniert" />}
           </div>
           {bean.flavorNotes?.length ? (
@@ -156,7 +156,7 @@ function BeanDetail({ bean, onBack }: { bean: Bean; onBack: () => void }) {
         </Card>
       </Section>
 
-      <Section title="Eignung">
+      <Section title="Fit">
         <Card>
           <div className="space-y-2">
             {(['espresso', 'v60', 'aeropress'] as BrewMethod[]).map((m) => {
@@ -189,11 +189,11 @@ function BeanDetail({ bean, onBack }: { bean: Bean; onBack: () => void }) {
         </Card>
       </Section>
 
-      <Section title="Tüten" action={<Button size="sm" variant="ghost" onClick={() => setShowBag(true)}>+ Tüte</Button>}>
+      <Section title="Bags" action={<Button size="sm" variant="ghost" onClick={() => setShowBag(true)}>+ Bag</Button>}>
         {bags.length === 0 ? (
           <Card>
             <p className="text-[14px] text-mute">
-              Noch keine Tüte. Ohne Röstdatum kann ich die Frische nicht mitführen.
+              Noch keine Bag. Ohne Röstdatum kann ich die Frische nicht mitführen.
             </p>
           </Card>
         ) : (
@@ -253,7 +253,7 @@ function BeanDetail({ bean, onBack }: { bean: Bean; onBack: () => void }) {
           variant="danger"
           className="w-full"
           onClick={() => {
-            if (confirm(`„${bean.name}“ mit allen Tüten und Protokollen löschen?`)) {
+            if (confirm(`„${bean.name}“ mit allen Bags und Protokollen löschen?`)) {
               deleteBean(bean.id)
               onBack()
             }
@@ -326,10 +326,10 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
         <Field label="Name">
           <TextInput value={name} onChange={setName} placeholder="z. B. Finca La Esperanza" />
         </Field>
-        <Field label="Rösterei">
+        <Field label="Roaster">
           <TextInput value={roaster} onChange={setRoaster} placeholder="optional" />
         </Field>
-        <Field label="Herkunft" hint="Beeinflusst Mahlgrad und Temperatur">
+        <Field label="Origin" hint="Beeinflusst Mahlgrad und Temperatur">
           <Select
             value={country}
             onChange={setCountry}
@@ -339,14 +339,14 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
             ]}
           />
         </Field>
-        <Field label="Röstgrad" hint="Die wichtigste Angabe für den Startpunkt">
+        <Field label="Roast" hint="Die wichtigste Angabe für den Startpunkt">
           <Select
             value={roast}
             onChange={setRoast}
             options={(Object.keys(ROAST_LABEL) as RoastLevel[]).map((r) => ({ value: r, label: ROAST_LABEL[r] }))}
           />
         </Field>
-        <Field label="Aufbereitung" term="process">
+        <Field label="Process" term="process">
           <Select
             value={process}
             onChange={setProcess}
@@ -354,13 +354,13 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
           />
         </Field>
         <Field
-          label="Anbauhöhe"
+          label="Altitude"
           hint={
             altitude === null
-              ? `Steht meist auf der Tüte. Ohne Angabe rechne ich mit dem, was für ${country === BLEND ? 'die Herkunft' : country} üblich ist.`
+              ? `Steht meist auf der Bag. Ohne Angabe rechne ich mit dem, was für ${country === BLEND ? 'die Herkunft' : country} üblich ist.`
               : altitudeTouched
                 ? 'Höher gewachsen heißt dichter — mehr Extraktion nötig.'
-                : `Typisch für ${country}. Überschreib es, wenn die Tüte etwas anderes sagt.`
+                : `Typisch für ${country}. Überschreib es, wenn die Bag etwas anderes sagt.`
           }
         >
           {altitude === null ? (
@@ -379,18 +379,18 @@ function BeanSheet({ onClose }: { onClose: () => void }) {
               min={400}
               max={2400}
               unit="m"
-              label="Anbauhöhe"
+              label="Altitude"
             />
           )}
         </Field>
-        <Field label="Geschmacksnotizen des Rösters" hint="Kommagetrennt">
+        <Field label="Tasting Notes des Rösters" hint="Kommagetrennt">
           <TextInput value={notes} onChange={setNotes} placeholder="Schokolade, Nuss, Karamell" />
         </Field>
-        <Toggle checked={decaf} onChange={setDecaf} label="Entkoffeiniert" />
+        <Toggle checked={decaf} onChange={setDecaf} label="Decaf" />
 
         <div className="border-t border-line pt-4">
-          <p className="mb-3 text-[13px] font-semibold tracking-wide text-mute uppercase">Erste Tüte</p>
-          <Field label="Röstdatum" hint="Ohne dieses Datum kann ich die Frische nicht mitführen">
+          <p className="mb-3 text-[13px] font-semibold tracking-wide text-mute uppercase">Erste Bag</p>
+          <Field label="Roast Date" hint="Ohne dieses Datum kann ich die Frische nicht mitführen">
             <TextInput value={roastDate} onChange={setRoastDate} type="date" />
           </Field>
           <div className="mt-4">
@@ -417,7 +417,7 @@ function BagSheet({
 
   return (
     <Sheet
-      title="Neue Tüte"
+      title="Neuer Bag"
       onClose={onClose}
       footer={
         <Button
@@ -432,7 +432,7 @@ function BagSheet({
       }
     >
       <div className="space-y-4">
-        <Field label="Röstdatum">
+        <Field label="Roast Date">
           <TextInput value={roastDate} onChange={setRoastDate} type="date" />
         </Field>
         <Field label="Menge">
