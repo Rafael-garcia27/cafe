@@ -10,7 +10,7 @@
 import { useState } from 'react'
 import type { BrewMethod } from '@domain'
 import { getMethod } from '@/kb'
-import { num } from './ui'
+import { num, fmtClock } from './ui'
 
 export interface StepParams {
   doseG: number
@@ -34,11 +34,20 @@ interface RawStep {
   durationS?: number
 }
 
+/**
+ * Dauer in der Schreibweise, die daneben im Zeitfeld steht: ab einer
+ * Minute als m:ss. „125 s ziehen lassen" neben einem Feld mit „2:38"
+ * zwingt sonst zum Umrechnen.
+ */
+function dauer(s: number): string {
+  return s >= 60 ? fmtClock(s) : `${Math.round(s)} s`
+}
+
 /** Kurzfassung der Schritte, die die Methode ausmachen. */
 export function stepSummary(method: BrewMethod, p: StepParams): string | null {
   if (method === 'v60') {
     const teile = []
-    if (p.bloomWaterG && p.bloomTimeS) teile.push(`${p.bloomWaterG} g Bloom, ${p.bloomTimeS} s`)
+    if (p.bloomWaterG && p.bloomTimeS) teile.push(`${p.bloomWaterG} g Bloom, ${dauer(p.bloomTimeS)}`)
     if (p.pourCount) teile.push(`${p.pourCount} Aufgüsse`)
     return teile.length ? teile.join(' · ') : null
   }
@@ -46,7 +55,7 @@ export function stepSummary(method: BrewMethod, p: StepParams): string | null {
     const teile = []
     if (p.inverted) teile.push('invertiert')
     if (p.stirCount) teile.push(`${p.stirCount}× rühren`)
-    if (p.steepS) teile.push(`${p.steepS} s ziehen`)
+    if (p.steepS) teile.push(`${dauer(p.steepS)} ziehen`)
     teile.push('wenden, pressen')
     return teile.join(' · ')
   }
@@ -94,7 +103,7 @@ function textFor(s: RawStep, method: BrewMethod, p: StepParams, vorher: RawStep[
       return 'Waage tarieren'
     case 'bloom':
       return p.bloomWaterG && p.bloomTimeS
-        ? `${p.bloomWaterG} g aufgießen, ${p.bloomTimeS} s blühen lassen`
+        ? `${p.bloomWaterG} g aufgießen, ${dauer(p.bloomTimeS)} blühen lassen`
         : 'Blooming'
     case 'swirl':
       return s.note === 'Rao Spin' ? 'Kurz schwenken, damit das Bett eben bleibt' : 'Schwenken'
@@ -106,7 +115,7 @@ function textFor(s: RawStep, method: BrewMethod, p: StepParams, vorher: RawStep[
     case 'stir':
       return p.stirCount ? `${p.stirCount}× rühren` : 'Rühren'
     case 'steep':
-      return p.steepS ? `${p.steepS} s ziehen lassen` : 'Ziehen lassen'
+      return p.steepS ? `${dauer(p.steepS)} ziehen lassen` : 'Ziehen lassen'
     case 'cap':
       return s.note ?? 'Kappe aufsetzen und festdrehen'
     case 'invert':
@@ -118,7 +127,9 @@ function textFor(s: RawStep, method: BrewMethod, p: StepParams, vorher: RawStep[
     case 'brew':
       return p.yieldG ? `Bezug starten, Ziel ${num(p.yieldG)} g` : 'Bezug starten'
     case 'stop':
-      return p.targetTimeS ? `Bei Zielgewicht stoppen (${p.targetTimeS[0]}–${p.targetTimeS[1]} s)` : 'Stoppen'
+      return p.targetTimeS
+        ? `Bei Zielgewicht stoppen (${dauer(p.targetTimeS[0])}–${dauer(p.targetTimeS[1])})`
+        : 'Stoppen'
     case 'dilute':
       return 'Nach Geschmack mit heißem Wasser strecken'
     case 'record':

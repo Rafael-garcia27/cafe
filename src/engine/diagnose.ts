@@ -253,7 +253,7 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
       'Das war kein vollständiger Durchgang',
       `Aufgezeichnet sind ${fmtDauer(actual.timeS)} bei einem Ziel von ${fmtDauer(zielMitte)}. ` +
         `Aus einem abgebrochenen Durchgang lässt sich nichts ableiten — ` +
-        `${isEspresso ? 'zieh den Shot noch einmal' : 'brüh noch einmal'} und lass den Timer bis zum Ende laufen.`,
+        `${isEspresso ? 'zieh den Shot noch einmal' : 'brüh noch einmal'} und trag die volle Zeit ein.`,
       { metrics },
     )
   }

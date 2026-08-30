@@ -253,7 +253,7 @@ function applyBeanModifiers(
 
   // Bei Immersion ist die Zeit der zweite Hebel: Was der Mahlgrad hier
   // nicht leistet, leistet die Ziehzeit. Auf 5 s gerundet, damit die
-  // Vorgabe am Timer ablesbar bleibt, und bei ±5 % ohne Begründung.
+  // Vorgabe im Ablauf ablesbar bleibt, und bei ±5 % ohne Begründung.
   if (p.steepS && Math.abs(steepFactor - 1) > 0.05) {
     const vorher = p.steepS
     p.steepS = Math.round((p.steepS * steepFactor) / 5) * 5

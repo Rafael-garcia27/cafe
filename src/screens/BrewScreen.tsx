@@ -4,7 +4,7 @@
  * Briefing G10: Von „Start“ bis „bewertet“ höchstens drei Pflichtinteraktionen.
  * Alles andere ist vorbelegt und optional.
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Route } from '@/router'
 import { useStore, selectActiveWater, grinderFor } from '@/store'
 import type { BrewMethod, Defect, Character, FlowState, PuckState, BloomBehavior } from '@domain'
@@ -15,19 +15,19 @@ import { assessFreshness } from '@/engine/freshness'
 import GrinderDial from '@/components/GrinderDial'
 import BrewSteps from '@/components/BrewSteps'
 import SageGrindDial from '@/components/SageGrindDial'
-import BrewAnimation from '@/components/BrewAnimation'
 import { consistencyWarning, brewsUntilPersonal } from '@/engine/learn'
 import { suitability, SUITABILITY_LABEL, bestMethodFor } from '@/engine/suitability'
+import { ratioTone, ratioLabel, RATIO_ANCHOR } from '@/engine/ratio'
 import { grindPlausibility, formatSetting, vendorRange } from '@/engine/grinder'
-import { GRINDER_CATALOG, aeropressPhases, grindersForMethod, targetTimeRange, type AeropressPhases } from '@/kb'
+import { GRINDER_CATALOG, grindersForMethod, targetTimeRange } from '@/kb'
 import { METHOD_LABEL, DEFECT_LABEL, COMMON_DEFECTS, CHARACTER_LABEL, COMMON_CHARACTERS, FLOW_LABEL, FLOW_CHOICES, PUCK_LABEL, PUCK_CHOICES, BLOOM_LABEL, BLOOM_CHOICES } from '@/labels'
 import {
   Screen, Header, Section, Card, Button, Chip, SegmentedControl, Stepper, Field,
-  Empty, Stat, FreshnessRing, InfoDot, fmtTime, fmtClock, fmtRange, num
+  Empty, Stat, FreshnessRing, InfoDot, fmtRange, num
 } from '@/components/ui'
 import { BackupBanner, SetupNudge } from '@/components/system'
 
-type Phase = 'select' | 'proposal' | 'timer' | 'record' | 'taste' | 'result'
+type Phase = 'select' | 'proposal' | 'record' | 'taste' | 'result'
 
 interface Props {
   route: Route
@@ -100,12 +100,6 @@ export default function BrewScreen({ navigate }: Props) {
     return grinders.filter((g) => erlaubt.some((e) => e.id === g.catalogId || e.name === g.name))
   }, [grinders, method])
 
-  // Die Ziehzeit kann bohnenspezifisch angepasst sein (z. B. anaerob kürzer) —
-  // die Phasengrenzen der Animation müssen derselben Zahl folgen.
-  const apPhases = useMemo(
-    () => (method === 'aeropress' ? aeropressPhases(sp?.proposal.steepS ?? 90) : undefined),
-    [method, sp?.proposal.steepS],
-  )
 
   // Ist-Werte
   const [doseG, setDoseG] = useState(18)
@@ -114,9 +108,6 @@ export default function BrewScreen({ navigate }: Props) {
   const [tempC, setTempC] = useState(93)
   const [grindVal, setGrindVal] = useState(0)
   const [elapsed, setElapsed] = useState(0)
-  /** Was der Timer gemessen hat — Bezugswert für „zurücksetzen". */
-  const [gestoppt, setGestoppt] = useState(0)
-  const [zeitKorrektur, setZeitKorrektur] = useState(false)
   const [flow, setFlow] = useState<FlowState | undefined>()
   const [puck, setPuck] = useState<PuckState | undefined>()
   const [bloom, setBloom] = useState<BloomBehavior | undefined>()
@@ -135,6 +126,10 @@ export default function BrewScreen({ navigate }: Props) {
     setWaterG(sp.proposal.waterG ?? Math.round(sp.proposal.doseG * sp.proposal.ratio))
     setTempC(sp.proposal.waterTempC)
     setGrindVal(sp.proposal.grindSetting ?? 0)
+    // Auch die Zeit: Sonst stünde nach dem Wechsel von der V60 zum Espresso
+    // noch die Filterzeit im Feld. 0 heißt „noch nicht vorbelegt" — der
+    // Startwert wird beim Übergang ins Erfassen gesetzt.
+    setElapsed(0)
   }, [sp])
 
   if (s.beans.length === 0) {
@@ -161,7 +156,6 @@ export default function BrewScreen({ navigate }: Props) {
   // Am Handfilter und an der AeroPress läuft die Uhr in Minuten:Sekunden,
   // beim Espresso in nackten Sekunden — ein Shot dauert nie eine Minute.
   const alsUhr = !isEspresso
-  const zeit = (sek: number) => (alsUhr ? fmtClock(sek) : fmtTime(sek))
   const isPro = s.settings.mode === 'pro'
   const catalogEntry = GRINDER_CATALOG.find(
     (g) => g.id === grinder?.catalogId || g.name === grinder?.name,
@@ -191,9 +185,10 @@ export default function BrewScreen({ navigate }: Props) {
   const targetT =
     targetTimeRange(method, doseG, bean.roastLevel, isEspresso ? yieldG : undefined, sp.proposal.steepS) ??
     undefined
+  const ratioTon = ratioTone(ratioLive)
 
   const reset = () => {
-    setPhase('select'); setElapsed(0); setGestoppt(0); setZeitKorrektur(false); setRating(0); setShowTweak(false)
+    setPhase('select'); setElapsed(0); setRating(0); setShowTweak(false)
     setDefects([]); setCharacters([]); setResult(null)
     setFlow(undefined); setPuck(undefined); setBloom(undefined); setDrawdown(0)
   }
@@ -231,27 +226,6 @@ export default function BrewScreen({ navigate }: Props) {
   }
 
   // ══ TIMER (Vollbild) ══════════════════════════════════════════════
-  if (phase === 'timer') {
-    return (
-      <BrewTimer
-        method={method}
-        title={bean.name}
-        subtitle={`${METHOD_LABEL[method]} · ${fresh.label}`}
-        target={targetT}
-        targetYieldG={isEspresso ? yieldG : undefined}
-        apPhases={apPhases}
-        inverted={sp.proposal.inverted}
-        onStop={(sec) => {
-          setElapsed(sec)
-          setGestoppt(sec)
-          setZeitKorrektur(false)
-          setPhase('record')
-        }}
-        onCancel={reset}
-      />
-    )
-  }
-
   return (
     <Screen>
       <Header
@@ -555,8 +529,19 @@ export default function BrewScreen({ navigate }: Props) {
           )}
 
           <Section>
-            <Button size="lg" className="w-full" onClick={() => setPhase('timer')}>
-              Brühen starten
+            {/* Getimt wird an der Waage. Die App nimmt hinterher entgegen,
+                was dabei herausgekommen ist. */}
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                // Zeit mit der Zielmitte vorbelegen — ein Startwert, der in
+                // der Größenordnung stimmt und beim Eintragen überschrieben wird.
+                if (elapsed === 0 && targetT) setElapsed(Math.round((targetT[0] + targetT[1]) / 2))
+                setPhase('record')
+              }}
+            >
+              Durchgang eintragen
             </Button>
           </Section>
         </>
@@ -565,79 +550,92 @@ export default function BrewScreen({ navigate }: Props) {
       {/* ══ ERFASSEN ══ */}
       {phase === 'record' && (
         <>
-          <Section title="Ergebnis">
+          {/* Die vier Zahlen, die wirklich zählen — in der Reihenfolge,
+              in der sie an der Maschine anfallen. Alles andere steht
+              darunter und ist optional. */}
+          <Section title="Durchgang">
             <Card>
-              {/* Ohne Flussrate stehen hier nur zwei Werte — in drei engen
-                  Spalten bräche „2:42–3:12" sonst um. */}
-              <div className={`grid gap-3 ${isEspresso ? 'grid-cols-3' : 'grid-cols-2'}`}>
-                <Stat
-                  label="Zeit"
-                  value={zeit(elapsed)}
-                  tone={targetT ? (elapsed < targetT[0] ? 'warn' : elapsed > targetT[1] ? 'warn' : 'ok') : undefined}
-                />
-                {targetT && <Stat label="Ziel" value={fmtRange(targetT, alsUhr)} />}
-                {isEspresso && (
-                  <Stat label="Fluss" value={num(yieldG / Math.max(1, elapsed), 2)} unit="g/s" />
+              <div className="space-y-4">
+                <Field label="In" hint="Eingewogene Bohnen">
+                  <Stepper
+                    value={doseG} onChange={changeDose} step={0.1} min={5} max={60}
+                    unit="g" decimals={1} label="In"
+                  />
+                </Field>
+
+                <Field
+                  label="Time"
+                  hint={targetT ? `Ziel ${fmtRange(targetT, alsUhr)}` : undefined}
+                >
+                  <Stepper
+                    value={elapsed} onChange={setElapsed}
+                    step={alsUhr ? 5 : 1} min={1} max={900}
+                    unit={alsUhr ? undefined : 's'} clock={alsUhr}
+                    label="Time"
+                  />
+                </Field>
+
+                <Field label="Out" hint={isEspresso ? 'Im Glas' : 'Aufgegossenes Wasser'}>
+                  {isEspresso ? (
+                    <Stepper
+                      value={yieldG} onChange={setYieldG} step={0.1} min={5} max={120}
+                      unit="g" decimals={1} label="Out"
+                    />
+                  ) : (
+                    <Stepper
+                      value={waterG} onChange={setWaterG} step={1} min={50} max={1000}
+                      unit="g" label="Out"
+                    />
+                  )}
+                </Field>
+
+                {isEspresso && grinder && (
+                  <Field label="Grind Size" hint={grinder.name}>
+                    <Stepper
+                      value={grindVal} onChange={setGrindVal}
+                      step={grinder.scaleType === 'stepless' ? (grinder.step ?? 0.5) : 1}
+                      min={0}
+                      max={grinder.usableRange?.[1] ?? 100}
+                      decimals={grinder.scaleType === 'stepless' ? 1 : 0}
+                      label="Grind Size"
+                    />
+                  </Field>
                 )}
               </div>
 
-              {/* Der Timer wird selten auf die Sekunde genau gestoppt: Man
-                  stellt die Tasse ab, wischt die Waage sauber, tippt erst
-                  dann. Die Zeit geht in jede Empfehlung ein — sie muss sich
-                  nachtragen lassen, ohne den Durchgang zu verwerfen. */}
-              {zeitKorrektur ? (
-                <div className="mt-4 border-t border-line pt-3">
-                  <Field
-                    label="Gelaufene Zeit"
-                    hint={
-                      elapsed !== gestoppt
-                        ? `Gestoppt bei ${zeit(gestoppt)} — korrigiert auf ${zeit(elapsed)}.`
-                        : alsUhr
-                          ? 'Als m:ss oder in Sekunden. Der Wert fließt in die Auswertung ein.'
-                          : 'In Sekunden. Der Wert fließt in die Auswertung ein.'
-                    }
+              {/* Ratio rechnet sich aus In und Out und braucht keine
+                  Eingabe — sie sagt im Vorbeigehen, ob das noch ein
+                  Espresso ist. */}
+              {isEspresso && (
+                <div className="mt-4 flex items-baseline gap-3 border-t border-line pt-3">
+                  <span className="text-[13px] text-mute">Ratio</span>
+                  <span
+                    className={`tnum text-[26px] leading-none font-semibold ${
+                      ratioTon === 'ok' ? 'text-ok' : ratioTon === 'warn' ? 'text-warn' : 'text-bad'
+                    }`}
                   >
-                    <Stepper
-                      value={elapsed}
-                      onChange={setElapsed}
-                      step={alsUhr ? 5 : 1}
-                      min={1}
-                      max={900}
-                      unit={alsUhr ? undefined : 's'}
-                      clock={alsUhr}
-                      label="Gelaufene Zeit"
-                    />
-                  </Field>
-                  {elapsed !== gestoppt && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="mt-2 -ml-3"
-                      onClick={() => setElapsed(gestoppt)}
-                    >
-                      Auf {zeit(gestoppt)} zurücksetzen
-                    </Button>
-                  )}
+                    1:{num(ratioLive)}
+                  </span>
+                  <span
+                    className={`text-[13px] ${
+                      ratioTon === 'ok' ? 'text-ok' : ratioTon === 'warn' ? 'text-warn' : 'text-bad'
+                    }`}
+                  >
+                    {ratioLabel(ratioLive)}
+                  </span>
                 </div>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="mt-2 -ml-3"
-                  onClick={() => setZeitKorrektur(true)}
-                >
-                  Zeit korrigieren
-                </Button>
+              )}
+
+              {/* Für helle Röstungen empfiehlt die App selbst weiter als
+                  1:2. Ohne diesen Hinweis widerspräche die Ampel dem
+                  eigenen Vorschlag. */}
+              {isEspresso && Math.abs(sp.proposal.ratio - RATIO_ANCHOR) > 0.15 && (
+                <p className="mt-2 text-[13px] text-faint">
+                  Die Ampel misst gegen 1:2. Für diese Bohne empfiehlt die App
+                  1:{num(sp.proposal.ratio)}.
+                </p>
               )}
             </Card>
-          </Section>
-
-          <Section title={isEspresso ? 'Tatsächlich im Glas' : 'Tatsächlich aufgegossen'}>
-            {isEspresso ? (
-              <Stepper value={yieldG} onChange={setYieldG} step={0.1} min={5} max={120} unit="g" decimals={1} label="Ziel-Ausbringung" />
-            ) : (
-              <Stepper value={waterG} onChange={setWaterG} step={1} min={50} max={1000} unit="g" label="Wasser" />
-            )}
           </Section>
 
           {isEspresso && (
@@ -855,80 +853,4 @@ export default function BrewScreen({ navigate }: Props) {
   )
 }
 
-// ══ Timer ═══════════════════════════════════════════════════════════
 
-function BrewTimer({
-  method,
-  title,
-  subtitle,
-  target,
-  targetYieldG,
-  apPhases,
-  inverted,
-  onStop,
-  onCancel,
-}: {
-  method: BrewMethod
-  title: string
-  subtitle: string
-  target?: [number, number]
-  targetYieldG?: number
-  apPhases?: AeropressPhases
-  inverted?: boolean
-  onStop: (sec: number) => void
-  onCancel: () => void
-}) {
-  const [sec, setSec] = useState(0)
-  const startRef = useRef<number>(Date.now())
-
-  useEffect(() => {
-    startRef.current = Date.now()
-    const id = setInterval(() => setSec(Math.floor((Date.now() - startRef.current) / 1000)), 200)
-    return () => clearInterval(id)
-  }, [])
-
-  const inTarget = target ? sec >= target[0] && sec <= target[1] : false
-  const over = target ? sec > target[1] : false
-  // Zwei bis drei Minuten am Handfilter liest man als Uhr ab, nicht als
-  // dreistellige Sekundenzahl.
-  const alsUhr = method !== 'espresso'
-
-  return (
-    <Screen>
-      {/* Bewusst dieselbe Kopfzeile wie in jedem anderen Bereich — die
-          Rahmung darf zwischen den Ansichten nicht springen. */}
-      <Header
-        title={title}
-        subtitle={subtitle}
-        right={
-          <button onClick={onCancel} className="h-11 shrink-0 px-2 text-[15px] text-mute">
-            Abbrechen
-          </button>
-        }
-      />
-      {/* Ganzflächig antippbar — blindbedienbar mit nassen Händen.
-          Höhe: Bildschirm minus Kopfzeile (58) minus Tab-Leiste (54)
-          minus Sicherheitsbereiche. */}
-      <button
-        onClick={() => onStop(sec)}
-        className="flex w-full flex-col items-center justify-center gap-1"
-        style={{ minHeight: 'calc(100dvh - 58px - 54px - env(safe-area-inset-top) - env(safe-area-inset-bottom))' }}
-      >
-        <BrewAnimation method={method} elapsedS={sec} target={target} targetYieldG={targetYieldG} apPhases={apPhases} inverted={inverted} />
-        <span
-          className={`tnum text-[96px] leading-none font-light tabular-nums ${
-            over ? 'text-bad' : inTarget ? 'text-ok' : 'text-ink'
-          }`}
-        >
-          {alsUhr ? fmtClock(sec) : sec}
-        </span>
-        <span className="text-[15px] text-mute">
-          {target ? `Ziel ${fmtRange(target, alsUhr)}` : alsUhr ? 'Minuten' : 'Sekunden'}
-        </span>
-        <span className="mt-6 rounded-full border border-line px-6 py-3 text-[15px] text-mute">
-          Tippen zum Stoppen
-        </span>
-      </button>
-    </Screen>
-  )
-}

@@ -121,7 +121,7 @@ export function targetFlowRate(roast: RoastLevel, ratio = 2): number {
  * Mengen ist der häufigste Fehler in V60-Apps.
  */
 export interface AeropressPhases {
-  /** Ende Benetzen/Bloom/Rühren (s ab Timerstart) */
+  /** Ende Benetzen/Bloom/Rühren (Sekunden ab Brühbeginn) */
   bloomEnd: number
   /** Ende der Ziehzeit */
   steepEnd: number

@@ -404,7 +404,7 @@ export function Stepper({
             const raw = e.target.value.replace(clock ? /[^0-9:]/g : /[^0-9.,-]/g, '')
             setDraft(raw)
             // Sofort übernehmen, nicht erst beim Verlassen: Auf dem iPhone
-            // schließt der erste Tipper auf „Brühen starten" nur die
+            // schließt der erste Tipper auf „Weiter zum Verkosten" nur die
             // Tastatur — der Wert muss da längst gespeichert sein.
             // Halbfertige Eingaben („1" bei Mindestwert 5) bleiben außen vor.
             const n = parse(raw)
