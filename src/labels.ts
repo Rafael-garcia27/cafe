@@ -17,10 +17,31 @@ import type {
   BloomBehavior,
 } from '@domain'
 
+/**
+ * Alle Methoden in Anzeigereihenfolge — eine Liste, kein verstreutes
+ * Literal. Vier Methoden waren der Anlass: Beim Ergänzen der French Press
+ * lagen sechs Kopien dieser Aufzählung im Code.
+ */
+export const METHODS: BrewMethod[] = ['espresso', 'v60', 'aeropress', 'frenchpress']
+
 export const METHOD_LABEL: Record<BrewMethod, string> = {
   espresso: 'Espresso',
   v60: 'V60',
   aeropress: 'AeroPress',
+  frenchpress: 'French Press',
+}
+
+/**
+ * Kurzform für enge Stellen — den Methodenumschalter.
+ *
+ * „French Press" passt auf 375 px nicht in ein Viertel der Breite und
+ * würde abgeschnitten. Überall sonst steht der volle Name.
+ */
+export const METHOD_SHORT: Record<BrewMethod, string> = {
+  espresso: 'Espresso',
+  v60: 'V60',
+  aeropress: 'AeroPress',
+  frenchpress: 'French',
 }
 
 export const ROAST_LABEL: Record<RoastLevel, string> = {

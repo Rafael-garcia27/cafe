@@ -12,7 +12,7 @@ import type { AppMode } from '@/domain'
 import { levelForMode, PRO_FEATURES } from '@/domain'
 import { GRINDER_CATALOG, GLOSSARY, termsForLevel } from '@/kb'
 import { grinderFromCatalog, calibrate, suggestedSetting, formatSetting } from '@/engine/grinder'
-import { METHOD_LABEL } from '@/labels'
+import { METHODS, METHOD_LABEL } from '@/labels'
 import { shareBackup, parseBackup, storageEstimate, requestPersistence } from '@/store/persist'
 import { APP_NAME, BACKUP_REMINDER_DAYS } from '@/config'
 import {
@@ -114,7 +114,7 @@ export default function SetupScreen({ route, back }: Props) {
             </div>
 
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-line pt-3">
-              {(['espresso', 'v60', 'aeropress'] as BrewMethod[]).map((m) => (
+              {METHODS.map((m) => (
                 <Stat
                   key={m}
                   label={METHOD_LABEL[m]}

@@ -27,7 +27,7 @@ export default defineConfig({
       manifest: {
         name: 'Café — dein Dial-in',
         short_name: 'Café',
-        description: 'Persönliches Dial-in-Werkzeug für Espresso, V60 und AeroPress',
+        description: 'Persönliches Dial-in-Werkzeug für Espresso, V60, AeroPress und French Press',
         lang: 'de',
         theme_color: '#faf4ea',
         background_color: '#faf4ea',

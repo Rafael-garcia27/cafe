@@ -197,15 +197,19 @@ export function SegmentedControl<T extends string>({
   value: T
   onChange: (v: T) => void
 }) {
+  // Ab vier Segmenten wird es auf 375 px eng. Statt umzubrechen — was die
+  // Zeile doppelt hoch macht und den Umschalter zerreißt — rückt die
+  // Schrift eine Stufe zurück und die Beschriftungen bleiben einzeilig.
+  const eng = options.length > 3
   return (
     <div className="flex gap-1 rounded-2xl bg-raised p-1">
       {options.map((o) => (
         <button
           key={o.value}
           onClick={() => onChange(o.value)}
-          className={`h-11 flex-1 rounded-xl text-[15px] transition-colors ${
-            value === o.value ? 'bg-crema font-semibold text-on-crema' : 'text-mute active:bg-line'
-          }`}
+          className={`h-11 min-w-0 flex-1 truncate rounded-xl px-1 transition-colors ${
+            eng ? 'text-[13px]' : 'text-[15px]'
+          } ${value === o.value ? 'bg-crema font-semibold text-on-crema' : 'text-mute active:bg-line'}`}
         >
           {o.label}
         </button>

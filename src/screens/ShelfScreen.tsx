@@ -14,7 +14,7 @@ import { ORIGIN_NAMES, getOrigin } from '@/kb'
 
 /** Sammelwert für Mischungen — dann greifen keine Herkunfts-Modifikatoren. */
 const BLEND = 'Blend'
-import { ROAST_LABEL, PROCESS_LABEL, METHOD_LABEL } from '@/labels'
+import { METHODS, ROAST_LABEL, PROCESS_LABEL, METHOD_LABEL } from '@/labels'
 import {
   Screen, Header, Section, Card, Button, Field, TextInput, Select, Sheet,
   Empty, Stat, FreshnessRing, Stepper, Toggle, Chip,
@@ -122,7 +122,7 @@ function BeanDetail({ bean, onBack }: { bean: Bean; onBack: () => void }) {
   const updateBag = useStore((s) => s.updateBag)
   const [showBag, setShowBag] = useState(false)
 
-  const bestByMethod = (['espresso', 'v60', 'aeropress'] as BrewMethod[])
+  const bestByMethod = METHODS
     .map((m) => {
       const list = brews.filter((b) => b.method === m && (b.tasting?.rating ?? 0) >= 4)
       const best = list.sort((a, b) => (b.tasting!.rating - a.tasting!.rating))[0]
@@ -159,7 +159,7 @@ function BeanDetail({ bean, onBack }: { bean: Bean; onBack: () => void }) {
       <Section title="Fit">
         <Card>
           <div className="space-y-2">
-            {(['espresso', 'v60', 'aeropress'] as BrewMethod[]).map((m) => {
+            {METHODS.map((m) => {
               const fit = suitability(bean, m)
               return (
                 <div key={m} className="flex items-center gap-3">

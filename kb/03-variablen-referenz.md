@@ -113,7 +113,7 @@ brühen, danach verdünnen). Die App sollte das automatisch erkennen:
 `if (waterG > 250) → bypass-Modus vorschlagen`.
 
 **Wassertemperatur:** Der Bereich beginnt bei 70 °C, nicht bei 80 °C. Die
-AeroPress ist die einzige der drei Methoden, bei der niedrige Temperaturen
+AeroPress ist die einzige Methode, bei der niedrige Temperaturen
 (75–85 °C) ein etabliertes Stilmittel sind — sie reduzieren Bitterkeit bei
 dunklen Röstungen und sehr feinem Mahlgrad drastisch.
 

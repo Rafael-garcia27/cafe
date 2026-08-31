@@ -73,7 +73,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'sour' && (defects includes 'bitter' || defects includes 'astringent')",
       "cause": "Ungleichmäßige Extraktion — nicht zu viel und nicht zu wenig, sondern beides gleichzeitig",
@@ -95,6 +96,11 @@
         "aeropress": [
           "Mahlwerk prüfen (Alignment/Schärfe)",
           "Röstung verdächtigen — Channeling ist hier unmöglich"
+        ],
+        "frenchpress": [
+          "zügig aufgießen, alles Mehl benetzen",
+          "Kruste bei 4:00 brechen und umrühren",
+          "gleichmäßiger mahlen"
         ]
       },
       "explanation": "Sauer und bitter gleichzeitig ist kein Widerspruch, sondern die Signatur ungleichmäßiger Extraktion. Ein Teil des Kaffees ist überextrahiert, ein anderer unterextrahiert. Mahlgrad hilft hier nicht.",
@@ -111,7 +117,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "daysOffRoast < restWindow.min",
       "cause": "Zu viel CO₂ — die Bohne ist noch nicht ausgegast",
@@ -132,7 +139,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "daysOffRoast > 60",
       "cause": "Aromaverlust und Lipidoxidation",
@@ -153,7 +161,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "ey > 26 || ey < 12 || tdsPct > 15",
       "cause": "Unplausible Messung",
@@ -181,7 +190,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "ey >= 18 && ey <= 22 && rating <= 2 && defects includes 'flat' && !(defects includes 'sour') && !(defects includes 'bitter')",
       "cause": "Vermutlich zu hohe Karbonathärte im Wasser",
@@ -203,7 +213,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "last3CorrectionsSameDirection('finer') && !ratingImproved() && defects includes 'sour' && defects includes 'bitter'",
       "cause": "Unterentwickelte Röstung",
@@ -384,7 +395,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'sour' && defects includes 'salty'",
       "cause": "Unterextraktion",
@@ -404,7 +416,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'sour' && (defects includes 'thin' || defects includes 'shortFinish')",
       "cause": "Unterextraktion",
@@ -439,7 +452,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'sour' && timeInTarget && waterTempC < 96",
       "cause": "Extraktionstemperatur zu niedrig",
@@ -457,7 +471,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'sour' && waterTempC >= 96",
       "cause": "Extraktionskapazität begrenzt",
@@ -494,7 +509,8 @@
       "stage": 2,
       "priority": 1,
       "scope": [
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'sour'",
       "cause": "Unterextraktion",
@@ -514,7 +530,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'bitter' && defects includes 'astringent'",
       "cause": "Überextraktion",
@@ -549,7 +566,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'bitter' && timeInTarget && waterTempC > 90",
       "cause": "Extraktionstemperatur zu hoch",
@@ -567,7 +585,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'bitter' && waterTempC <= 90",
       "cause": "Zu weite Ratio treibt die Extraktion in die Bitterstoffe",
@@ -604,7 +623,8 @@
       "stage": 2,
       "priority": 1,
       "scope": [
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'bitter'",
       "cause": "Zu hohe Extraktionstemperatur",
@@ -624,7 +644,8 @@
       "scope": [
         "espresso",
         "v60",
-        "aeropress"
+        "aeropress",
+        "frenchpress"
       ],
       "when": "defects includes 'bitter' && roastLevel in ['medium-dark','dark']",
       "cause": "Dunkle Röstung extrahiert leicht und kippt schnell",
@@ -1265,5 +1286,6 @@
         "confidence": "medium"
       }
     ]
-  }
+  },
+  "_frenchpressNote": "Regeln, die für die AeroPress gelten, gelten bei voller Immersion in aller Regel auch für die French Press. Abweichungen stehen in kb/10b §6."
 }

@@ -12,7 +12,7 @@
 //  ENUMS
 // ═══════════════════════════════════════════════════════════════
 
-export type BrewMethod = 'espresso' | 'v60' | 'aeropress'
+export type BrewMethod = 'espresso' | 'v60' | 'aeropress' | 'frenchpress'
 
 export type RoastLevel =
   | 'light' | 'medium-light' | 'medium' | 'medium-dark' | 'dark'
@@ -285,6 +285,14 @@ export interface Observation {
   bedAppearance?: 'even' | 'crater' | 'uneven'
   cremaQuality?: 'good' | 'thin' | 'dark-spotted' | 'excessive' | 'absent'
   pressResistance?: 'none' | 'light' | 'normal' | 'heavy'
+  /**
+   * French Press: Wurde nach dem Pressen sofort umgefüllt?
+   *
+   * Der einzige Fehler, der NACH dem Brühen passiert. Wer die Kanne stehen
+   * lässt, extrahiert weiter — das erklärt Bitterkeit, die an keiner
+   * Einstellung liegt (kb/10b §6).
+   */
+  decantedImmediately?: boolean
 }
 
 export interface Measurement {

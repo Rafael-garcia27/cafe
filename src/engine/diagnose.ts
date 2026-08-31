@@ -13,7 +13,7 @@ import type { BrewActual, Observation, Measurement, Tasting, Defect, Brew, BrewM
 import { extractionYield, beverageMass, flowRate } from '@domain'
 import type { EngineContext } from '@/domain'
 import { daysOffRoast } from '@/domain'
-import { getRule, lrrFor, TARGET_RANGES, HARD_LIMITS, tolerances, roastRuleFor, tempRange, targetTimeRange } from '@/kb'
+import { getRule, lrrFor, TARGET_RANGES, HARD_LIMITS, tolerances, roastRuleFor, tempRange, targetTimeRange, isImmersion, correctionOrder } from '@/kb'
 import { correctionFromTime, describeCorrection, cappedNote, timeIsTrustworthy } from './grinder'
 import { restWindow } from './freshness'
 
@@ -435,11 +435,12 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
 
   const sugg: Suggestion[] = []
   // F-22 (√(t_ist/t_ziel)) ist Durchflussphysik und gilt nur für
-  // Perkolation. Bei der AeroPress ist die Zeit GEWÄHLT, kein Ergebnis —
-  // eine lange Gesamtzeit heißt dort nur, dass der Nutzer länger gewartet
-  // hat, und darf nie in eine Mahlgradkorrektur übersetzt werden.
+  // Perkolation. Bei Immersion — AeroPress, French Press — ist die Zeit
+  // GEWÄHLT, kein Ergebnis: Eine lange Gesamtzeit heißt dort nur, dass
+  // länger gewartet wurde, und darf nie in eine Grind-Korrektur übersetzt
+  // werden.
   const grindCorr =
-    method !== 'aeropress' && targetMid && timeIsTrustworthy(obs?.flowState)
+    !isImmersion(method) && targetMid && timeIsTrustworthy(obs?.flowState)
       ? correctionFromTime(actual.timeS, targetMid, method, ctx.grinder, actual.grindSetting?.value)
       : null
 
@@ -537,6 +538,20 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
 
   // ── Überextraktion ──
   if (hasAny(defects, 'bitter', 'astringent', 'harsh', 'ashy') && !hasAny(defects, 'sour')) {
+    // French Press: Der einzige Fehler, der NACH dem Brühen passiert.
+    // Stand der Kaffee auf dem Satz, ist die Bitterkeit erklärt — an den
+    // Einstellungen zu drehen würde einen intakten Brew verschlimmbessern.
+    if (method === 'frenchpress' && obs?.decantedImmediately === false) {
+      return blocked(
+        'D-FP-01',
+        'Der Kaffee stand auf dem Satz',
+        'In der Kanne extrahiert er weiter — nach zehn Minuten ist aus einem ' +
+          'guten Brew ein bitterer geworden, ohne dass an der Einstellung etwas ' +
+          'falsch war. Nächstes Mal sofort umfüllen und dieselben Werte noch ' +
+          'einmal fahren, bevor du etwas änderst.',
+        { metrics },
+      )
+    }
     // AeroPress: Temperatur ist der stärkste Bitterkeitshebel (D-35)
     if (method === 'aeropress') {
       push({
@@ -662,15 +677,20 @@ export function diagnose(input: DiagnoseInput): Diagnosis {
   const rr = roastRuleFor(ctx.bean.roastLevel, defects ?? [])
 
   // ── Kardinalregel: genau EINE Empfehlung ──
-  // Reihenfolge: Mahlgrad → Ratio → Temperatur → Technik (kb/14 §6),
-  // außer bei AeroPress, wo Agitation und Temperatur vorrücken.
+  // Reihenfolge: Standard ist Grind → Ratio → Temperatur → Technik
+  // (kb/14 §6). Methoden, die es anders wollen, sagen das in methods.json:
+  // Die AeroPress rückt Agitation und Temperatur vor, die French Press
+  // die Ratio — dort ist der Grind der schwächste Hebel.
   const order = rr
     ? // Röstgrad schlägt die Standardkaskade: bei dunkel+bitter zuerst die
       // Temperatur, bei dunkel+sauer zuerst die Technik.
       [...rr.order, 'grindSetting', 'ratio', 'waterTempC', 'stirCount', 'pourCount']
-    : method === 'aeropress'
-      ? ['stirCount', 'waterTempC', 'grindSetting', 'ratio', 'steepS']
-      : ['grindSetting', 'ratio', 'waterTempC', 'stirCount', 'pourCount']
+    : (correctionOrder(
+        method,
+        hasAny(defects, 'bitter', 'astringent', 'harsh', 'ashy')
+          ? 'overextracted'
+          : 'underextracted',
+      ) ?? ['grindSetting', 'ratio', 'waterTempC', 'stirCount', 'pourCount'])
   const rank = (v: string) => {
     const i = order.indexOf(v)
     return i === -1 ? 99 : i

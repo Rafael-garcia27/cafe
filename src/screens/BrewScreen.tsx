@@ -20,7 +20,7 @@ import { suitability, SUITABILITY_LABEL, bestMethodFor } from '@/engine/suitabil
 import { ratioTone, ratioLabel, RATIO_ANCHOR } from '@/engine/ratio'
 import { grindPlausibility, formatSetting, vendorRange } from '@/engine/grinder'
 import { GRINDER_CATALOG, grindersForMethod, targetTimeRange } from '@/kb'
-import { METHOD_LABEL, DEFECT_LABEL, COMMON_DEFECTS, CHARACTER_LABEL, COMMON_CHARACTERS, FLOW_LABEL, FLOW_CHOICES, PUCK_LABEL, PUCK_CHOICES, BLOOM_LABEL, BLOOM_CHOICES } from '@/labels'
+import { METHODS, METHOD_LABEL, METHOD_SHORT, DEFECT_LABEL, COMMON_DEFECTS, CHARACTER_LABEL, COMMON_CHARACTERS, FLOW_LABEL, FLOW_CHOICES, PUCK_LABEL, PUCK_CHOICES, BLOOM_LABEL, BLOOM_CHOICES } from '@/labels'
 import {
   Screen, Header, Section, Card, Button, Chip, SegmentedControl, Stepper, Field,
   Empty, Stat, FreshnessRing, InfoDot, fmtRange, num
@@ -112,6 +112,8 @@ export default function BrewScreen({ navigate }: Props) {
   const [puck, setPuck] = useState<PuckState | undefined>()
   const [bloom, setBloom] = useState<BloomBehavior | undefined>()
   const [drawdown, setDrawdown] = useState(0)
+  /** French Press: sofort umgefüllt oder stehen gelassen? */
+  const [decanted, setDecanted] = useState<boolean | undefined>()
   const [rating, setRating] = useState(0)
   const [defects, setDefects] = useState<Defect[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
@@ -191,6 +193,7 @@ export default function BrewScreen({ navigate }: Props) {
     setPhase('select'); setElapsed(0); setRating(0); setShowTweak(false)
     setDefects([]); setCharacters([]); setResult(null)
     setFlow(undefined); setPuck(undefined); setBloom(undefined); setDrawdown(0)
+    setDecanted(undefined)
   }
 
   const runDiagnosis = () => {
@@ -204,7 +207,7 @@ export default function BrewScreen({ navigate }: Props) {
       },
       observations: {
         flowState: flow, puckState: puck, bloomBehavior: bloom,
-        drawdownS: drawdown || undefined,
+        drawdownS: drawdown || undefined, decantedImmediately: decanted,
       },
       tasting: rating ? { rating: rating as 1|2|3|4|5, defects, characters, wouldRepeat: rating >= 4 } : undefined,
       targetTimeS: targetT,
@@ -218,7 +221,10 @@ export default function BrewScreen({ navigate }: Props) {
         waterG: isEspresso ? undefined : waterG,
         grindSetting: grinder ? { equipmentId: grinder.id, value: grindVal, unit: 'clicks' } : undefined,
       },
-      observations: { flowState: flow, puckState: puck, bloomBehavior: bloom, drawdownS: drawdown || undefined },
+      observations: {
+        flowState: flow, puckState: puck, bloomBehavior: bloom,
+        drawdownS: drawdown || undefined, decantedImmediately: decanted,
+      },
       tasting: rating ? { rating: rating as 1|2|3|4|5, defects, characters, wouldRepeat: rating >= 4 } : undefined,
       isBest: false,
     })
@@ -243,11 +249,7 @@ export default function BrewScreen({ navigate }: Props) {
             <SegmentedControl
               value={method}
               onChange={setMethod}
-              options={[
-                { value: 'espresso' as const, label: 'Espresso' },
-                { value: 'v60' as const, label: 'V60' },
-                { value: 'aeropress' as const, label: 'AeroPress' },
-              ]}
+              options={METHODS.map((m) => ({ value: m, label: METHOD_SHORT[m] }))}
             />
           </Section>
 
@@ -640,6 +642,27 @@ export default function BrewScreen({ navigate }: Props) {
               )}
             </Card>
           </Section>
+
+          {/* Die einzige Beobachtung, die bei der French Press zählt: Der
+              Fehler passiert nach dem Brühen, nicht währenddessen. */}
+          {method === 'frenchpress' && (
+            <Section title="Nach dem Pressen" action={<InfoDot termId="decant" />}>
+              <div className="flex flex-wrap gap-2">
+                <Chip
+                  label="Sofort umgefüllt"
+                  active={decanted === true}
+                  tone="good"
+                  onClick={() => setDecanted(decanted === true ? undefined : true)}
+                />
+                <Chip
+                  label="Stand in der Kanne"
+                  active={decanted === false}
+                  tone="bad"
+                  onClick={() => setDecanted(decanted === false ? undefined : false)}
+                />
+              </div>
+            </Section>
+          )}
 
           {isEspresso && (
             <>

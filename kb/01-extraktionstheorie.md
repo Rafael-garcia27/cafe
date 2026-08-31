@@ -232,7 +232,7 @@ Charakteristik:
 
 **Für die App wichtig:** Die Zeit-Sensitivität von Immersion ist rund
 **halb so groß** wie die von Perkolation. Eine Diagnose-Engine, die für alle
-drei Methoden dieselben Zeit-Korrekturen vorschlägt, ist bei der AeroPress
+alle Methoden dieselben Zeit-Korrekturen vorschlägt, ist bei der AeroPress
 systematisch zu aggressiv.
 
 ### 4.3 Druckextraktion (Espresso)

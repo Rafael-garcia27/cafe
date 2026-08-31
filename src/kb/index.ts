@@ -120,6 +120,36 @@ export function targetFlowRate(roast: RoastLevel, ratio = 2): number {
  * V60: skaliert mit der Dosis (Anti-Regel D-66). Eine feste Zielzeit für alle
  * Mengen ist der häufigste Fehler in V60-Apps.
  */
+/**
+ * Ob die Kontaktzeit gewählt oder Ergebnis ist.
+ *
+ * Bei Immersion — AeroPress, French Press — bestimmt der Mensch, wie lange
+ * gezogen wird. Eine lange Gesamtzeit ist dort kein Befund. Bei Perkolation
+ * fällt die Zeit aus Mahlgrad und Bett heraus.
+ */
+/**
+ * In welcher Reihenfolge diese Methode korrigiert werden will.
+ *
+ * Steht in methods.json, nicht im Code: Beim Espresso ist der Grind der
+ * stärkste Hebel, bei der French Press der schwächste. Diese Umkehrung
+ * ist Fachwissen und gehört in die Wissensbasis.
+ */
+export function correctionOrder(
+  method: BrewMethod,
+  richtung: 'underextracted' | 'overextracted',
+): string[] | null {
+  const co = (getMethod(method) as unknown as {
+    correctionOrder?: string[] | Record<string, string[]>
+  }).correctionOrder
+  if (!co) return null
+  if (Array.isArray(co)) return co
+  return co[richtung] ?? null
+}
+
+export function isImmersion(method: BrewMethod): boolean {
+  return (getMethod(method) as unknown as { physics?: string }).physics === 'immersion'
+}
+
 export interface AeropressPhases {
   /** Ende Benetzen/Bloom/Rühren (Sekunden ab Brühbeginn) */
   bloomEnd: number
@@ -138,8 +168,8 @@ export interface AeropressPhases {
  * Benetzen, CO₂-Entwicklung und Rühren in den ersten ~35 Sekunden. Danach
  * ruhiges Ziehen, dann Kappe aufsetzen und Wenden, zuletzt Pressen.
  */
-export function aeropressPhases(steepS: number): AeropressPhases {
-  const pm = (getMethod('aeropress') as unknown as {
+export function aeropressPhases(steepS: number, method: BrewMethod = 'aeropress'): AeropressPhases {
+  const pm = (getMethod(method) as unknown as {
     phaseModel?: { bloomMaxS: number; bloomFractionOfSteep: number; transferS: number; pressS: number }
   }).phaseModel ?? { bloomMaxS: 35, bloomFractionOfSteep: 0.4, transferS: 8, pressS: 25 }
   const bloomEnd = Math.min(pm.bloomMaxS, Math.round(steepS * pm.bloomFractionOfSteep))
@@ -196,14 +226,13 @@ export function targetTimeRange(
     return [Math.round(mid - 3), Math.round(mid + 3)]
   }
 
-  if (method === 'aeropress') {
-    // Gesamtzeit aus dem Phasenmodell — vorher lieferte dieser Zweig null,
-    // die Brüh-Animation fiel auf 30 s zurück und zeigte „Pressen" ab
-    // Sekunde 24. Die Ziehzeit kann bohnenspezifisch angepasst sein
-    // (z. B. anaerob −10 %), deshalb der Override.
+  if (isImmersion(method)) {
+    // Gesamtzeit aus dem Phasenmodell. Ohne diesen Zweig lieferte die
+    // Methode gar keine Zielzeit — die Ziehzeit kann bohnenspezifisch
+    // angepasst sein (z. B. anaerob kürzer), deshalb der Override.
     const steep = steepSOverride ?? m.defaults[roast]?.steepS ?? m.defaults['medium']?.steepS ?? 90
-    const total = aeropressPhases(steep).total
-    const tol = tolerances('aeropress').timeS
+    const total = aeropressPhases(steep, method).total
+    const tol = tolerances(method).timeS
     return [total - tol, total + tol]
   }
 

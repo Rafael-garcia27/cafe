@@ -135,7 +135,7 @@ und kann es nicht wiederholen.
 
 ---
 
-## 5. Die drei Methoden
+## 5. Die vier Methoden
 
 ### Espresso (Siebträger)
 
@@ -161,9 +161,19 @@ Ein Trichter mit Papierfilter. Wasser wird von Hand aufgegossen und läuft durch
 Kaffee liegt im Wasser (wie Tee), danach wird mit einem Kolben durchgedrückt.
 1–2 Minuten.
 
-- Fehlerverzeihendste Methode
+- Sehr fehlerverzeihend
 - **Kanalbildung ist physikalisch unmöglich** — es gibt kein Bett zum Durchströmen
 - Deshalb das beste Lernwerkzeug: eine Fehlerquelle weniger
+
+### French Press
+
+Kaffee liegt vier Minuten im Wasser, ein Metallsieb hält ihn beim Ausgießen
+zurück. Grob gemahlen.
+
+- Einfachste Methode im Handgriff, größter Körper
+- Das Metallsieb lässt Öle und Fines durch — daher der Körper, daher die Trübung
+- **Der einzige Fehler passiert nach dem Brühen:** Wer die Kanne stehen lässt,
+  extrahiert weiter. Sofort umfüllen.
 
 ---
 

@@ -9,6 +9,7 @@
  *   Pro-Bohne-Modell → was hat bei genau dieser Bohne funktioniert?
  */
 import type { Brew, Bean, Bag, BrewMethod } from '@domain'
+import { METHODS } from '@/labels'
 import type { LearnedModels, PerBeanModel, PreferenceModel, ProcessModel } from '@/domain'
 import { beanKey, daysOffRoast, EMPTY_LEARNED } from '@/domain'
 import { getMethodDefaults, targetTimeRange } from '@/kb'
@@ -55,7 +56,7 @@ export function recompute(brews: Brew[], beans: Bean[], bags: Bag[], today: Date
 
   const beanById = new Map(beans.map((b) => [b.id, b]))
   const bagById = new Map(bags.map((b) => [b.id, b]))
-  const methods: BrewMethod[] = ['espresso', 'v60', 'aeropress']
+  const methods = METHODS
 
   // ── Pro Bohne und Methode ───────────────────────────────────────────
   const groups = new Map<string, Brew[]>()

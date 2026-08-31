@@ -11,6 +11,7 @@
  * `data/methods.json` plus Herkunftsprofil.
  */
 import type { Bean, BrewMethod, Process } from '@domain'
+import { METHODS } from '@/labels'
 import { getMethod, getOrigin } from '@/kb'
 
 export type SuitabilityLevel = 'ideal' | 'gut' | 'machbar' | 'anspruchsvoll' | 'schwierig'
@@ -117,7 +118,7 @@ function reasonFor(
  * theoretisch passt. Ohne Herkunftsangabe (Blend) bleibt die Eignung.
  */
 export function bestMethodFor(bean: Bean): { method: BrewMethod; suitability: Suitability } {
-  const methods: BrewMethod[] = ['espresso', 'v60', 'aeropress']
+  const methods = METHODS
   const origin = bean.origins[0] ? getOrigin(bean.origins[0].country) : undefined
 
   const scored = methods.map((m) => {

@@ -24,7 +24,7 @@ Verursacht durch Gerbstoffe, die sich erst spät lösen.
 
 ### AeroPress 🟦
 Zubereitungsgerät: ein Zylinder mit Kolben. Kaffee zieht wie Tee im Wasser,
-danach drückt man ihn durch einen Filter. Fehlerverzeihendste der drei Methoden.
+danach drückt man ihn durch einen Filter. Sehr fehlerverzeihend.
 → kb/10
 
 ### Agitation 🟨

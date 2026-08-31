@@ -3,7 +3,7 @@
 > **Fachbegriffe?** Einstieg ohne Vorwissen: [START-HIER.md](START-HIER.md) ·
 > Einzelne Begriffe: [GLOSSAR.md](GLOSSAR.md)
 
-Immersion mit Druckabschluss. Die fehlerverzeihendste der drei Methoden und
+Immersion mit Druckabschluss. Sehr fehlerverzeihend und
 die mit dem größten Rezeptspielraum.
 
 ---
@@ -19,7 +19,7 @@ die mit dem größten Rezeptspielraum.
 | **Kleines Volumen (max. ~250 g)** | Größere Mengen brauchen zwingend Bypass. |
 
 **Die entscheidende praktische Folge:** Die Zeitsensitivität ist rund halb so
-groß wie beim V60. Eine Diagnose-Engine, die für alle drei Methoden dieselben
+groß wie beim V60. Eine Diagnose-Engine, die für alle Methoden dieselben
 Zeitkorrekturen vorschlägt, ist bei der AeroPress systematisch zu aggressiv.
 
 ---
@@ -196,7 +196,7 @@ weil die Immersion durch das Rühren beschleunigt wird.
 
 ### 5.1 Temperatur als Hauptregler
 
-Die AeroPress ist die einzige der drei Methoden, bei der niedrige Temperaturen
+Die AeroPress ist die einzige Methode, bei der niedrige Temperaturen
 (75–85 °C) ein etabliertes Stilmittel sind, kein Fehler.
 
 | Temp | Wirkung |
@@ -264,7 +264,7 @@ STEP 13  Verkosten und bewerten
 ```
 
 **Sicherheitshinweis in der UI vor STEP 10:** Kappe auf festen Sitz prüfen.
-Das ist der einzige Schritt der drei Methoden mit echtem Verbrühungsrisiko.
+Das ist der einzige Schritt aller Methoden mit echtem Verbrühungsrisiko.
 
 ---
 

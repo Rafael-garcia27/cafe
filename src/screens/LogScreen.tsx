@@ -8,7 +8,7 @@ import { useState } from 'react'
 import type { Route } from '@/router'
 import { useStore } from '@/store'
 import type { BrewMethod } from '@domain'
-import { METHOD_LABEL, DEFECT_LABEL, CHARACTER_LABEL, FLOW_LABEL } from '@/labels'
+import { METHODS, METHOD_LABEL, DEFECT_LABEL, CHARACTER_LABEL, FLOW_LABEL } from '@/labels'
 import { Screen, Header, Section, Card, Empty, Chip, Stat, Button, fmtTime, num } from '@/components/ui'
 import { formatSetting } from '@/engine/grinder'
 
@@ -50,7 +50,7 @@ export default function LogScreen({ route, navigate, back }: Props) {
           <Section title="Filter">
             <div className="flex flex-wrap gap-2">
               <Chip label="Alle" active={filterMethod === 'all'} onClick={() => setFilterMethod('all')} />
-              {(['espresso', 'v60', 'aeropress'] as BrewMethod[]).map((m) => (
+              {METHODS.map((m) => (
                 <Chip
                   key={m}
                   label={METHOD_LABEL[m]}

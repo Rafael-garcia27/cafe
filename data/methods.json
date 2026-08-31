@@ -1167,6 +1167,216 @@
       },
       "usableChamberWaterG": 230,
       "_chamberNote": "Die Kammer fasst nominal 250 ml. Praktisch bleiben mit Kaffeemehl und Kolbeneinschub etwa 230 g Wasser — invertiert braucht die Kappe zusätzlich Rand."
+    },
+    {
+      "id": "frenchpress",
+      "label": "French Press",
+      "physics": "immersion",
+      "_source": "kb/10b-methode-frenchpress.md",
+      "grindSensitivity": 0.4,
+      "timeSensitivity": 0.4,
+      "agitationRelevant": true,
+      "channelingPossible": false,
+      "timeIsResult": false,
+      "_timeNote": "Die Kontaktzeit wählt der Mensch. Eine lange Gesamtzeit ist kein Befund und darf nie in eine Grind-Korrektur übersetzt werden.",
+      "lrr": 2.0,
+      "_lrrNote": "Grob gemahlener Kaffee in voller Immersion hält rund das Doppelte seines Eigengewichts zurück (kb/10b §5).",
+      "targetGrindMicron": [
+        900,
+        1200
+      ],
+      "_grindNote": "Die gröbste Einstellung aller vier Methoden. Grund ist nicht die Extraktion, sondern das Metallsieb: Maschen um 300–400 µm lassen alles Feinere in die Tasse.",
+      "tempRangeC": {
+        "min": 80,
+        "max": 100,
+        "_note": "Wie beim Handfilter: frisch gekochtes Wasser ist für helle Röstungen vertretbar, dunkle wollen deutlich weniger."
+      },
+      "defaults": {
+        "light": {
+          "doseG": 30,
+          "ratio": 15.5,
+          "waterTempC": 96,
+          "steepS": 270,
+          "stirCount": 1
+        },
+        "medium-light": {
+          "doseG": 30,
+          "ratio": 16.0,
+          "waterTempC": 95,
+          "steepS": 255,
+          "stirCount": 1
+        },
+        "medium": {
+          "doseG": 30,
+          "ratio": 16.0,
+          "waterTempC": 94,
+          "steepS": 240,
+          "stirCount": 1
+        },
+        "medium-dark": {
+          "doseG": 30,
+          "ratio": 16.5,
+          "waterTempC": 91,
+          "steepS": 225,
+          "stirCount": 1
+        },
+        "dark": {
+          "doseG": 30,
+          "ratio": 17.0,
+          "waterTempC": 89,
+          "steepS": 210,
+          "stirCount": 1
+        }
+      },
+      "_defaultsNote": "1:16 entspricht 60 g/L. Die Ziehzeit von 4:00 ist der Standard; helle Röstungen vertragen etwas länger, dunkle kippen früher.",
+      "phaseModel": {
+        "_source": "kb/10b §4.2",
+        "_note": "Benetzen und Umrühren am Anfang, dann ruhiges Ziehen. Bei der Kruste wird gebrochen und abgeschöpft, danach gepresst.",
+        "bloomMaxS": 45,
+        "bloomFractionOfSteep": 0.15,
+        "transferS": 20,
+        "pressS": 15
+      },
+      "recipeVariants": [
+        {
+          "id": "standard",
+          "label": "Standard",
+          "steepS": 240,
+          "note": "Vier Minuten, Kruste brechen, pressen, sofort umfüllen."
+        },
+        {
+          "id": "hoffmann",
+          "label": "Verlängert",
+          "steepS": 240,
+          "extraSettleS": 390,
+          "note": "Nach vier Minuten Kruste brechen und abschöpfen, dann 5–8 min absetzen lassen. Deutlich klarer bei gleichem Körper, dafür 9–12 min gesamt und nur noch trinkwarm.",
+          "grindMicron": [
+            900,
+            1200
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "index": 1,
+          "type": "prepare",
+          "note": "Kanne mit heißem Wasser vorwärmen, ausgießen"
+        },
+        {
+          "index": 2,
+          "type": "weigh"
+        },
+        {
+          "index": 3,
+          "type": "grind"
+        },
+        {
+          "index": 4,
+          "type": "fill"
+        },
+        {
+          "index": 5,
+          "type": "tare"
+        },
+        {
+          "index": 6,
+          "type": "pour",
+          "note": "Zügig das gesamte Wasser aufgießen, alles Mehl benetzen"
+        },
+        {
+          "index": 7,
+          "type": "steep"
+        },
+        {
+          "index": 8,
+          "type": "crust",
+          "note": "Kruste brechen und umrühren"
+        },
+        {
+          "index": 9,
+          "type": "skim",
+          "note": "Schaum und Schwimmer abschöpfen"
+        },
+        {
+          "index": 10,
+          "type": "press",
+          "note": "Kolben langsam absenken, nicht durchdrücken"
+        },
+        {
+          "index": 11,
+          "type": "decant",
+          "warning": "Auf dem Satz extrahiert der Kaffee weiter",
+          "note": "Sofort in Kanne oder Tasse umfüllen"
+        },
+        {
+          "index": 12,
+          "type": "record"
+        },
+        {
+          "index": 13,
+          "type": "taste"
+        }
+      ],
+      "suitability": {
+        "_note": "Körper und Süße werden ausgespielt, Klarheit und Säure gedämpft. Helle gewaschene Ostafrikaner sind hier nicht falsch, aber verschwendet — ihre Stärke deckt das Metallsieb zu.",
+        "dark": {
+          "natural": 5,
+          "honey": 5,
+          "washed": 4,
+          "fermented": 4
+        },
+        "medium-dark": {
+          "natural": 5,
+          "honey": 5,
+          "washed": 4,
+          "fermented": 4
+        },
+        "medium": {
+          "natural": 4,
+          "honey": 4,
+          "washed": 4,
+          "fermented": 4
+        },
+        "medium-light": {
+          "natural": 4,
+          "honey": 4,
+          "washed": 3,
+          "fermented": 3
+        },
+        "light": {
+          "natural": 3,
+          "honey": 3,
+          "washed": 3,
+          "fermented": 3
+        }
+      },
+      "tolerances": {
+        "_note": "Die unempfindlichste der vier Methoden — hier wird spät korrigiert.",
+        "doseG": 2,
+        "timeS": 20,
+        "waterG": 15
+      },
+      "correctionOrder": {
+        "_source": "kb/10b §6",
+        "underextracted": [
+          "ratio",
+          "grindSetting",
+          "steepS",
+          "waterTempC"
+        ],
+        "overextracted": [
+          "decant",
+          "waterTempC",
+          "ratio",
+          "steepS",
+          "grindSetting"
+        ]
+      },
+      "_correctionNote": "Umgekehrt zum Espresso: Der Grind ist hier ein schwacher Hebel. Bei Bitterkeit steht zuerst die Frage, ob sofort umgefüllt wurde — auf dem Satz extrahiert der Kaffee weiter.",
+      "observations": [
+        "crust",
+        "decantedImmediately"
+      ]
     }
   ],
   "_suitabilityLegend": {

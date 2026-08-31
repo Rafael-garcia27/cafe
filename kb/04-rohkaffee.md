@@ -204,7 +204,7 @@ Rückverfolgbarkeit oft schwach. Für die App: `experimental` mit Freitextfeld.
 | **Aufbereitung** | überwiegend Washed; stark wachsender Anteil experimenteller Fermentation |
 | **Profil** | Karamell, Panela, roter Apfel, Zitrus, ausgewogene Säure, mittlerer Körper |
 | **Besonderheit** | Zwei Ernten pro Jahr → ganzjährig frische Ware verfügbar. Kleinbäuerlich geprägt (Ø < 2 ha). |
-| **Eignung** | Allrounder — funktioniert in allen drei Methoden. Ideale Einsteigerbohne für Dial-in. |
+| **Eignung** | Allrounder — funktioniert in allen Methoden. Ideale Einsteigerbohne für Dial-in. |
 
 ### 🇪🇹 Äthiopien
 

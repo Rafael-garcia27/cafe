@@ -59,6 +59,12 @@ export function stepSummary(method: BrewMethod, p: StepParams): string | null {
     teile.push('wenden, pressen')
     return teile.join(' · ')
   }
+  if (method === 'frenchpress') {
+    const teile = []
+    if (p.steepS) teile.push(`${dauer(p.steepS)} ziehen`)
+    teile.push('Kruste brechen', 'sofort umfüllen')
+    return teile.join(' · ')
+  }
   return null
 }
 
@@ -75,6 +81,7 @@ function textFor(s: RawStep, method: BrewMethod, p: StepParams, vorher: RawStep[
     case 'prepare':
       // Beim Espresso heizt die Maschine, nicht der Wasserkocher.
       if (method === 'espresso') return s.note ?? 'Maschine aufheizen'
+      if (method === 'frenchpress') return `Wasser auf ${p.waterTempC} °C, Kanne vorwärmen`
       return `Wasser auf ${p.waterTempC} °C bringen`
     case 'rinse':
       return s.note ?? 'Filter spülen, Spülwasser weggießen'
@@ -98,7 +105,9 @@ function textFor(s: RawStep, method: BrewMethod, p: StepParams, vorher: RawStep[
     case 'flush':
       return 'Brühgruppe kurz spülen'
     case 'fill':
-      return method === 'aeropress' ? 'Mehl einfüllen' : 'Mehl einfüllen, Bett flach klopfen'
+      return method === 'aeropress' || method === 'frenchpress'
+        ? 'Mehl einfüllen'
+        : 'Mehl einfüllen, Bett flach klopfen'
     case 'tare':
       return 'Waage tarieren'
     case 'bloom':
@@ -108,20 +117,36 @@ function textFor(s: RawStep, method: BrewMethod, p: StepParams, vorher: RawStep[
     case 'swirl':
       return s.note === 'Rao Spin' ? 'Kurz schwenken, damit das Bett eben bleibt' : 'Schwenken'
     case 'pour':
-      if (method === 'aeropress') return gesamt ? `Auf ${gesamt} g aufgießen` : 'Aufgießen'
+      if (method === 'aeropress' || method === 'frenchpress') {
+        return gesamt ? `Zügig auf ${gesamt} g aufgießen` : 'Aufgießen'
+      }
       return p.pourCount && gesamt
         ? `In ${p.pourCount - 1} weiteren Aufgüssen auf ${gesamt} g`
         : 'Weiter aufgießen'
     case 'stir':
       return p.stirCount ? `${p.stirCount}× rühren` : 'Rühren'
     case 'steep':
+      // Bei der French Press nennt der nächste Schritt die Zeit (Kruste
+      // brechen bei 4:00) — sie zweimal zu schreiben liest sich wie zwei
+      // getrennte Ereignisse.
+      if (method === 'frenchpress') return 'Ziehen lassen'
       return p.steepS ? `${dauer(p.steepS)} ziehen lassen` : 'Ziehen lassen'
     case 'cap':
       return s.note ?? 'Kappe aufsetzen und festdrehen'
     case 'invert':
       return 'Tasse aufsetzen und wenden'
     case 'press':
-      return 'In etwa 25 s gleichmäßig durchdrücken'
+      // Bei der French Press trennt der Kolben nur — wer presst, drückt
+      // Fines durch das Sieb.
+      return method === 'frenchpress'
+        ? (s.note ?? 'Kolben langsam absenken')
+        : 'In etwa 25 s gleichmäßig durchdrücken'
+    case 'crust':
+      return p.steepS ? `Bei ${dauer(p.steepS)} die Kruste brechen und umrühren` : 'Kruste brechen'
+    case 'skim':
+      return s.note ?? 'Schaum und Schwimmer abschöpfen'
+    case 'decant':
+      return s.note ?? 'Sofort umfüllen'
     case 'drawdown':
       return 'Durchlaufen lassen'
     case 'brew':

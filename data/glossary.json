@@ -754,6 +754,33 @@
         "channeling"
       ],
       "kbRef": "kb/16"
+    },
+    {
+      "id": "decant",
+      "term": "Decant",
+      "aka": "Umfüllen",
+      "level": "basis",
+      "short": "Den fertigen Kaffee sofort von den Grounds trennen.",
+      "long": "Bei der French Press bleibt das Getränk nach dem Pressen auf dem Satz stehen und extrahiert weiter. Nach zehn Minuten in der Kanne ist aus einem guten Brew ein bitterer geworden, ohne dass an der Einstellung etwas falsch war. Deshalb: pressen, umfüllen, dann trinken.",
+      "seeAlso": [
+        "overextraction",
+        "immersion"
+      ],
+      "kbRef": "kb/10b §6"
+    },
+    {
+      "id": "crust",
+      "term": "Crust",
+      "aka": "Kruste",
+      "level": "basis",
+      "short": "Die Schicht aus Mehl und Schaum, die bei der French Press oben aufschwimmt.",
+      "long": "CO₂ trägt das Mehl nach oben. Wird die Kruste nach etwa vier Minuten gebrochen und umgerührt, sinkt der Großteil ab und der Kontakt wird gleichmäßig. Wer sie stehen lässt, extrahiert oben kaum und unten zu viel.",
+      "seeAlso": [
+        "bloom",
+        "immersion",
+        "decant"
+      ],
+      "kbRef": "kb/10b §4.2"
     }
   ]
 }

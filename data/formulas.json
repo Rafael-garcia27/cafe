@@ -518,6 +518,28 @@
             "tPeak": 6,
             "sigma": 7
           }
+        },
+        "frenchpress": {
+          "light": {
+            "tPeak": 12,
+            "sigma": 10
+          },
+          "medium-light": {
+            "tPeak": 10,
+            "sigma": 9.5
+          },
+          "medium": {
+            "tPeak": 9,
+            "sigma": 9.5
+          },
+          "medium-dark": {
+            "tPeak": 7,
+            "sigma": 8.5
+          },
+          "dark": {
+            "tPeak": 6,
+            "sigma": 8
+          }
         }
       },
       "openedPenalty": "score * max(0.6, 1 - 0.004 * daysSinceOpened)"
@@ -715,7 +737,29 @@
         "max": 1
       }
     },
-    "_learnableNote": "Alle Modifikatoren sind Startwerte. Sobald für eine Bohne genügend bewertete Durchgänge vorliegen, gewinnt das gemessene persönliche Optimum."
+    "_learnableNote": "Alle Modifikatoren sind Startwerte. Sobald für eine Bohne genügend bewertete Durchgänge vorliegen, gewinnt das gemessene persönliche Optimum.",
+    "frenchpress": {
+      "light": [
+        6,
+        28
+      ],
+      "medium-light": [
+        5,
+        24
+      ],
+      "medium": [
+        4,
+        21
+      ],
+      "medium-dark": [
+        3,
+        17
+      ],
+      "dark": [
+        3,
+        13
+      ]
+    }
   },
   "roastModifiers": {
     "_source": "kb/03 §6, kb/05 §7",
@@ -891,6 +935,13 @@
       "ratioWeight": 0.4,
       "_steepNote": "Rest des Mahlgradhebels als Ziehzeit: 1 Schritt feiner ≈ +6 %",
       "steepPerGrindStep": -0.06
+    },
+    "frenchpress": {
+      "grindWeight": 0.4,
+      "tempWeight": 1.0,
+      "ratioWeight": 0.4,
+      "_steepNote": "Noch stärker als bei der AeroPress wandert die Wirkung in die Zeit — der Grind ist hier der schwächste Hebel.",
+      "steepPerGrindStep": -0.07
     }
   },
   "grindStepReference": {
