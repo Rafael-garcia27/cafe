@@ -19,7 +19,7 @@ import { consistencyWarning, brewsUntilPersonal } from '@/engine/learn'
 import { suitability, SUITABILITY_LABEL, bestMethodFor } from '@/engine/suitability'
 import { ratioTone, ratioLabel, RATIO_ANCHOR } from '@/engine/ratio'
 import { grindPlausibility, formatSetting, vendorRange } from '@/engine/grinder'
-import { GRINDER_CATALOG, grindersForMethod, targetTimeRange } from '@/kb'
+import { GRINDER_CATALOG, grindersForMethod, targetTimeRange, beverageYield } from '@/kb'
 import { METHODS, METHOD_LABEL, METHOD_SHORT, DEFECT_LABEL, COMMON_DEFECTS, CHARACTER_LABEL, COMMON_CHARACTERS, FLOW_LABEL, FLOW_CHOICES, PUCK_LABEL, PUCK_CHOICES, BLOOM_LABEL, BLOOM_CHOICES } from '@/labels'
 import {
   Screen, Header, Section, Card, Button, Chip, SegmentedControl, Stepper, Field,
@@ -317,7 +317,12 @@ export default function BrewScreen({ navigate }: Props) {
                 {isEspresso ? (
                   <Stat label="Yield" value={num(yieldG)} unit="g" term="yield" />
                 ) : (
-                  <Stat label="Wasser" value={waterG} unit="g" />
+                  <Stat
+                    label="Wasser"
+                    value={waterG}
+                    unit="g"
+                    hint={`≈ ${beverageYield(method, doseG, waterG)} g in der Tasse`}
+                  />
                 )}
                 <Stat label="Ratio" value={`1:${num(ratioLive)}`} term="ratio" />
                 <Stat label="Temp" value={tempC} unit="°C" />
@@ -578,7 +583,17 @@ export default function BrewScreen({ navigate }: Props) {
                   />
                 </Field>
 
-                <Field label="Out" term="yield" hint={isEspresso ? 'Im Glas' : 'Aufgegossenes Wasser'}>
+                <Field
+                  label="Out"
+                  term="yield"
+                  hint={
+                    isEspresso
+                      ? 'Im Glas'
+                      // Die App führt das aufgegossene Wasser, gedacht wird in
+                      // Tassengröße. Der Satz behält den Unterschied.
+                      : `Aufgegossenes Wasser · ≈ ${beverageYield(method, doseG, waterG)} g in der Tasse`
+                  }
+                >
                   {isEspresso ? (
                     <Stepper
                       value={yieldG} onChange={setYieldG} step={0.1} min={5} max={120}

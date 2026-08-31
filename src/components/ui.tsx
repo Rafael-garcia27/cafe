@@ -607,12 +607,15 @@ export function Stat({
   unit,
   term,
   tone,
+  hint,
 }: {
   label: string
   value: string | number
   unit?: string
   term?: string
   tone?: 'ok' | 'warn' | 'bad'
+  /** Kleine Zusatzzeile unter dem Wert, z. B. eine abgeleitete Größe */
+  hint?: string
 }) {
   const c = tone === 'ok' ? 'text-ok' : tone === 'warn' ? 'text-warn' : tone === 'bad' ? 'text-bad' : 'text-ink'
   return (
@@ -625,6 +628,7 @@ export function Stat({
         {value}
         {unit && <span className="ml-0.5 text-[13px] font-normal text-mute">{unit}</span>}
       </div>
+      {hint && <div className="mt-0.5 text-[12px] text-faint">{hint}</div>}
     </div>
   )
 }

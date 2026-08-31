@@ -41,7 +41,7 @@
         "espresso": 18,
         "v60": 18,
         "aeropress": 16,
-        "frenchpress": 30
+        "frenchpress": 18
       },
       "step": {
         "espresso": 0.1,
@@ -108,7 +108,7 @@
       "defaults": {
         "v60": 300,
         "aeropress": 240,
-        "frenchpress": 480
+        "frenchpress": 290
       },
       "step": {
         "v60": 5,

@@ -13,7 +13,7 @@ import { startingPoint } from './starting'
 import { diagnose } from './diagnose'
 import { bestMethodFor, suitability } from './suitability'
 import { grinderFromCatalog, suggestedSetting } from './grinder'
-import { targetTimeRange, isImmersion, correctionOrder, getMethod, tempRange, ORIGINS } from '@/kb'
+import { targetTimeRange, isImmersion, correctionOrder, getMethod, tempRange, beverageYield, ORIGINS } from '@/kb'
 import { METHODS, METHOD_LABEL } from '@/labels'
 import formulas from '@data/formulas.json'
 
@@ -183,5 +183,28 @@ describe('Eignung: Körper ja, Klarheit nein', () => {
         expect(p.ratio).toBeLessThan(20)
       }
     }
+  })
+})
+
+describe('Eine Tasse, nicht eine Kanne', () => {
+  it('die Standarddosis ergibt rund 250 g in der Tasse', () => {
+    const p = startingPoint(ctx()).proposal
+    const inDerTasse = beverageYield('frenchpress', p.doseG, p.waterG!)
+    expect(inDerTasse).toBeGreaterThanOrEqual(230)
+    expect(inDerTasse).toBeLessThanOrEqual(300)
+  })
+
+  it('der Satz behält das Doppelte seines Gewichts', () => {
+    // 18 g Kaffee halten ~36 g Wasser zurück (kb/10b §5).
+    expect(beverageYield('frenchpress', 18, 288)).toBe(252)
+  })
+
+  it('beim Espresso gibt es keine Retention', () => {
+    expect(beverageYield('espresso', 18, 36)).toBe(36)
+  })
+
+  it('gilt auch für die anderen Aufgussmethoden', () => {
+    expect(beverageYield('v60', 18, 300)).toBeLessThan(300)
+    expect(beverageYield('aeropress', 16, 230)).toBeLessThan(230)
   })
 })

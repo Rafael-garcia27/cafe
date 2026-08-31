@@ -73,6 +73,7 @@ und die verlängerte Variante als Rezeptvariante.
 
 | Parameter | Wert |
 | --------- | ---- |
+| Dose | 18 g für eine Tasse (~250 g), 30 g für zwei |
 | Ratio | 1:16 (60 g/L) |
 | Mahlgrad | 900–1200 µm |
 | Wasser | 93–96 °C, dunkle Röstung 88–90 °C |
@@ -100,8 +101,12 @@ guten Kaffee ein bitterer geworden, ohne dass an der Einstellung etwas falsch wa
 ## 5. Retentionswasser
 
 Grob gemahlener Kaffee in voller Immersion hält rund das **Doppelte seines
-Eigengewichts** an Wasser zurück (LRR ≈ 2,0). Bei 30 g Kaffee und 480 g Wasser
-bleiben also etwa 60 g in der Kanne — im Glas landen ~420 g.
+Eigengewichts** an Wasser zurück (LRR ≈ 2,0). Bei 18 g Kaffee und 288 g Wasser
+bleiben also etwa 36 g im Satz — in der Tasse landen ~252 g.
+
+Das ist der Grund, warum die App unter der Wassermenge zusätzlich anzeigt, was
+tatsächlich in der Tasse ankommt: Gedacht wird in Tassengröße, aufgegossen
+wird mehr.
 
 Wer die Ausbeute rechnen will, muss mit dem ausgegossenen Gewicht rechnen,
 nicht mit dem aufgegossenen (F-08).

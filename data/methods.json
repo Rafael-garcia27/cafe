@@ -1193,42 +1193,42 @@
       },
       "defaults": {
         "light": {
-          "doseG": 30,
+          "doseG": 18,
           "ratio": 15.5,
           "waterTempC": 96,
           "steepS": 270,
           "stirCount": 1
         },
         "medium-light": {
-          "doseG": 30,
+          "doseG": 18,
           "ratio": 16.0,
           "waterTempC": 95,
           "steepS": 255,
           "stirCount": 1
         },
         "medium": {
-          "doseG": 30,
+          "doseG": 18,
           "ratio": 16.0,
           "waterTempC": 94,
           "steepS": 240,
           "stirCount": 1
         },
         "medium-dark": {
-          "doseG": 30,
+          "doseG": 18,
           "ratio": 16.5,
           "waterTempC": 91,
           "steepS": 225,
           "stirCount": 1
         },
         "dark": {
-          "doseG": 30,
+          "doseG": 18,
           "ratio": 17.0,
           "waterTempC": 89,
           "steepS": 210,
           "stirCount": 1
         }
       },
-      "_defaultsNote": "1:16 entspricht 60 g/L. Die Ziehzeit von 4:00 ist der Standard; helle Röstungen vertragen etwas länger, dunkle kippen früher.",
+      "_defaultsNote": "1:16 entspricht 60 g/L. 18 g auf ~290 g Wasser ergeben rund 250 g in der Tasse — der Satz behält den Rest. Die Ziehzeit von 4:00 ist der Standard; helle Röstungen vertragen etwas länger, dunkle kippen früher.",
       "phaseModel": {
         "_source": "kb/10b §4.2",
         "_note": "Benetzen und Umrühren am Anfang, dann ruhiges Ziehen. Bei der Kruste wird gebrochen und abgeschöpft, danach gepresst.",

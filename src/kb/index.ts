@@ -586,5 +586,23 @@ export function lrrFor(method: BrewMethod, inverted = false): number {
     return inverted
       ? (LRR_DEFAULTS['aeropress_inverted'] ?? 1.6)
       : (LRR_DEFAULTS['aeropress_standard'] ?? 1.5)
+  if (method === 'frenchpress') {
+    // Grob gemahlener Kaffee in voller Immersion hält rund das Doppelte
+    // seines Eigengewichts zurück (kb/10b §5).
+    return (getMethod('frenchpress') as unknown as { lrr?: number }).lrr ?? 2.0
+  }
   return 0
+}
+
+/**
+ * Was am Ende wirklich in der Tasse steht.
+ *
+ * Bei den Aufgussmethoden führt die App das aufgegossene Wasser — der
+ * Nutzer denkt aber in Tassengröße. Der Satz behält je nach Methode das
+ * Anderthalb- bis Doppelte seines Eigengewichts (F-08).
+ */
+export function beverageYield(method: BrewMethod, doseG: number, waterG: number, inverted = false): number {
+  const lrr = lrrFor(method, inverted)
+  if (!lrr) return waterG
+  return Math.max(0, Math.round(waterG - doseG * lrr))
 }
